@@ -5,6 +5,7 @@ import (
 	"absensi-sppg/internal/service"
 	"encoding/json"
 	"fmt"
+	"log"
 	"math"
 	"net/http"
 	"strconv"
@@ -374,6 +375,15 @@ func (h *AbsensiHandler) InputAbsenMesin(c *gin.Context) {
 
 	err := h.AbsensiService.InputAbsenMesin(c.Request.Context(), req.Nama, req.Timestamp, req.Status)
 	if err != nil {
+		if strings.Contains(err.Error(), "user_karyawan not found") {
+			log.Printf("[AbsensiHandler] Karyawan tidak ditemukan: '%s' (error: %v)", req.Nama, err)
+			c.JSON(http.StatusNotFound, gin.H{
+				"success": false,
+				"message": fmt.Sprintf("Karyawan dengan nama '%s' tidak ditemukan di database", req.Nama),
+				"error":   err.Error(),
+			})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
 			"message": "failed to save attendance from machine",

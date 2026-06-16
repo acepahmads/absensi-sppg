@@ -898,12 +898,13 @@ cc Pak Sri Winardono, Pak Acep Ahmad S, Pak Djuhartono, Pak Dani Gumilar, Pak Al
 }
 func (r *absensiRepository) InputAbsenMesin(ctx context.Context, nama string, timestamp string, status string) error {
 	type UserKaryawan struct {
-		ID         int     `db:"id"`
-		UangMakan  float64 `db:"uang_makan"`
-		UangHarian float64 `db:"uang_harian"`
+		ID             int     `db:"id"`
+		UangMakan      float64 `db:"uang_makan"`
+		UangHarian     float64 `db:"uang_harian"`
+		NamaMesinAbsen string  `db:"nama_mesin_absen"`
 	}
 	var uk UserKaryawan
-	err := r.db.Get(&uk, "SELECT id, uang_makan, uang_harian FROM user_karyawan WHERE nama_mesin_absen = ?", nama)
+	err := r.db.Get(&uk, "SELECT id, uang_makan, uang_harian, nama_mesin_absen FROM user_karyawan WHERE LOWER(REPLACE(nama_mesin_absen, ' ', '')) = LOWER(REPLACE(?, ' ', ''))", nama)
 	if err != nil {
 		return fmt.Errorf("user_karyawan not found for name %s: %v", nama, err)
 	}
@@ -986,7 +987,7 @@ func (r *absensiRepository) InputAbsenMesin(ctx context.Context, nama string, ti
 		}
 
 		_, err = r.db.ExecContext(ctx, query,
-			nama,
+			uk.NamaMesinAbsen,
 			jamMasuk,
 			jamKeluar,
 			lemburMasuk,
@@ -1010,7 +1011,7 @@ func (r *absensiRepository) InputAbsenMesin(ctx context.Context, nama string, ti
 			SET jam_pulang = ?
 			WHERE nama = ? AND jam_masuk >= ? AND jam_masuk < ?
 		`
-		_, err = r.db.ExecContext(ctx, query, mysqlTimeStr, nama, startDate, endDate)
+		_, err = r.db.ExecContext(ctx, query, mysqlTimeStr, uk.NamaMesinAbsen, startDate, endDate)
 		return err
 
 	} else if flagMasuk == 4 {
@@ -1023,7 +1024,7 @@ func (r *absensiRepository) InputAbsenMesin(ctx context.Context, nama string, ti
 			SET lembur_pulang = ?
 			WHERE nama = ? AND lembur_masuk >= ? AND lembur_masuk < ?
 		`
-		_, err = r.db.ExecContext(ctx, query, mysqlTimeStr, nama, startDate, endDate)
+		_, err = r.db.ExecContext(ctx, query, mysqlTimeStr, uk.NamaMesinAbsen, startDate, endDate)
 		return err
 	}
 
