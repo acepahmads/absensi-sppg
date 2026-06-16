@@ -7,7 +7,7 @@
   <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
   <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=Outfit:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   
   <style>
     :root {
@@ -18,6 +18,15 @@
       --accent-color: #4a7bc8;
       --card-bg: rgba(13, 20, 32, 0.7);
       --border-color: rgba(74, 123, 200, 0.3);
+
+      /* Sidebar Match Variables */
+      --sidebar-bg: rgba(10, 14, 26, 0.85);
+      --sidebar-accent: #00d4ff;
+      --sidebar-glow: rgba(0, 212, 255, 0.4);
+      --sidebar-border: rgba(0, 212, 255, 0.2);
+      --sidebar-text-muted: #8b9dc3;
+      --sidebar-row-hover: rgba(0, 212, 255, 0.08);
+      --sidebar-row-selected: rgba(0, 212, 255, 0.15);
     }
 
     body {
@@ -52,88 +61,182 @@
     }
 
     .sidebar {
-      background: linear-gradient(180deg, rgba(10, 14, 26, 0.95) 0%, rgba(13, 20, 32, 0.95) 100%);
-      border-right: 2px solid var(--border-color);
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      z-index: 50;
-      backdrop-filter: blur(12px);
+      width: 200px;
+      height: 100%;
+      background: var(--sidebar-bg) !important;
+      border-right: 3px solid var(--sidebar-accent) !important;
+      box-shadow: none !important;
+      position: relative;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
     }
 
-    .logo-section-sidebar {
-      padding: 24px 16px;
+    .sidebar.collapsed {
+      width: 0px !important;
+      min-width: 0px !important;
+      max-width: 0px !important;
+      overflow: hidden;
+      border-right: 0px solid transparent !important;
+      padding: 0 !important;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .sidebar-resizer {
+      position: absolute;
+      top: 0;
+      right: -3px;
+      width: 6px;
+      height: 100%;
+      cursor: col-resize;
+      z-index: 20;
+    }
+
+    .sidebar-resizer:hover {
+      background: rgba(0, 212, 255, 0.3);
+    }
+
+    .resizing .sidebar {
+      transition: none !important;
+    }
+
+    .resizing * {
+      user-select: none !important;
+      cursor: col-resize !important;
+    }
+
+    .logo-section {
+      padding: 16px 14px;
       text-align: center;
-      border-bottom: 1px solid var(--border-color);
     }
 
-    .logo-section-sidebar h1 {
+    .logo-section h1 {
+      font-family: 'Orbitron', sans-serif !important;
       font-size: 16px;
-      font-weight: 700;
+      font-weight: 800;
+      color: var(--sidebar-accent) !important;
+      text-shadow: 0 0 20px var(--sidebar-glow);
       letter-spacing: 2px;
-      color: #00d4ff;
-      text-shadow: 0 0 15px rgba(0, 212, 255, 0.5);
+      transition: all 0.3s ease;
     }
 
     .nav-menu {
-      padding: 16px 8px;
+      flex: 1;
+      padding: 12px 0;
+      overflow-y: auto;
     }
 
     .nav-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 12px 16px;
+      padding: 10px 14px;
       margin: 4px 8px;
       border-radius: 8px;
       cursor: pointer;
-      font-size: 13px;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
       font-weight: 500;
-      color: #8b9dc3;
+      color: var(--sidebar-text-muted) !important;
       border: 1px solid transparent;
-      transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .nav-item::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 0;
+      height: 100%;
+      background: linear-gradient(90deg, var(--sidebar-row-selected), transparent);
+      transition: width 0.3s ease;
+    }
+
+    .nav-item:hover::before {
+      width: 100%;
     }
 
     .nav-item:hover {
-      background: rgba(0, 212, 255, 0.05);
-      color: #00d4ff;
-      border-color: rgba(0, 212, 255, 0.2);
+      background: var(--sidebar-row-hover) !important;
+      border-color: var(--sidebar-border) !important;
+      color: var(--sidebar-accent) !important;
+      transform: translateX(4px);
     }
 
     .nav-item.active {
-      background: rgba(0, 212, 255, 0.1);
-      color: #00d4ff;
-      border-color: rgba(0, 212, 255, 0.4);
-      box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);
+      background: var(--sidebar-row-selected) !important;
+      border-color: var(--sidebar-accent) !important;
+      color: var(--sidebar-accent) !important;
+      box-shadow: 0 0 20px var(--sidebar-glow);
+    }
+
+    .nav-item.active::before {
+      width: 100%;
+    }
+
+    .nav-icon {
+      width: 16px;
+      height: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      z-index: 1;
     }
 
     .nav-group-header {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      padding: 12px 16px;
-      margin: 4px 8px;
-      border-radius: 8px;
+      gap: 10px;
+      padding: 10px 23px;
       cursor: pointer;
-      font-size: 13px;
-      font-weight: 600;
-      color: #a3b8cc;
-      transition: all 0.2s ease;
+      border-radius: 8px;
+      transition: background 0.2s;
+      font-size: 12px;
+      color: var(--sidebar-text-muted) !important;
     }
 
     .nav-group-header:hover {
-      background: rgba(255, 255, 255, 0.02);
-      color: #fff;
+      background: var(--sidebar-row-hover) !important;
+      border-color: var(--sidebar-border) !important;
+      color: var(--sidebar-accent) !important;
+      transform: translateX(4px);
+    }
+
+    .nav-group-header.active {
+      background: var(--sidebar-row-selected) !important;
+      border-color: var(--sidebar-accent) !important;
+      color: var(--sidebar-accent) !important;
+      font-weight: 600;
+    }
+
+    .nav-arrow {
+      margin-left: auto;
+      transition: transform 0.2s;
+    }
+
+    .nav-arrow.open {
+      transform: rotate(180deg);
     }
 
     .nav-group-children {
-      margin-left: 12px;
-      border-left: 1px dashed var(--border-color);
-      padding-left: 4px;
+      padding-left: 16px;
+      overflow: hidden;
+      transition: all 0.2s;
+    }
+
+    .nav-group-children.hidden {
+      display: none;
     }
 
     .nav-child {
-      padding: 10px 14px;
-      margin: 2px 8px;
-      font-size: 12.5px;
+      padding-left: 7px !important;
+      font-size: 11.5px;
     }
 
     .top-bar {
@@ -216,19 +319,15 @@
       --accent-color: #2563eb;
       --card-bg: rgba(255, 255, 255, 0.9);
       --border-color: rgba(59, 130, 246, 0.2);
-    }
 
-    .theme-light .sidebar {
-      background: #ffffff;
-    }
-
-    .theme-light .nav-item {
-      color: #4b5563;
-    }
-
-    .theme-light .nav-item:hover, .theme-light .nav-item.active {
-      color: #2563eb;
-      background: rgba(59, 130, 246, 0.1);
+      /* Sidebar Match Variables */
+      --sidebar-bg: rgba(255, 255, 255, 0.9);
+      --sidebar-accent: #0066ff;
+      --sidebar-glow: rgba(0, 102, 255, 0.2);
+      --sidebar-border: rgba(0, 102, 255, 0.15);
+      --sidebar-text-muted: #64748b;
+      --sidebar-row-hover: rgba(0, 102, 255, 0.06);
+      --sidebar-row-selected: rgba(0, 102, 255, 0.12);
     }
 
     .theme-light .form-input {
@@ -246,17 +345,15 @@
       --accent-color: #00cc55;
       --card-bg: rgba(5, 5, 5, 0.95);
       --border-color: rgba(0, 255, 102, 0.3);
-    }
 
-    .theme-matrix .logo-section-sidebar h1 {
-      color: #00ff66;
-      text-shadow: 0 0 15px #00ff66;
-    }
-
-    .theme-matrix .nav-item:hover, .theme-matrix .nav-item.active {
-      color: #00ff66;
-      background: rgba(0, 255, 102, 0.08);
-      border-color: #00ff66;
+      /* Sidebar Match Variables */
+      --sidebar-bg: rgba(5, 15, 5, 0.85);
+      --sidebar-accent: #00ff41;
+      --sidebar-glow: rgba(0, 255, 65, 0.4);
+      --sidebar-border: rgba(0, 255, 65, 0.2);
+      --sidebar-text-muted: #4e9a4e;
+      --sidebar-row-hover: rgba(0, 255, 65, 0.08);
+      --sidebar-row-selected: rgba(0, 255, 65, 0.15);
     }
 
     /* Theme Synthwave overrides */
@@ -268,17 +365,15 @@
       --accent-color: #ff007f;
       --card-bg: rgba(36, 11, 54, 0.85);
       --border-color: rgba(255, 0, 127, 0.3);
-    }
 
-    .theme-synthwave .logo-section-sidebar h1 {
-      color: #ff007f;
-      text-shadow: 0 0 15px #ff007f;
-    }
-
-    .theme-synthwave .nav-item:hover, .theme-synthwave .nav-item.active {
-      color: #f300c0;
-      background: rgba(255, 0, 127, 0.08);
-      border-color: #ff007f;
+      /* Sidebar Match Variables */
+      --sidebar-bg: rgba(25, 10, 40, 0.85);
+      --sidebar-accent: #ff007f;
+      --sidebar-glow: rgba(255, 0, 127, 0.4);
+      --sidebar-border: rgba(255, 0, 127, 0.2);
+      --sidebar-text-muted: #c084fc;
+      --sidebar-row-hover: rgba(255, 0, 127, 0.08);
+      --sidebar-row-selected: rgba(255, 0, 127, 0.15);
     }
   </style>
  </head>
@@ -289,9 +384,10 @@
       
       <div style="display: flex; width: 100%; height: 100%;">
         <!-- Sidebar Navigation -->
-        <aside class="sidebar" :class="{ 'w-0 overflow-hidden': !sidebarOpen }" :style="{ width: sidebarOpen ? sidebarWidth + 'px' : '0px', minWidth: sidebarOpen ? sidebarWidth + 'px' : '0px', maxWidth: sidebarOpen ? sidebarWidth + 'px' : '0px' }">
-          <div class="logo-section-sidebar">
-            <h1>{{ configState.company_name || 'ENTERPRISE' }}</h1>
+        <aside class="sidebar" :class="{ 'collapsed': !sidebarOpen }" :style="{ width: sidebarOpen ? sidebarWidth + 'px' : '0px', minWidth: sidebarOpen ? sidebarWidth + 'px' : '0px', maxWidth: sidebarOpen ? sidebarWidth + 'px' : '0px' }">
+          <div class="sidebar-resizer" @mousedown="startResize"></div>
+          <div class="logo-section">
+            <h1 id="company-name">{{ configState.company_name || 'ENTERPRISE' }}</h1>
           </div>
           <nav class="nav-menu">
             <!-- Dashboard -->
@@ -309,11 +405,11 @@
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
                 </div>
                 <span>Absensi</span>
-                <div class="nav-arrow" :class="{ 'transform rotate-180': groupExpanded['group-absensi'] }">
+                <div class="nav-arrow" :class="{ 'open': groupExpanded['group-absensi'] }">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
                 </div>
               </div>
-              <div class="nav-group-children" v-show="groupExpanded['group-absensi']">
+              <div class="nav-group-children" :class="{ 'hidden': !groupExpanded['group-absensi'] }">
                 <div class="nav-item nav-child" @click="navigatePage('absensi')" v-show="isMenuVisible('absensi')">
                   <div class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="2"></circle></svg></div>
                   <span>Absensi</span>
@@ -340,20 +436,20 @@
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
                 </div>
                 <span>Setup</span>
-                <div class="nav-arrow" :class="{ 'transform rotate-180': groupExpanded['group-setup'] }">
+                <div class="nav-arrow" :class="{ 'open': groupExpanded['group-setup'] }">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
                 </div>
               </div>
-              <div class="nav-group-children" v-show="groupExpanded['group-setup']">
-                <div class="nav-item nav-child active" @click="navigatePage('setup_user_karyawan')" v-show="isMenuVisible('setup_user_karyawan')">
+              <div class="nav-group-children" :class="{ 'hidden': !groupExpanded['group-setup'] }">
+                <div class="nav-item nav-child" :class="{ 'active': activePage === 'setup_user_karyawan' }" @click="navigatePage('setup_user_karyawan')" v-show="isMenuVisible('setup_user_karyawan')">
                   <div class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></div>
                   <span>User Karyawan</span>
                 </div>
-                <div class="nav-item nav-child" @click="navigatePage('setup_leaders')" v-show="isMenuVisible('setup_leaders')">
+                <div class="nav-item nav-child" :class="{ 'active': activePage === 'setup_leaders' }" @click="navigatePage('setup_leaders')" v-show="isMenuVisible('setup_leaders')">
                   <div class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></div>
                   <span>Leader</span>
                 </div>
-                <div class="nav-item nav-child" @click="navigatePage('setup_users')" v-show="isMenuVisible('setup_users')">
+                <div class="nav-item nav-child" :class="{ 'active': activePage === 'setup_users' }" @click="navigatePage('setup_users')" v-show="isMenuVisible('setup_users')">
                   <div class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></div>
                   <span>User Management</span>
                 </div>
@@ -582,6 +678,7 @@
 
         const employees = ref([]);
         const leaders = ref([]);
+        const activePage = ref('setup_user_karyawan');
 
         // Search & Filters
         const search = ref('');
@@ -934,7 +1031,8 @@
           closeDeleteModal,
           deleteEmployee,
           filteredKaryawan,
-          formatCurrency
+          formatCurrency,
+          activePage
         };
       }
     }).mount('#app');
