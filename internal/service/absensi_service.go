@@ -609,3 +609,7 @@ func strPtrToString(s *string) string {
 func strToPtr(s string) *string {
 	return &s
 }
+
+func (s *AbsensiService) GetDashboardStats(ctx context.Context) (model.DashboardStats, error) {
+	return s.repo.GetDashboardStats(ctx)
+}

@@ -233,3 +233,18 @@ type FileUpload struct {
 	Size int    `json:"size"`
 	Data string `json:"data"` // base64
 }
+
+type DashboardStats struct {
+	TotalKaryawan         int      `json:"total_karyawan"`
+	TotalLeader           int      `json:"total_leader"`
+	AkunTerdaftar         int      `json:"akun_terdaftar"`
+	AttendanceRateToday   float64  `json:"attendance_rate_today"`
+	TepatWaktuPercent     float64  `json:"tepat_waktu_percent"`
+	TerlambatPercent      float64  `json:"terlambat_percent"`
+	LemburPercent         float64  `json:"lembur_percent"`
+	AbsentPercent         float64  `json:"absent_percent"`
+	TotalAbsenBulanIni    int      `json:"total_absen_bulan_ini"`
+	TotalLemburBulanIni   int      `json:"total_lembur_bulan_ini"`
+	AttendanceRateAverage float64  `json:"attendance_rate_average"`
+	RecentActivities      []string `json:"recent_activities"`
+}

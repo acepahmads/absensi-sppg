@@ -169,6 +169,7 @@ func main() {
 		auth.DELETE("/setup/users/:id", userHandler.DeleteUserAccount)
 
 		auth.GET("/absensi", absensiHandler.GetAll)
+		auth.GET("/dashboard/stats", absensiHandler.GetDashboardStats)
 		auth.GET("/absensi/last", absensiHandler.GetLast)
 		auth.GET("/absensi/perhitungan", absensiHandler.GetAllPerhitungan)
 		auth.GET("/absensi/karyawan", absensiHandler.GetAbsensiByKaryawan)

@@ -1197,3 +1197,14 @@ func mapStatus1(status string) string {
 		return status
 	}
 }
+
+func (h *AbsensiHandler) GetDashboardStats(c *gin.Context) {
+	stats, err := h.AbsensiService.GetDashboardStats(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to fetch dashboard statistics",
+		})
+		return
+	}
+	c.JSON(http.StatusOK, stats)
+}
