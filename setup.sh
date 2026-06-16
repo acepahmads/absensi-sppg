@@ -1,4 +1,3 @@
-// setup.sh placeholder
 #!/bin/bash
 
 # setup.sh
@@ -23,8 +22,16 @@ else
 fi
 
 # 2. Build dan start container dengan Docker Compose
-echo "🐳 Menjalankan docker-compose..."
-docker-compose up -d --build
+echo "🐳 Menjalankan docker compose..."
+if docker compose version >/dev/null 2>&1; then
+  docker compose up -d --build
+elif docker-compose version >/dev/null 2>&1; then
+  docker-compose up -d --build
+else
+  echo "❌ Error: docker compose atau docker-compose tidak ditemukan!"
+  echo "Silakan instal Docker Compose terlebih dahulu."
+  exit 1
+fi
 
 # 3. Tunggu MySQL siap
 echo "⏳ Menunggu MySQL siap..."
@@ -36,12 +43,11 @@ done
 echo ""
 echo "✅ MySQL siap digunakan."
 
-# 4. Jalankan seeder SQL
-echo "🌱 Menjalankan seeder..."
-docker cp seed/seeder.sql rt-app-db:/seed.sql
-docker exec -i rt-app-db sh -c 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" "$MYSQL_DATABASE"' < seed/seeder.sql
+# 4. Jalankan seeder & migrasi
+echo "🌱 Menjalankan migrasi dan seeder database..."
+docker exec -i rt-app-backend go run cmd/installer/main.go
 
-echo "✅ Seeder selesai."
+echo "✅ Migrasi dan Seeder selesai."
 
 # 5. Info akses
 echo "🌐 Aplikasi siap dijalankan!"
