@@ -30,6 +30,18 @@ type UserRepository interface {
 	UpdateUserKaryawan(ctx context.Context, uk *model.UserKaryawan) error
 	DeleteUserKaryawan(ctx context.Context, id int) error
 	GetLeadersList(ctx context.Context) ([]model.KaryawanLeader, error)
+
+	// Leader CRUD
+	GetAllLeaders(ctx context.Context) ([]model.KaryawanLeader, error)
+	CreateLeader(ctx context.Context, leader *model.KaryawanLeader) error
+	UpdateLeader(ctx context.Context, leader *model.KaryawanLeader) error
+	DeleteLeader(ctx context.Context, id int) error
+
+	// User Account CRUD
+	GetAllUserAccounts(ctx context.Context) ([]model.UserAccountCRUD, error)
+	CreateUserAccount(ctx context.Context, ua *model.UserAccountCRUD) error
+	UpdateUserAccount(ctx context.Context, ua *model.UserAccountCRUD) error
+	DeleteUserAccount(ctx context.Context, id string) error
 }
 
 type userRepository struct {
@@ -298,11 +310,89 @@ func (r *userRepository) DeleteUserKaryawan(ctx context.Context, id int) error {
 }
 
 func (r *userRepository) GetLeadersList(ctx context.Context) ([]model.KaryawanLeader, error) {
-	query := `SELECT id, nama FROM karyawan_leader ORDER BY id ASC`
+	query := `SELECT id, nama, divisi, status FROM karyawan_leader ORDER BY id ASC`
 	var list []model.KaryawanLeader
 	err := r.db.SelectContext(ctx, &list, query)
 	if err != nil {
 		return nil, err
 	}
 	return list, nil
+}
+
+// Leader CRUD
+func (r *userRepository) GetAllLeaders(ctx context.Context) ([]model.KaryawanLeader, error) {
+	query := `SELECT id, nama, divisi, status FROM karyawan_leader ORDER BY id DESC`
+	var list []model.KaryawanLeader
+	err := r.db.SelectContext(ctx, &list, query)
+	return list, err
+}
+
+func (r *userRepository) CreateLeader(ctx context.Context, leader *model.KaryawanLeader) error {
+	query := `INSERT INTO karyawan_leader (nama, divisi, status) VALUES (?, ?, ?)`
+	_, err := r.db.ExecContext(ctx, query, leader.Nama, leader.Divisi, leader.Status)
+	return err
+}
+
+func (r *userRepository) UpdateLeader(ctx context.Context, leader *model.KaryawanLeader) error {
+	query := `UPDATE karyawan_leader SET nama = ?, divisi = ?, status = ? WHERE id = ?`
+	_, err := r.db.ExecContext(ctx, query, leader.Nama, leader.Divisi, leader.Status, leader.ID)
+	return err
+}
+
+func (r *userRepository) DeleteLeader(ctx context.Context, id int) error {
+	query := `DELETE FROM karyawan_leader WHERE id = ?`
+	_, err := r.db.ExecContext(ctx, query, id)
+	return err
+}
+
+// User Account CRUD
+func (r *userRepository) GetAllUserAccounts(ctx context.Context) ([]model.UserAccountCRUD, error) {
+	query := `
+		SELECT 
+			ua.id, ua.name, ua.email, ua.role, ua.status, ua.id_karyawan, ua.id_leader, ua.created_at, ua.updated_at,
+			COALESCE(uk.nama_mesin_absen, '') AS nama_karyawan,
+			COALESCE(kl.nama, '') AS nama_leader
+		FROM user_accounts ua
+		LEFT JOIN user_karyawan uk ON ua.id_karyawan = uk.id
+		LEFT JOIN karyawan_leader kl ON ua.id_leader = kl.id
+		ORDER BY ua.created_at DESC
+	`
+	var list []model.UserAccountCRUD
+	err := r.db.SelectContext(ctx, &list, query)
+	return list, err
+}
+
+func (r *userRepository) CreateUserAccount(ctx context.Context, ua *model.UserAccountCRUD) error {
+	query := `
+		INSERT INTO user_accounts (id, name, email, password, role, status, id_karyawan, id_leader, created_at, updated_at, photos)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '[]')
+	`
+	_, err := r.db.ExecContext(ctx, query, ua.ID, ua.Name, ua.Email, ua.Password, ua.Role, ua.Status, ua.IDKaryawan, ua.IDLeader, ua.CreatedAt, ua.UpdatedAt)
+	return err
+}
+
+func (r *userRepository) UpdateUserAccount(ctx context.Context, ua *model.UserAccountCRUD) error {
+	var err error
+	if ua.Password != "" {
+		query := `
+			UPDATE user_accounts
+			SET name = ?, email = ?, password = ?, role = ?, status = ?, id_karyawan = ?, id_leader = ?, updated_at = ?
+			WHERE id = ?
+		`
+		_, err = r.db.ExecContext(ctx, query, ua.Name, ua.Email, ua.Password, ua.Role, ua.Status, ua.IDKaryawan, ua.IDLeader, ua.UpdatedAt, ua.ID)
+	} else {
+		query := `
+			UPDATE user_accounts
+			SET name = ?, email = ?, role = ?, status = ?, id_karyawan = ?, id_leader = ?, updated_at = ?
+			WHERE id = ?
+		`
+		_, err = r.db.ExecContext(ctx, query, ua.Name, ua.Email, ua.Role, ua.Status, ua.IDKaryawan, ua.IDLeader, ua.UpdatedAt, ua.ID)
+	}
+	return err
+}
+
+func (r *userRepository) DeleteUserAccount(ctx context.Context, id string) error {
+	query := `DELETE FROM user_accounts WHERE id = ?`
+	_, err := r.db.ExecContext(ctx, query, id)
+	return err
 }

@@ -1502,15 +1502,15 @@
               <div class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></div>
               <span>User Karyawan</span>
             </div>
+            <div class="nav-item nav-child" v-show="canAccess('setup_leaders')" @click="navigateTo('setup_leaders')">
+              <div class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></div>
+              <span>Leader</span>
+            </div>
+            <div class="nav-item nav-child" v-show="canAccess('setup_users')" @click="navigateTo('setup_users')">
+              <div class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></div>
+              <span>User Management</span>
+            </div>
           </div>
-        </div>
-
-        <!-- Complain Sidebar Item -->
-        <div class="nav-item" v-show="false" @click="navigateTo('complain')">
-          <div class="nav-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-          </div>
-          <span>Complain Handling</span>
         </div>
       
       </nav>
@@ -1909,12 +1909,13 @@
         const navigateTo = (page) => {
           const urlMap = {
             'dashboard': '/dashboard',
-            'complain': '/complain_handling',
             'absensi': '/rekapan_absensi',
             'input_absensi': '/input_absensi',
             'absensi_saya': '/absensi_karyawan',
             'absensi_perhitungan': '/absensi_perhitungan',
-            'setup_user_karyawan': '/setup/user_karyawan'
+            'setup_user_karyawan': '/setup/user_karyawan',
+            'setup_leaders': '/setup/leaders',
+            'setup_users': '/setup/users'
           };
           if (urlMap[page]) {
             window.location.href = urlMap[page];
@@ -1929,22 +1930,22 @@
             return true;
           }
           if (role === 'Operator') {
-            return ['complain', 'input_maintenance_da', 'rekapan_maintenance_da'].includes(pageName);
+            return ['input_maintenance_da', 'rekapan_maintenance_da'].includes(pageName);
           }
           if (role === 'HRDAdmin') {
-            return ['absensi_perhitungan', 'setup_user_karyawan'].includes(pageName);
+            return ['absensi_perhitungan', 'setup_user_karyawan', 'setup_leaders', 'setup_users'].includes(pageName);
           }
           if (role === 'SupervisorIT' || role === 'SupervisorRND') {
-            return ['absensi', 'complain', 'absensi_perhitungan', 'list_site_report', 'list_lembur', 'list_daily_report', 'setup_user_karyawan'].includes(pageName);
+            return ['absensi', 'absensi_perhitungan', 'list_site_report', 'list_lembur', 'list_daily_report', 'setup_user_karyawan', 'setup_leaders', 'setup_users'].includes(pageName);
           }
           if (role === 'SupervisorInventory') {
-            return ['absensi', 'inventory', 'inventory_management', 'inventory_peminjaman', 'absensi_perhitungan', 'list_site_report', 'list_lembur', 'list_daily_report'].includes(pageName);
+            return ['absensi', 'absensi_perhitungan', 'list_site_report', 'list_lembur', 'list_daily_report'].includes(pageName);
           }
           if (role === 'SuperAdmin' || role === 'Manager') {
-            return ['complain', 'absensi', 'input_absensi', 'absensi_perhitungan', 'input_maintenance_da', 'rekapan_maintenance_da', 'inventory', 'inventory_management', 'inventory_peminjaman', 'list_site_report', 'list_lembur', 'list_daily_report', 'setup_user_karyawan'].includes(pageName);
+            return ['absensi', 'input_absensi', 'absensi_perhitungan', 'input_maintenance_da', 'rekapan_maintenance_da', 'list_site_report', 'list_lembur', 'list_daily_report', 'setup_user_karyawan', 'setup_leaders', 'setup_users'].includes(pageName);
           }
           if (role === 'ManagerMarketing') {
-            return ['complain', 'absensi', 'absensi_perhitungan', 'list_site_report', 'list_lembur', 'list_daily_report'].includes(pageName);
+            return ['absensi', 'absensi_perhitungan', 'list_site_report', 'list_lembur', 'list_daily_report'].includes(pageName);
           }
           return false;
         };
@@ -2031,7 +2032,7 @@
           const activePageName = 'dashboard';
           const groups = {
             'group-absensi': ['absensi', 'input_absensi', 'absensi_saya', 'absensi_perhitungan'],
-            'group-setup': ['setup_user_karyawan']
+            'group-setup': ['setup_user_karyawan', 'setup_leaders', 'setup_users']
           };
           Object.entries(groups).forEach(([groupId, pages]) => {
             if (pages.includes(activePageName)) {

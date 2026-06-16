@@ -1,0 +1,859 @@
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Setup - Leader Management</title>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-color: #0a0e1a;
+      --surface-color: #0d1420;
+      --text-color: #e8f1ff;
+      --primary-color: #1e4a7f;
+      --accent-color: #4a7bc8;
+      --card-bg: rgba(13, 20, 32, 0.7);
+      --border-color: rgba(74, 123, 200, 0.3);
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Outfit', 'IBM Plex Sans', sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      overflow: hidden;
+    }
+
+    [v-cloak] { display: none !important; }
+
+    .dashboard-wrapper {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .tech-pattern {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      opacity: 0.05;
+      background-image: 
+        linear-gradient(0deg, transparent 24%, rgba(0, 212, 255, 0.08) 25%, rgba(0, 212, 255, 0.08) 26%, transparent 27%, transparent 74%, rgba(0, 212, 255, 0.08) 75%, rgba(0, 212, 255, 0.08) 76%, transparent 77%, transparent),
+        linear-gradient(90deg, transparent 24%, rgba(0, 212, 255, 0.08) 25%, rgba(0, 212, 255, 0.08) 26%, transparent 27%, transparent 74%, rgba(0, 212, 255, 0.08) 75%, rgba(0, 212, 255, 0.08) 76%, transparent 77%, transparent);
+      background-size: 100px 100px;
+      pointer-events: none;
+    }
+
+    .sidebar {
+      background: linear-gradient(180deg, rgba(10, 14, 26, 0.95) 0%, rgba(13, 20, 32, 0.95) 100%);
+      border-right: 2px solid var(--border-color);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 50;
+      backdrop-filter: blur(12px);
+    }
+
+    .logo-section-sidebar {
+      padding: 24px 16px;
+      text-align: center;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .logo-section-sidebar h1 {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: #00d4ff;
+      text-shadow: 0 0 15px rgba(0, 212, 255, 0.5);
+    }
+
+    .nav-menu {
+      padding: 16px 8px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      margin: 4px 8px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      color: #8b9dc3;
+      border: 1px solid transparent;
+      transition: all 0.2s ease;
+    }
+
+    .nav-item:hover {
+      background: rgba(0, 212, 255, 0.05);
+      color: #00d4ff;
+      border-color: rgba(0, 212, 255, 0.2);
+    }
+
+    .nav-item.active {
+      background: rgba(0, 212, 255, 0.1);
+      color: #00d4ff;
+      border-color: rgba(0, 212, 255, 0.4);
+      box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);
+    }
+
+    .nav-group-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      margin: 4px 8px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      color: #a3b8cc;
+      transition: all 0.2s ease;
+    }
+
+    .nav-group-header:hover {
+      background: rgba(255, 255, 255, 0.02);
+      color: #fff;
+    }
+
+    .nav-group-children {
+      margin-left: 12px;
+      border-left: 1px dashed var(--border-color);
+      padding-left: 4px;
+    }
+
+    .nav-child {
+      padding: 10px 14px;
+      margin: 2px 8px;
+      font-size: 12.5px;
+    }
+
+    .top-bar {
+      height: 60px;
+      background: rgba(10, 14, 26, 0.85);
+      border-bottom: 1px solid var(--border-color);
+      backdrop-filter: blur(12px);
+      z-index: 40;
+    }
+
+    .content-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+      z-index: 10;
+    }
+
+    .glass-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+      border-radius: 16px;
+    }
+
+    .form-input {
+      background: rgba(10, 14, 26, 0.6);
+      border: 1px solid var(--border-color);
+      color: var(--text-color);
+      border-radius: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: #00d4ff;
+      box-shadow: 0 0 10px rgba(0, 212, 255, 0.2);
+    }
+
+    /* Modal Styling */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .modal-overlay.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-content {
+      width: 100%;
+      max-width: 500px;
+      transform: scale(0.9);
+      transition: transform 0.3s ease;
+    }
+
+    .modal-overlay.show .modal-content {
+      transform: scale(1);
+    }
+
+    /* Light Theme overrides */
+    .theme-light {
+      --bg-color: #f3f4f6;
+      --surface-color: #ffffff;
+      --text-color: #1f2937;
+      --primary-color: #3b82f6;
+      --accent-color: #2563eb;
+      --card-bg: rgba(255, 255, 255, 0.9);
+      --border-color: rgba(59, 130, 246, 0.2);
+    }
+
+    .theme-light .sidebar {
+      background: #ffffff;
+    }
+
+    .theme-light .nav-item {
+      color: #4b5563;
+    }
+
+    .theme-light .nav-item:hover, .theme-light .nav-item.active {
+      color: #2563eb;
+      background: rgba(59, 130, 246, 0.1);
+    }
+
+    .theme-light .form-input {
+      background: #f9fafb;
+      color: #1f2937;
+      border-color: #d1d5db;
+    }
+
+    /* Theme Matrix overrides */
+    .theme-matrix {
+      --bg-color: #020202;
+      --surface-color: #070707;
+      --text-color: #00ff66;
+      --primary-color: #008833;
+      --accent-color: #00cc55;
+      --card-bg: rgba(5, 5, 5, 0.95);
+      --border-color: rgba(0, 255, 102, 0.3);
+    }
+
+    .theme-matrix .logo-section-sidebar h1 {
+      color: #00ff66;
+      text-shadow: 0 0 15px #00ff66;
+    }
+
+    .theme-matrix .nav-item:hover, .theme-matrix .nav-item.active {
+      color: #00ff66;
+      background: rgba(0, 255, 102, 0.08);
+      border-color: #00ff66;
+    }
+
+    /* Theme Synthwave overrides */
+    .theme-synthwave {
+      --bg-color: #1a0826;
+      --surface-color: #240b36;
+      --text-color: #ff007f;
+      --primary-color: #8c005b;
+      --accent-color: #ff007f;
+      --card-bg: rgba(36, 11, 54, 0.85);
+      --border-color: rgba(255, 0, 127, 0.3);
+    }
+
+    .theme-synthwave .logo-section-sidebar h1 {
+      color: #ff007f;
+      text-shadow: 0 0 15px #ff007f;
+    }
+
+    .theme-synthwave .nav-item:hover, .theme-synthwave .nav-item.active {
+      color: #f300c0;
+      background: rgba(255, 0, 127, 0.08);
+      border-color: #ff007f;
+    }
+  </style>
+ </head>
+ <body class="h-full">
+  <div id="app" v-cloak class="h-full" :class="[currentTheme, { 'resizing': isResizing }]">
+    <div class="dashboard-wrapper">
+      <div class="tech-pattern"></div>
+      
+      <div style="display: flex; width: 100%; height: 100%;">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" :class="{ 'w-0 overflow-hidden': !sidebarOpen }" :style="{ width: sidebarOpen ? sidebarWidth + 'px' : '0px', minWidth: sidebarOpen ? sidebarWidth + 'px' : '0px', maxWidth: sidebarOpen ? sidebarWidth + 'px' : '0px' }">
+          <div class="logo-section-sidebar">
+            <h1>{{ configState.company_name || 'ENTERPRISE' }}</h1>
+          </div>
+          <nav class="nav-menu">
+            <!-- Dashboard -->
+            <div class="nav-item" @click="navigatePage('dashboard')">
+              <div class="nav-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+              </div>
+              <span>Dashboard</span>
+            </div>
+            
+            <!-- Absensi Group -->
+            <div class="nav-group">
+              <div class="nav-group-header" @click="toggleGroup('group-absensi')">
+                <div class="nav-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                </div>
+                <span>Absensi</span>
+                <div class="nav-arrow" :class="{ 'transform rotate-180': groupExpanded['group-absensi'] }">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </div>
+              </div>
+              <div class="nav-group-children" v-show="groupExpanded['group-absensi']">
+                <div class="nav-item nav-child" @click="navigatePage('absensi')" v-show="isMenuVisible('absensi')">
+                  <div class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="2"></circle></svg></div>
+                  <span>Absensi</span>
+                </div>
+                <div class="nav-item nav-child" @click="navigatePage('input_absensi')" v-show="isMenuVisible('input_absensi')">
+                  <div class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="2"></circle></svg></div>
+                  <span>Input Absensi</span>
+                </div>
+                <div class="nav-item nav-child" @click="navigatePage('absensi_saya')" v-show="isMenuVisible('absensi_saya')">
+                  <div class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="2"></circle></svg></div>
+                  <span>Absensi Saya</span>
+                </div>
+                <div class="nav-item nav-child" @click="navigatePage('absensi_perhitungan')" v-show="isMenuVisible('absensi_perhitungan')">
+                  <div class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="2"></circle></svg></div>
+                  <span>Perhitungan Absensi</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Setup Group -->
+            <div class="nav-group">
+              <div class="nav-group-header" @click="toggleGroup('group-setup')">
+                <div class="nav-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                </div>
+                <span>Setup</span>
+                <div class="nav-arrow" :class="{ 'transform rotate-180': groupExpanded['group-setup'] }">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </div>
+              </div>
+              <div class="nav-group-children" v-show="groupExpanded['group-setup']">
+                <div class="nav-item nav-child" @click="navigatePage('setup_user_karyawan')" v-show="isMenuVisible('setup_user_karyawan')">
+                  <div class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></div>
+                  <span>User Karyawan</span>
+                </div>
+                <div class="nav-item nav-child active" @click="navigatePage('setup_leaders')" v-show="isMenuVisible('setup_leaders')">
+                  <div class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></div>
+                  <span>Leader</span>
+                </div>
+                <div class="nav-item nav-child" @click="navigatePage('setup_users')" v-show="isMenuVisible('setup_users')">
+                  <div class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></div>
+                  <span>User Management</span>
+                </div>
+              </div>
+            </div>
+          </nav>
+        </aside>
+        
+        <main style="display: flex; flex-direction: column; flex: 1; height: 100%; overflow: hidden;">
+          <!-- Top Bar -->
+          <header class="top-bar flex items-center justify-between px-6">
+            <div class="flex items-center gap-3">
+              <button @click="toggleSidebar" class="p-1.5 text-cyan-400 hover:text-cyan-300 transition-colors focus:outline-none border border-cyan-500/30 rounded bg-cyan-950/20 hover:bg-cyan-500/10 flex items-center justify-center" title="Toggle Sidebar">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="3" y1="12" x2="21" y2="12"></line>
+                  <line x1="3" y1="6" x2="21" y2="6"></line>
+                  <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+              </button>
+              <h2 class="text-lg font-bold text-cyan-400">Setup Leader</h2>
+            </div>
+            
+            <div class="flex items-center gap-4">
+              <div class="theme-switcher">
+                <select v-model="currentTheme" class="theme-select-control border border-cyan-500/30 bg-slate-900 text-cyan-400 px-3 py-1.5 rounded text-sm outline-none" @change="saveTheme">
+                  <option value="theme-cyber">🌐 Cyber Mode (Dark)</option>
+                  <option value="theme-light">☀️ Day Mode (Light)</option>
+                  <option value="theme-synthwave">🔮 Synthwave (Purple)</option>
+                  <option value="theme-matrix">📟 Matrix (Green)</option>
+                </select>
+              </div>
+              <div class="profile-section flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-cyan-600 flex items-center justify-center font-bold text-xs text-white">
+                  {{ initials }}
+                </div>
+                <div class="flex flex-col">
+                  <span class="text-xs font-semibold">{{ userProfile ? userProfile.name : 'User' }}</span>
+                  <button @click="handleLogout" class="text-[10px] text-red-400 hover:underline text-left">Logout</button>
+                </div>
+              </div>
+            </div>
+          </header>
+          
+          <!-- Content Area -->
+          <div class="content-area">
+            <div class="max-w-6xl mx-auto space-y-6">
+              
+              <!-- Filter & Actions Card -->
+              <div class="glass-card p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div class="flex flex-1 flex-col sm:flex-row gap-4 items-stretch sm:items-center">
+                  <input type="text" v-model="search" placeholder="Search by leader name, division..." class="form-input flex-1 px-4 py-2 text-sm max-w-sm" />
+                  <select v-model="statusFilter" class="form-input px-4 py-2 text-sm">
+                    <option value="all">All Status</option>
+                    <option value="active">Active Only</option>
+                    <option value="inactive">Inactive Only</option>
+                  </select>
+                </div>
+                
+                <div>
+                  <button @click="openAddModal" class="px-5 py-2.5 text-sm font-semibold rounded bg-cyan-500 hover:bg-cyan-600 text-slate-950 font-bold transition-all shadow shadow-cyan-500/20 hover:shadow-cyan-500/40 flex items-center gap-2">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    Add Leader
+                  </button>
+                </div>
+              </div>
+              
+              <!-- Table List -->
+              <div class="glass-card overflow-hidden">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-sm">
+                    <thead>
+                      <tr class="border-b border-cyan-500/20 bg-cyan-950/20 text-cyan-400 text-xs uppercase tracking-wider font-bold">
+                        <th class="px-6 py-4">No</th>
+                        <th class="px-6 py-4">Nama Leader</th>
+                        <th class="px-6 py-4">Divisi</th>
+                        <th class="px-6 py-4">Status</th>
+                        <th class="px-6 py-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-cyan-500/10">
+                      <tr v-for="(l, index) in filteredLeaders" :key="l.id" class="hover:bg-cyan-500/5 transition-colors">
+                        <td class="px-6 py-4 text-xs font-semibold text-slate-400">{{ index + 1 }}</td>
+                        <td class="px-6 py-4 font-semibold text-cyan-300">{{ l.nama }}</td>
+                        <td class="px-6 py-4">{{ l.divisi || '-' }}</td>
+                        <td class="px-6 py-4">
+                          <span :class="l.status === 1 ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/15 text-rose-400 border border-rose-500/30'" class="px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
+                            {{ l.status === 1 ? 'Active' : 'Inactive' }}
+                          </span>
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                          <div class="flex items-center justify-end gap-3">
+                            <button @click="openEditModal(l)" class="text-cyan-400 hover:text-cyan-300 font-medium text-xs border border-cyan-500/30 rounded px-2.5 py-1.5 bg-cyan-950/20 hover:bg-cyan-500/10 transition-colors">
+                              Edit
+                            </button>
+                            <button @click="confirmDelete(l.id, l.nama)" class="text-rose-400 hover:text-rose-300 font-medium text-xs border border-rose-500/30 rounded px-2.5 py-1.5 bg-rose-950/20 hover:bg-rose-500/10 transition-colors">
+                              Delete
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr v-if="filteredLeaders.length === 0">
+                        <td colspan="5" class="px-6 py-12 text-center text-slate-400">
+                          No leaders found. Try expanding your search filters.
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <!-- Add/Edit Modal -->
+    <div class="modal-overlay" :class="{ 'show': modalVisible }" @click.self="closeModal">
+      <div class="modal-content glass-card p-6 w-full max-w-md">
+        <div class="flex items-center justify-between border-b border-cyan-500/20 pb-4 mb-6">
+          <h3 class="text-lg font-bold text-cyan-400">{{ modalMode === 'add' ? 'Add Leader' : 'Edit Leader' }}</h3>
+          <button @click="closeModal" class="text-slate-400 hover:text-white">&times;</button>
+        </div>
+        
+        <form @submit.prevent="saveLeader" class="space-y-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-400 mb-2 uppercase">Nama Leader</label>
+            <input type="text" v-model="form.nama" required class="form-input w-full px-4 py-2 text-sm" placeholder="e.g. Erwin Widianto" />
+          </div>
+          
+          <div>
+            <label class="block text-xs font-bold text-slate-400 mb-2 uppercase">Divisi</label>
+            <input type="text" v-model="form.divisi" required class="form-input w-full px-4 py-2 text-sm" placeholder="e.g. IT, RnD, Operations" />
+          </div>
+          
+          <div>
+            <label class="block text-xs font-bold text-slate-400 mb-2 uppercase">Status</label>
+            <select v-model.number="form.status" required class="form-input w-full px-4 py-2 text-sm">
+              <option :value="1">Active</option>
+              <option :value="0">Inactive</option>
+            </select>
+          </div>
+          
+          <div class="flex items-center justify-end gap-3 pt-4 border-t border-cyan-500/20 mt-6">
+            <button type="button" @click="closeModal" class="px-4 py-2 text-sm font-semibold rounded border border-cyan-500/30 text-cyan-400 bg-cyan-950/20 hover:bg-cyan-500/10 transition-colors">
+              Cancel
+            </button>
+            <button type="submit" class="px-5 py-2 rounded bg-cyan-500 hover:bg-cyan-600 text-slate-950 font-bold transition-colors shadow shadow-cyan-500/25">
+              {{ modalMode === 'add' ? 'Create' : 'Save' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal-overlay" :class="{ 'show': deleteModalVisible }" @click.self="closeDeleteModal">
+      <div class="modal-content glass-card p-6 w-full max-w-sm">
+        <div class="text-center">
+          <div class="w-12 h-12 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center mx-auto mb-4 text-xl border border-rose-500/30">
+            ⚠️
+          </div>
+          <h3 class="text-lg font-bold text-rose-400 mb-2">Delete Leader</h3>
+          <p class="text-sm text-slate-400 mb-6">
+            Are you sure you want to delete leader <strong class="text-slate-200">"{{ deleteTargetName }}"</strong>? This action cannot be undone and will delete all references to this leader.
+          </p>
+          
+          <div class="flex items-center justify-center gap-3">
+            <button @click="closeDeleteModal" class="px-4 py-2 text-sm font-semibold rounded border border-cyan-500/30 text-cyan-400 bg-cyan-950/20 hover:bg-cyan-500/10 transition-colors">
+              Cancel
+            </button>
+            <button @click="deleteLeader" class="px-5 py-2 rounded bg-rose-500 hover:bg-rose-600 text-slate-950 font-bold transition-colors shadow shadow-rose-500/25">
+              Confirm Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const { createApp, ref, reactive, onMounted, computed } = Vue;
+
+    createApp({
+      setup() {
+        const currentTheme = ref(localStorage.getItem('selectedTheme') || 'theme-cyber');
+        const sidebarOpen = ref(true);
+        const sidebarWidth = ref(parseInt(localStorage.getItem('sidebarWidth')) || 200);
+        const isResizing = ref(false);
+
+        // Sidebar groups state
+        const groupExpanded = reactive({
+          'group-absensi': false,
+          'group-setup': true
+        });
+
+        // User profile & Auth cookies
+        const userProfile = ref(null);
+        const authToken = ref('');
+        const userID = ref('');
+
+        const leaders = ref([]);
+
+        // Search & Filters
+        const search = ref('');
+        const statusFilter = ref('all');
+
+        // Modal states
+        const modalVisible = ref(false);
+        const modalMode = ref('add'); // 'add' or 'edit'
+        const form = reactive({
+          id: 0,
+          nama: '',
+          divisi: '',
+          status: 1
+        });
+
+        // Delete confirmation states
+        const deleteModalVisible = ref(false);
+        const deleteTargetId = ref(0);
+        const deleteTargetName = ref('');
+
+        const configState = reactive({
+          company_name: "PT. Cakrawala Bima Instrument",
+          dashboard_title: "Enterprise Dashboard"
+        });
+
+        const getCookie = (name) => {
+          const value = `; ${document.cookie}`;
+          const parts = value.split(`; ${name}=`);
+          if (parts.length === 2) return parts.pop().split(";").shift();
+          return null;
+        };
+
+        const toggleSidebar = () => {
+          sidebarOpen.value = !sidebarOpen.value;
+        };
+
+        const toggleGroup = (groupId) => {
+          groupExpanded[groupId] = !groupExpanded[groupId];
+        };
+
+        const navigatePage = (page) => {
+          const routes = {
+            'dashboard': '/dashboard',
+            'absensi': '/rekapan_absensi',
+            'input_absensi': '/input_absensi',
+            'absensi_saya': '/absensi_karyawan',
+            'absensi_perhitungan': '/absensi_perhitungan',
+            'setup_user_karyawan': '/setup/user_karyawan',
+            'setup_leaders': '/setup/leaders',
+            'setup_users': '/setup/users'
+          };
+          if (routes[page]) {
+            window.location.href = routes[page];
+          }
+        };
+
+        const isMenuVisible = (menuId) => {
+          if (!userProfile.value) return false;
+          const role = userProfile.value.role;
+          if (role === 'SuperAdmin' || role === 'Manager') return true;
+
+          const permissions = {
+            'absensi': ['SupervisorIT', 'SupervisorRND', 'SupervisorInventory', 'ManagerMarketing'],
+            'input_absensi': [],
+            'absensi_saya': [],
+            'absensi_perhitungan': ['HRDAdmin', 'SupervisorIT', 'SupervisorRND', 'SupervisorInventory', 'ManagerMarketing'],
+            'setup_user_karyawan': ['HRDAdmin', 'SupervisorIT', 'SupervisorRND'],
+            'setup_leaders': ['HRDAdmin', 'SupervisorIT', 'SupervisorRND'],
+            'setup_users': ['HRDAdmin', 'SupervisorIT', 'SupervisorRND']
+          };
+
+          return permissions[menuId]?.includes(role) || false;
+        };
+
+        const saveTheme = () => {
+          localStorage.setItem('selectedTheme', currentTheme.value);
+        };
+
+        const handleLogout = async () => {
+          try {
+            await fetch('/auth/logout', { method: 'POST' });
+          } catch(e) {}
+          document.cookie = "authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+          window.location.href = '/';
+        };
+
+        const fetchUserProfile = async () => {
+          try {
+            const response = await fetch('/auth/user/profile?userID=' + userID.value, {
+              headers: { 'Authorization': `Bearer ${authToken.value}` }
+            });
+            if (!response.ok) throw new Error();
+            userProfile.value = await response.json();
+          } catch (e) {
+            window.location.href = '/';
+          }
+        };
+
+        // CRUD Fetch
+        const fetchLeaders = async () => {
+          try {
+            const response = await fetch('/auth/setup/leaders', {
+              headers: { 'Authorization': `Bearer ${authToken.value}` }
+            });
+            if (response.ok) {
+              leaders.value = await response.json();
+            }
+          } catch (error) {
+            console.error("Failed to fetch leaders list:", error);
+          }
+        };
+
+        // Form handlers
+        const openAddModal = () => {
+          modalMode.value = 'add';
+          form.id = 0;
+          form.nama = '';
+          form.divisi = 'Operations';
+          form.status = 1;
+          modalVisible.value = true;
+        };
+
+        const openEditModal = (l) => {
+          modalMode.value = 'edit';
+          form.id = l.id;
+          form.nama = l.nama;
+          form.divisi = l.divisi;
+          form.status = l.status;
+          modalVisible.value = true;
+        };
+
+        const closeModal = () => {
+          modalVisible.value = false;
+        };
+
+        const saveLeader = async () => {
+          try {
+            const url = modalMode.value === 'add' ? '/auth/setup/leaders' : `/auth/setup/leaders/${form.id}`;
+            const method = modalMode.value === 'add' ? 'POST' : 'PUT';
+            
+            const response = await fetch(url, {
+              method: method,
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken.value}`
+              },
+              body: JSON.stringify(form)
+            });
+            
+            if (response.ok) {
+              showToast(modalMode.value === 'add' ? 'Leader created successfully' : 'Leader updated successfully', 'success');
+              closeModal();
+              fetchLeaders();
+            } else {
+              const res = await response.json();
+              showToast(res.error || 'Failed to save leader record', 'error');
+            }
+          } catch (error) {
+            showToast('Network error while saving data', 'error');
+          }
+        };
+
+        // Delete Handler
+        const confirmDelete = (id, name) => {
+          deleteTargetId.value = id;
+          deleteTargetName.value = name;
+          deleteModalVisible.value = true;
+        };
+
+        const closeDeleteModal = () => {
+          deleteModalVisible.value = false;
+        };
+
+        const deleteLeader = async () => {
+          try {
+            const response = await fetch(`/auth/setup/leaders/${deleteTargetId.value}`, {
+              method: 'DELETE',
+              headers: { 'Authorization': `Bearer ${authToken.value}` }
+            });
+            
+            if (response.ok) {
+              showToast('Leader deleted successfully', 'success');
+              closeDeleteModal();
+              fetchLeaders();
+            } else {
+              const res = await response.json();
+              showToast(res.error || 'Failed to delete record', 'error');
+            }
+          } catch (error) {
+            showToast('Network error while deleting data', 'error');
+          }
+        };
+
+        // Filter and Search Computing
+        const filteredLeaders = computed(() => {
+          let list = leaders.value || [];
+          
+          if (search.value.trim() !== '') {
+            const q = search.value.toLowerCase().trim();
+            list = list.filter(l => 
+              l.nama.toLowerCase().includes(q) ||
+              (l.divisi && l.divisi.toLowerCase().includes(q))
+            );
+          }
+          
+          if (statusFilter.value === 'active') {
+            list = list.filter(l => l.status === 1);
+          } else if (statusFilter.value === 'inactive') {
+            list = list.filter(l => l.status === 0);
+          }
+          
+          return list;
+        });
+
+        // Helpers
+        const initials = computed(() => {
+          if (!userProfile.value) return 'U';
+          const name = userProfile.value.name || userProfile.value.role || 'User';
+          return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+        });
+
+        const showToast = (message, type = 'success') => {
+          const toast = document.createElement('div');
+          toast.style.cssText = `
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: ${type === 'success' ? '#065f46' : '#991b1b'};
+            color: #ffffff;
+            padding: 12px 24px;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            border: 1px solid ${type === 'success' ? '#047857' : '#b91c1c'};
+            z-index: 9999;
+            font-size: 14px;
+            font-weight: 600;
+          `;
+          toast.textContent = message;
+          document.body.appendChild(toast);
+          setTimeout(() => { toast.remove(); }, 3000);
+        };
+
+        onMounted(async () => {
+          authToken.value = getCookie("authToken");
+          userID.value = getCookie("id");
+          
+          if (!authToken.value || !userID.value) {
+            window.location.href = '/';
+            return;
+          }
+          
+          await fetchUserProfile();
+          await fetchLeaders();
+          
+          if (window.elementSdk) {
+            window.elementSdk.init({
+              defaultConfig: configState,
+              onConfigChange: (newConfig) => {
+                Object.assign(configState, newConfig);
+              }
+            });
+          }
+        });
+
+        return {
+          currentTheme,
+          sidebarOpen,
+          sidebarWidth,
+          isResizing,
+          groupExpanded,
+          userProfile,
+          leaders,
+          search,
+          statusFilter,
+          modalVisible,
+          modalMode,
+          form,
+          deleteModalVisible,
+          deleteTargetName,
+          configState,
+          initials,
+          toggleSidebar,
+          toggleGroup,
+          navigatePage,
+          isMenuVisible,
+          saveTheme,
+          handleLogout,
+          openAddModal,
+          openEditModal,
+          closeModal,
+          saveLeader,
+          confirmDelete,
+          closeDeleteModal,
+          deleteLeader,
+          filteredLeaders
+        };
+      }
+    }).mount('#app');
+  </script>
+ </body>
+</html>

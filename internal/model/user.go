@@ -11,7 +11,7 @@ type UserAccount struct {
 	Name         sql.NullString `gorm:"size:100;not null"`
 	Email        string         `gorm:"uniqueIndex;size:255;not null"`
 	Password     string         `gorm:"size:255;not null"`
-	Role         string         `gorm:"type:enum('SuperAdmin','Manager','Supervisor','Operator','Guest');not null"`
+	Role         string         `gorm:"type:enum('SuperAdmin','Manager','Supervisor','Operator','Guest','HRDAdmin','SupervisorIT','SupervisorRND','SupervisorInventory','ManagerMarketing');not null"`
 	Status       bool           `gorm:"default:true"`
 	CreatedAt    time.Time      `json:"created_at" db:"created_at"`
 	UpdatedAt    time.Time      `json:"updated_at" db:"updated_at"`
@@ -80,6 +80,23 @@ type UserKaryawan struct {
 }
 
 type KaryawanLeader struct {
-	ID   int    `json:"id" db:"id"`
-	Nama string `json:"nama" db:"nama"`
+	ID     int    `json:"id" db:"id" gorm:"primaryKey;autoIncrement"`
+	Nama   string `json:"nama" db:"nama" gorm:"size:100;not null"`
+	Divisi string `json:"divisi" db:"divisi" gorm:"size:100;default:'Operations'"`
+	Status int    `json:"status" db:"status" gorm:"default:1"`
+}
+
+type UserAccountCRUD struct {
+	ID           string    `json:"id" db:"id"`
+	Name         string    `json:"name" db:"name"`
+	Email        string    `json:"email" db:"email"`
+	Password     string    `json:"password,omitempty" db:"password"`
+	Role         string    `json:"role" db:"role"`
+	Status       int       `json:"status" db:"status"` // tinyint(1) -> 0 or 1
+	IDKaryawan   *int      `json:"id_karyawan" db:"id_karyawan"`
+	IDLeader     *int      `json:"id_leader" db:"id_leader"`
+	NamaKaryawan string    `json:"nama_karyawan" db:"nama_karyawan"`
+	NamaLeader   string    `json:"nama_leader" db:"nama_leader"`
+	CreatedAt    time.Time `json:"created_at" db:"created_at"`
+	UpdatedAt    time.Time `json:"updated_at" db:"updated_at"`
 }

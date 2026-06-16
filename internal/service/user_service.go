@@ -75,3 +75,51 @@ func (s *UserService) DeleteUserKaryawan(ctx context.Context, id int) error {
 func (s *UserService) GetLeadersList(ctx context.Context) ([]model.KaryawanLeader, error) {
 	return s.repo.GetLeadersList(ctx)
 }
+
+// Leader CRUD
+func (s *UserService) GetAllLeaders(ctx context.Context) ([]model.KaryawanLeader, error) {
+	return s.repo.GetAllLeaders(ctx)
+}
+
+func (s *UserService) CreateLeader(ctx context.Context, leader *model.KaryawanLeader) error {
+	return s.repo.CreateLeader(ctx, leader)
+}
+
+func (s *UserService) UpdateLeader(ctx context.Context, leader *model.KaryawanLeader) error {
+	return s.repo.UpdateLeader(ctx, leader)
+}
+
+func (s *UserService) DeleteLeader(ctx context.Context, id int) error {
+	return s.repo.DeleteLeader(ctx, id)
+}
+
+// User Account CRUD
+func (s *UserService) GetAllUserAccounts(ctx context.Context) ([]model.UserAccountCRUD, error) {
+	return s.repo.GetAllUserAccounts(ctx)
+}
+
+func (s *UserService) CreateUserAccount(ctx context.Context, ua *model.UserAccountCRUD) error {
+	if ua.Password != "" {
+		hashed, err := utils.HashPassword(ua.Password)
+		if err != nil {
+			return err
+		}
+		ua.Password = hashed
+	}
+	return s.repo.CreateUserAccount(ctx, ua)
+}
+
+func (s *UserService) UpdateUserAccount(ctx context.Context, ua *model.UserAccountCRUD) error {
+	if ua.Password != "" {
+		hashed, err := utils.HashPassword(ua.Password)
+		if err != nil {
+			return err
+		}
+		ua.Password = hashed
+	}
+	return s.repo.UpdateUserAccount(ctx, ua)
+}
+
+func (s *UserService) DeleteUserAccount(ctx context.Context, id string) error {
+	return s.repo.DeleteUserAccount(ctx, id)
+}

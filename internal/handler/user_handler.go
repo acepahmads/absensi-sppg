@@ -7,8 +7,10 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type UserHandler struct {
@@ -184,4 +186,130 @@ func (h *UserHandler) GetLeadersList(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, leaders)
+}
+
+// Leader CRUD
+func (h *UserHandler) GetAllLeaders(c *gin.Context) {
+	list, err := h.userService.GetAllLeaders(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get leaders list"})
+		return
+	}
+	c.JSON(http.StatusOK, list)
+}
+
+func (h *UserHandler) CreateLeader(c *gin.Context) {
+	var req model.KaryawanLeader
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
+		return
+	}
+	err := h.userService.CreateLeader(c.Request.Context(), &req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create leader"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Leader created successfully"})
+}
+
+func (h *UserHandler) UpdateLeader(c *gin.Context) {
+	idParam := c.Param("id")
+	var id int
+	_, err := fmt.Sscanf(idParam, "%d", &id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID parameter"})
+		return
+	}
+	var req model.KaryawanLeader
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
+		return
+	}
+	req.ID = id
+	err = h.userService.UpdateLeader(c.Request.Context(), &req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update leader"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Leader updated successfully"})
+}
+
+func (h *UserHandler) DeleteLeader(c *gin.Context) {
+	idParam := c.Param("id")
+	var id int
+	_, err := fmt.Sscanf(idParam, "%d", &id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID parameter"})
+		return
+	}
+	err = h.userService.DeleteLeader(c.Request.Context(), id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete leader"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Leader deleted successfully"})
+}
+
+// User Account CRUD
+func (h *UserHandler) GetAllUserAccounts(c *gin.Context) {
+	list, err := h.userService.GetAllUserAccounts(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user accounts list"})
+		return
+	}
+	c.JSON(http.StatusOK, list)
+}
+
+func (h *UserHandler) CreateUserAccount(c *gin.Context) {
+	var req model.UserAccountCRUD
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
+		return
+	}
+	req.ID = uuid.New().String()
+	req.CreatedAt = time.Now()
+	req.UpdatedAt = time.Now()
+
+	err := h.userService.CreateUserAccount(c.Request.Context(), &req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user account"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "User account created successfully"})
+}
+
+func (h *UserHandler) UpdateUserAccount(c *gin.Context) {
+	id := c.Param("id")
+	if id == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID parameter"})
+		return
+	}
+	var req model.UserAccountCRUD
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
+		return
+	}
+	req.ID = id
+	req.UpdatedAt = time.Now()
+
+	err := h.userService.UpdateUserAccount(c.Request.Context(), &req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user account"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "User account updated successfully"})
+}
+
+func (h *UserHandler) DeleteUserAccount(c *gin.Context) {
+	id := c.Param("id")
+	if id == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID parameter"})
+		return
+	}
+	err := h.userService.DeleteUserAccount(c.Request.Context(), id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete user account"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "User account deleted successfully"})
 }

@@ -349,6 +349,14 @@
                   <div class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></div>
                   <span>User Karyawan</span>
                 </div>
+                <div class="nav-item nav-child" @click="navigatePage('setup_leaders')" v-show="isMenuVisible('setup_leaders')">
+                  <div class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></div>
+                  <span>Leader</span>
+                </div>
+                <div class="nav-item nav-child" @click="navigatePage('setup_users')" v-show="isMenuVisible('setup_users')">
+                  <div class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></div>
+                  <span>User Management</span>
+                </div>
               </div>
             </div>
           </nav>
@@ -650,7 +658,9 @@
             'input_absensi': '/input_absensi',
             'absensi_saya': '/absensi_karyawan',
             'absensi_perhitungan': '/absensi_perhitungan',
-            'setup_user_karyawan': '/setup/user_karyawan'
+            'setup_user_karyawan': '/setup/user_karyawan',
+            'setup_leaders': '/setup/leaders',
+            'setup_users': '/setup/users'
           };
           if (routes[page]) {
             window.location.href = routes[page];
@@ -667,7 +677,9 @@
             'input_absensi': [],
             'absensi_saya': [],
             'absensi_perhitungan': ['HRDAdmin', 'SupervisorIT', 'SupervisorRND', 'SupervisorInventory', 'ManagerMarketing'],
-            'setup_user_karyawan': ['HRDAdmin', 'SupervisorIT', 'SupervisorRND']
+            'setup_user_karyawan': ['HRDAdmin', 'SupervisorIT', 'SupervisorRND'],
+            'setup_leaders': ['HRDAdmin', 'SupervisorIT', 'SupervisorRND'],
+            'setup_users': ['HRDAdmin', 'SupervisorIT', 'SupervisorRND']
           };
 
           return permissions[menuId]?.includes(role) || false;

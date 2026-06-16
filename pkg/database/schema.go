@@ -12,6 +12,15 @@ import (
 )
 
 func EnsureSchema(db *sqlx.DB) error {
+	// Modify user_accounts role column to VARCHAR(50) to support all roles dynamically if table exists
+	var tableExists int
+	_ = db.Get(&tableExists, "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'user_accounts'")
+	if tableExists > 0 {
+		if _, err := db.Exec("ALTER TABLE user_accounts MODIFY COLUMN role VARCHAR(50) NOT NULL"); err != nil {
+			log.Printf("Warning: failed to alter user_accounts role column to VARCHAR: %v", err)
+		}
+	}
+
 	// Check if user_karyawan table exists
 	var exists int
 	err := db.Get(&exists, "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'user_karyawan'")
@@ -203,7 +212,6 @@ func EnsureSchema(db *sqlx.DB) error {
 			}
 		}
 	}
-
 	// 3. Seed Leaders
 	leaders := []string{
 		"Erwin Widianto",

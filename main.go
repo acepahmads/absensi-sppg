@@ -44,17 +44,9 @@ func main() {
 	userService := service.NewUserService(userRepo)
 	userHandler := handler.NewUserHandler(userService)
 
-	complainRepo := repository.NewComplainRepository(db)
-	complainService := service.NewComplainService(complainRepo)
-	complainHandler := handler.NewComplainHandler(complainService)
-
 	absensiRepo := repository.NewAbsensiRepository(db)
 	absensiService := service.NewAbsensiService(absensiRepo)
 	absensiHandler := handler.NewAbsensiHandler(absensiService)
-
-	inventoryRepo := repository.NewInventoryRepository(db)
-	inventoryService := service.NewInventoryService(inventoryRepo)
-	inventoryHandler := handler.NewInventoryHandler(inventoryService)
 
 	// ===============================
 	// GIN SETUP
@@ -164,7 +156,17 @@ func main() {
 		auth.DELETE("/user-karyawan/:id", userHandler.DeleteUserKaryawan)
 		auth.GET("/leaders-list", userHandler.GetLeadersList)
 
-		auth.GET("/tickets", complainHandler.GetAll)
+		// Leader CRUD endpoints
+		auth.GET("/setup/leaders", userHandler.GetAllLeaders)
+		auth.POST("/setup/leaders", userHandler.CreateLeader)
+		auth.PUT("/setup/leaders/:id", userHandler.UpdateLeader)
+		auth.DELETE("/setup/leaders/:id", userHandler.DeleteLeader)
+
+		// User Account CRUD endpoints
+		auth.GET("/setup/users", userHandler.GetAllUserAccounts)
+		auth.POST("/setup/users", userHandler.CreateUserAccount)
+		auth.PUT("/setup/users/:id", userHandler.UpdateUserAccount)
+		auth.DELETE("/setup/users/:id", userHandler.DeleteUserAccount)
 
 		auth.GET("/absensi", absensiHandler.GetAll)
 		auth.GET("/absensi/last", absensiHandler.GetLast)
@@ -190,19 +192,6 @@ func main() {
 		auth.POST("/absensi/daily-report", absensiHandler.InputDailyReport)
 		auth.DELETE("/absensi/inputleader", absensiHandler.DeleteAbsensiLeader)
 		auth.PUT("/absensi/inputleader", absensiHandler.UpdateAbsensiLeader)
-
-		auth.GET("/inventory/barang", inventoryHandler.GetAll)
-		auth.GET("/inventory/barang-masuk", inventoryHandler.GetBarangMasuk)
-		auth.GET("/inventory/barang-keluar", inventoryHandler.GetBarangKeluar)
-		auth.POST("/inventory/barang", inventoryHandler.InputBarang)
-		auth.POST("/inventory/barang-masuk", inventoryHandler.InputBarangMasuk)
-		auth.POST("/inventory/barang-keluar", inventoryHandler.InputBarangKeluar)
-		auth.PUT("/inventory/barang/:id", inventoryHandler.UpdateBarang)
-		auth.PUT("/inventory/barang-masuk/:id", inventoryHandler.UpdateBarangMasuk)
-		auth.PUT("/inventory/barang-keluar/:id", inventoryHandler.UpdateBarangKeluar)
-		auth.DELETE("/inventory/barang/:id", inventoryHandler.DeleteBarang)
-		auth.DELETE("/inventory/barang-masuk/:id", inventoryHandler.DeleteBarangMasuk)
-		auth.DELETE("/inventory/barang-keluar/:id", inventoryHandler.DeleteBarangKeluar)
 	}
 
 	// ===============================
@@ -221,7 +210,6 @@ func main() {
 	// ===============================
 
 	dashboardPages := map[string]string{
-		"/complain_handling":            "complain_handling.html",
 		"/rekapan_absensi":              "absensi_rekapan.html",
 		"/input_absensi":                "absensi_input.html",
 		"/absensi_perhitungan":          "absensi_perhitungan.html",
@@ -232,38 +220,16 @@ func main() {
 		"/absensi_list_lembur":          "absensi_list_lembur.html",
 		"/input_maintenance_da":         "maintenance_da_input.html",
 		"/rekapan_maintenance_da":       "maintenance_da_rekapan.html",
-		"/inventory":                    "inventory.html",
-		"/inventory_management":         "inventory_management.html",
-		"/inventory_peminjaman":         "inventory_peminjaman.html",
-		"/inventory_mobile":             "inventory_mobile.html",
-		"/aicp_demulsifier":             "aicp_demulsifier.html",
 		"/absensi_daily_report":         "absensi_daily_report.html",
 		"/absensi_daily_report_rekapan": "absensi_daily_report_rekapan.html",
 		"/setup/user_karyawan":          "setup_user_karyawan.html",
+		"/setup/leaders":                "setup_leaders.html",
+		"/setup/users":                  "setup_users.html",
 	}
 
 	for path, tpl := range dashboardPages {
 		r.GET(path, middleware.JWTAuthDashboard(), dashboardPageHandler(tpl))
 	}
-
-	// ===============================
-	// SCADA / PUBLIC DASHBOARD
-	// ===============================
-	r.GET("/aicp_scada", func(c *gin.Context) {
-		c.HTML(200, "aicp_scada.html", nil)
-	})
-
-	r.GET("/aicp_chemical_performance", func(c *gin.Context) {
-		c.HTML(200, "aicp_chemical_performance.html", nil)
-	})
-
-	r.GET("/aicp_security", func(c *gin.Context) {
-		c.HTML(200, "aicp_security.html", nil)
-	})
-
-	r.GET("/aicp_filosofi_dashboard", func(c *gin.Context) {
-		c.HTML(200, "aicp_filosofi_dashboard.html", nil)
-	})
 
 	// ===============================
 	// START SERVER
