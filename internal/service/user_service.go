@@ -3,6 +3,7 @@ package service
 import (
 	"absensi-sppg/internal/repository"
 	"absensi-sppg/pkg/utils"
+	"context"
 	"errors"
 	"fmt"
 
@@ -53,4 +54,24 @@ func (s *UserService) Registered() ([]string, error) {
 
 func (s *UserService) GetLeaders() ([]string, error) {
 	return s.repo.GetLeaders()
+}
+
+func (s *UserService) GetAllUserKaryawan(ctx context.Context) ([]model.UserKaryawan, error) {
+	return s.repo.GetAllUserKaryawan(ctx)
+}
+
+func (s *UserService) CreateUserKaryawan(ctx context.Context, uk *model.UserKaryawan) error {
+	return s.repo.CreateUserKaryawan(ctx, uk)
+}
+
+func (s *UserService) UpdateUserKaryawan(ctx context.Context, uk *model.UserKaryawan) error {
+	return s.repo.UpdateUserKaryawan(ctx, uk)
+}
+
+func (s *UserService) DeleteUserKaryawan(ctx context.Context, id int) error {
+	return s.repo.DeleteUserKaryawan(ctx, id)
+}
+
+func (s *UserService) GetLeadersList(ctx context.Context) ([]model.KaryawanLeader, error) {
+	return s.repo.GetLeadersList(ctx)
 }

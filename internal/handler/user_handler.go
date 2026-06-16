@@ -108,3 +108,80 @@ func (h *UserHandler) GetLeaders(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"names": leaders})
 }
+
+func (h *UserHandler) GetAllUserKaryawan(c *gin.Context) {
+	list, err := h.userService.GetAllUserKaryawan(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user karyawan list"})
+		return
+	}
+	c.JSON(http.StatusOK, list)
+}
+
+func (h *UserHandler) CreateUserKaryawan(c *gin.Context) {
+	var req model.UserKaryawan
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
+		return
+	}
+
+	err := h.userService.CreateUserKaryawan(c.Request.Context(), &req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user karyawan"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "User karyawan created successfully"})
+}
+
+func (h *UserHandler) UpdateUserKaryawan(c *gin.Context) {
+	idParam := c.Param("id")
+	var id int
+	_, err := fmt.Sscanf(idParam, "%d", &id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID parameter"})
+		return
+	}
+
+	var req model.UserKaryawan
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
+		return
+	}
+	req.ID = id
+
+	err = h.userService.UpdateUserKaryawan(c.Request.Context(), &req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user karyawan"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "User karyawan updated successfully"})
+}
+
+func (h *UserHandler) DeleteUserKaryawan(c *gin.Context) {
+	idParam := c.Param("id")
+	var id int
+	_, err := fmt.Sscanf(idParam, "%d", &id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID parameter"})
+		return
+	}
+
+	err = h.userService.DeleteUserKaryawan(c.Request.Context(), id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete user karyawan"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "User karyawan deleted successfully"})
+}
+
+func (h *UserHandler) GetLeadersList(c *gin.Context) {
+	leaders, err := h.userService.GetLeadersList(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get leaders list"})
+		return
+	}
+	c.JSON(http.StatusOK, leaders)
+}

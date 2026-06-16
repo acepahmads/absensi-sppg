@@ -3,6 +3,7 @@ package repository
 import (
 	"absensi-sppg/internal/model"
 	"absensi-sppg/pkg/utils"
+	"context"
 	"database/sql"
 	"encoding/base64"
 	"encoding/json"
@@ -24,6 +25,11 @@ type UserRepository interface {
 	FindUserInfoByID(id string) (*model.UserAccount, error)
 	Registered() ([]string, error)
 	GetLeaders() ([]string, error)
+	GetAllUserKaryawan(ctx context.Context) ([]model.UserKaryawan, error)
+	CreateUserKaryawan(ctx context.Context, uk *model.UserKaryawan) error
+	UpdateUserKaryawan(ctx context.Context, uk *model.UserKaryawan) error
+	DeleteUserKaryawan(ctx context.Context, id int) error
+	GetLeadersList(ctx context.Context) ([]model.KaryawanLeader, error)
 }
 
 type userRepository struct {
@@ -249,4 +255,54 @@ func (r *userRepository) GetLeaders() ([]string, error) {
 		return nil, err
 	}
 	return names, nil
+}
+
+func (r *userRepository) GetAllUserKaryawan(ctx context.Context) ([]model.UserKaryawan, error) {
+	query := `
+		SELECT uk.id, uk.nama_mesin_absen, uk.status, uk.id_leader, uk.uang_makan, uk.uang_harian, uk.jabatan, COALESCE(kl.nama, '') as leader_nama
+		FROM user_karyawan uk
+		LEFT JOIN karyawan_leader kl ON uk.id_leader = kl.id
+		ORDER BY uk.id DESC
+	`
+	var list []model.UserKaryawan
+	err := r.db.SelectContext(ctx, &list, query)
+	if err != nil {
+		return nil, err
+	}
+	return list, nil
+}
+
+func (r *userRepository) CreateUserKaryawan(ctx context.Context, uk *model.UserKaryawan) error {
+	query := `
+		INSERT INTO user_karyawan (nama_mesin_absen, status, id_leader, uang_makan, uang_harian, jabatan)
+		VALUES (?, ?, ?, ?, ?, ?)
+	`
+	_, err := r.db.ExecContext(ctx, query, uk.NamaMesinAbsen, uk.Status, uk.IDLeader, uk.UangMakan, uk.UangHarian, uk.Jabatan)
+	return err
+}
+
+func (r *userRepository) UpdateUserKaryawan(ctx context.Context, uk *model.UserKaryawan) error {
+	query := `
+		UPDATE user_karyawan
+		SET nama_mesin_absen = ?, status = ?, id_leader = ?, uang_makan = ?, uang_harian = ?, jabatan = ?
+		WHERE id = ?
+	`
+	_, err := r.db.ExecContext(ctx, query, uk.NamaMesinAbsen, uk.Status, uk.IDLeader, uk.UangMakan, uk.UangHarian, uk.Jabatan, uk.ID)
+	return err
+}
+
+func (r *userRepository) DeleteUserKaryawan(ctx context.Context, id int) error {
+	query := `DELETE FROM user_karyawan WHERE id = ?`
+	_, err := r.db.ExecContext(ctx, query, id)
+	return err
+}
+
+func (r *userRepository) GetLeadersList(ctx context.Context) ([]model.KaryawanLeader, error) {
+	query := `SELECT id, nama FROM karyawan_leader ORDER BY id ASC`
+	var list []model.KaryawanLeader
+	err := r.db.SelectContext(ctx, &list, query)
+	if err != nil {
+		return nil, err
+	}
+	return list, nil
 }

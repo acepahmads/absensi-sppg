@@ -67,3 +67,19 @@ type UserInfoAccount struct {
 	Photo    string `json:"photo" binding:"required"`
 	Role     string `json:"role" binding:"required"`
 }
+
+type UserKaryawan struct {
+	ID             int     `json:"id" db:"id" gorm:"primaryKey;autoIncrement"`
+	NamaMesinAbsen string  `json:"nama_mesin_absen" db:"nama_mesin_absen" gorm:"size:100;not null"`
+	Status         int     `json:"status" db:"status" gorm:"default:1"`
+	IDLeader       int     `json:"id_leader" db:"id_leader" gorm:"not null"`
+	UangMakan      float64 `json:"uang_makan" db:"uang_makan" gorm:"default:0"`
+	UangHarian     float64 `json:"uang_harian" db:"uang_harian" gorm:"default:0"`
+	Jabatan        string  `json:"jabatan" db:"jabatan" gorm:"size:100;default:null"`
+	LeaderNama     string  `json:"leader_nama" db:"leader_nama" gorm:"-"`
+}
+
+type KaryawanLeader struct {
+	ID   int    `json:"id" db:"id"`
+	Nama string `json:"nama" db:"nama"`
+}

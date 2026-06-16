@@ -157,6 +157,13 @@ func main() {
 		auth.GET("/user/profile", userHandler.GetUserInfoByID)
 		auth.POST("/v1/members/register", userHandler.Register)
 
+		// User Karyawan CRUD endpoints
+		auth.GET("/user-karyawan", userHandler.GetAllUserKaryawan)
+		auth.POST("/user-karyawan", userHandler.CreateUserKaryawan)
+		auth.PUT("/user-karyawan/:id", userHandler.UpdateUserKaryawan)
+		auth.DELETE("/user-karyawan/:id", userHandler.DeleteUserKaryawan)
+		auth.GET("/leaders-list", userHandler.GetLeadersList)
+
 		auth.GET("/tickets", complainHandler.GetAll)
 
 		auth.GET("/absensi", absensiHandler.GetAll)
@@ -232,6 +239,7 @@ func main() {
 		"/aicp_demulsifier":             "aicp_demulsifier.html",
 		"/absensi_daily_report":         "absensi_daily_report.html",
 		"/absensi_daily_report_rekapan": "absensi_daily_report_rekapan.html",
+		"/setup/user_karyawan":          "setup_user_karyawan.html",
 	}
 
 	for path, tpl := range dashboardPages {
