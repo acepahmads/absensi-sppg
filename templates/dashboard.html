@@ -1490,6 +1490,25 @@
           </div>
         </div>
 
+        <!-- Laporan Group -->
+        <div class="nav-group" v-show="canAccess('laporan_penggajian')">
+          <div class="nav-group-header" @click="toggleGroup('group-laporan')">
+            <div class="nav-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            </div>
+            <span>Laporan</span>
+            <div class="nav-arrow" :class="{ open: isGroupOpen['group-laporan'] }">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </div>
+          </div>
+          <div class="nav-group-children" :class="{ hidden: !isGroupOpen['group-laporan'] }">
+            <div class="nav-item nav-child" :class="{ active: activePage === 'laporan_penggajian' }" v-show="canAccess('laporan_penggajian')" @click="navigateTo('laporan_penggajian')">
+              <div class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2" ry="2"></rect><line x1="12" y1="4" x2="12" y2="20"></line><line x1="2" y1="12" x2="22" y2="12"></line></svg></div>
+              <span>Penggajian</span>
+            </div>
+          </div>
+        </div>
+
         <!-- Setup Group -->
         <div class="nav-group" v-show="canAccess('setup_user_karyawan')">
           <div class="nav-group-header" @click="toggleGroup('group-setup')">
@@ -1866,6 +1885,7 @@
 
         const isGroupOpen = reactive({
           'group-absensi': false,
+          'group-laporan': false,
           'group-setup': false
         });
 
@@ -1905,7 +1925,8 @@
             'setup_user_karyawan': '/setup/user_karyawan',
             'setup_leaders': '/setup/leaders',
             'setup_users': '/setup/users',
-            'absensi_statistik': '/absensi_statistik'
+            'absensi_statistik': '/absensi_statistik',
+            'laporan_penggajian': '/laporan_penggajian'
           };
           if (urlMap[page]) {
             window.location.href = urlMap[page];
@@ -1926,19 +1947,19 @@
             return ['input_maintenance_da', 'rekapan_maintenance_da'].includes(pageName);
           }
           if (role === 'HRDAdmin') {
-            return ['absensi_perhitungan', 'setup_user_karyawan', 'setup_leaders', 'setup_users'].includes(pageName);
+            return ['absensi_perhitungan', 'setup_user_karyawan', 'setup_leaders', 'setup_users', 'laporan_penggajian'].includes(pageName);
           }
           if (role === 'SupervisorIT' || role === 'SupervisorRND') {
-            return ['absensi', 'absensi_perhitungan', 'list_site_report', 'list_lembur', 'list_daily_report', 'setup_user_karyawan', 'setup_leaders', 'setup_users'].includes(pageName);
+            return ['absensi', 'absensi_perhitungan', 'list_site_report', 'list_lembur', 'list_daily_report', 'setup_user_karyawan', 'setup_leaders', 'setup_users', 'laporan_penggajian'].includes(pageName);
           }
           if (role === 'SupervisorInventory') {
-            return ['absensi', 'absensi_perhitungan', 'list_site_report', 'list_lembur', 'list_daily_report'].includes(pageName);
+            return ['absensi', 'absensi_perhitungan', 'list_site_report', 'list_lembur', 'list_daily_report', 'laporan_penggajian'].includes(pageName);
           }
           if (role === 'SuperAdmin' || role === 'Manager') {
-            return ['absensi', 'input_absensi', 'absensi_perhitungan', 'input_maintenance_da', 'rekapan_maintenance_da', 'list_site_report', 'list_lembur', 'list_daily_report', 'setup_user_karyawan', 'setup_leaders', 'setup_users'].includes(pageName);
+            return ['absensi', 'input_absensi', 'absensi_perhitungan', 'input_maintenance_da', 'rekapan_maintenance_da', 'list_site_report', 'list_lembur', 'list_daily_report', 'setup_user_karyawan', 'setup_leaders', 'setup_users', 'laporan_penggajian'].includes(pageName);
           }
           if (role === 'ManagerMarketing') {
-            return ['absensi', 'absensi_perhitungan', 'list_site_report', 'list_lembur', 'list_daily_report'].includes(pageName);
+            return ['absensi', 'absensi_perhitungan', 'list_site_report', 'list_lembur', 'list_daily_report', 'laporan_penggajian'].includes(pageName);
           }
           return false;
         };
@@ -2026,6 +2047,7 @@
           const activePageName = 'dashboard';
           const groups = {
             'group-absensi': ['absensi', 'absensi_statistik', 'input_absensi', 'absensi_saya', 'absensi_perhitungan'],
+            'group-laporan': ['laporan_penggajian'],
             'group-setup': ['setup_user_karyawan', 'setup_leaders', 'setup_users']
           };
           Object.entries(groups).forEach(([groupId, pages]) => {

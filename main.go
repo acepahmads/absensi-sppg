@@ -229,6 +229,7 @@ func main() {
 		"/setup/leaders":                "setup_leaders.html",
 		"/setup/users":                  "setup_users.html",
 		"/absensi_statistik":            "absensi_statistik.html",
+		"/laporan_penggajian":           "laporan_penggajian.html",
 	}
 
 	for path, tpl := range dashboardPages {

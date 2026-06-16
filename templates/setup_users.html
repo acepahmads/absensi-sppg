@@ -433,6 +433,25 @@
               </div>
             </div>
 
+            <!-- Laporan Group -->
+            <div class="nav-group">
+              <div class="nav-group-header" @click="toggleGroup('group-laporan')">
+                <div class="nav-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                </div>
+                <span>Laporan</span>
+                <div class="nav-arrow" :class="{ 'open': groupExpanded['group-laporan'] }">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </div>
+              </div>
+              <div class="nav-group-children" :class="{ 'hidden': !groupExpanded['group-laporan'] }">
+                <div class="nav-item nav-child" :class="{ 'active': activePage === 'laporan_penggajian' }" @click="navigatePage('laporan_penggajian')" v-show="isMenuVisible('laporan_penggajian')">
+                  <div class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2" ry="2"></rect><line x1="12" y1="4" x2="12" y2="20"></line><line x1="2" y1="12" x2="22" y2="12"></line></svg></div>
+                  <span>Penggajian</span>
+                </div>
+              </div>
+            </div>
+
             <!-- Setup Group -->
             <div class="nav-group">
               <div class="nav-group-header" @click="toggleGroup('group-setup')">
@@ -702,6 +721,7 @@
         // Sidebar groups state
         const groupExpanded = reactive({
           'group-absensi': false,
+          'group-laporan': false,
           'group-setup': true
         });
 
@@ -793,7 +813,8 @@
             'setup_user_karyawan': '/setup/user_karyawan',
             'setup_leaders': '/setup/leaders',
             'setup_users': '/setup/users',
-            'absensi_statistik': '/absensi_statistik'
+            'absensi_statistik': '/absensi_statistik',
+            'laporan_penggajian': '/laporan_penggajian'
           };
           if (routes[page]) {
             window.location.href = routes[page];
@@ -813,6 +834,7 @@
             'input_absensi': [],
             'absensi_saya': [],
             'absensi_perhitungan': ['HRDAdmin', 'SupervisorIT', 'SupervisorRND', 'SupervisorInventory', 'ManagerMarketing'],
+            'laporan_penggajian': ['HRDAdmin', 'SupervisorIT', 'SupervisorRND', 'SupervisorInventory', 'ManagerMarketing'],
             'setup_user_karyawan': ['HRDAdmin', 'SupervisorIT', 'SupervisorRND'],
             'setup_leaders': ['HRDAdmin', 'SupervisorIT', 'SupervisorRND'],
             'setup_users': ['HRDAdmin', 'SupervisorIT', 'SupervisorRND']
