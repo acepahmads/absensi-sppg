@@ -5,6 +5,15 @@ import (
 	"time"
 )
 
+type Tenant struct {
+	ID        int       `json:"id" db:"id" gorm:"primaryKey;autoIncrement"`
+	Name      string    `json:"name" db:"name" gorm:"size:100;not null"`
+	Code      string    `json:"code" db:"code" gorm:"size:50;uniqueIndex;not null"`
+	Status    int       `json:"status" db:"status" gorm:"default:1"`
+	CreatedAt time.Time `json:"created_at" db:"created_at"`
+	UpdatedAt time.Time `json:"updated_at" db:"updated_at"`
+}
+
 // GORM models (dari ERD)
 type UserAccount struct {
 	ID           string         `gorm:"primaryKey;type:char(36)"`
@@ -20,6 +29,7 @@ type UserAccount struct {
 	Jabatan      sql.NullString `json:"jabatan" db:"jabatan"`
 	Photos       string         `json:"photos" db:"photos"`
 	IDLeader     int            `json:"id_leader" db:"id_leader"`
+	TenantID     int            `json:"tenant_id" db:"tenant_id" gorm:"default:1;not null"`
 }
 
 type UserInfo struct {
@@ -35,6 +45,7 @@ type UserInfo struct {
 	Address      string    `gorm:"type:text" json:"address" db:"address"`
 	PhotoFileURL string    `json:"photo_file_url" db:"photo_file_url"`
 	CreatedBy    string    `json:"created_by" db:"created_by"`
+	TenantID     int       `json:"tenant_id" db:"tenant_id" gorm:"default:1;not null"`
 }
 
 type UserPost struct {
@@ -59,6 +70,7 @@ type RegisterAccount struct {
 	Email    string   `json:"email" binding:"required,email"`
 	Password string   `json:"password" binding:"required"`
 	Photos   []string `json:"photos" binding:"required"`
+	TenantID int      `json:"tenant_id"`
 }
 
 type UserInfoAccount struct {
@@ -77,13 +89,15 @@ type UserKaryawan struct {
 	UangHarian     float64 `json:"uang_harian" db:"uang_harian" gorm:"default:0"`
 	Jabatan        string  `json:"jabatan" db:"jabatan" gorm:"size:100;default:null"`
 	LeaderNama     string  `json:"leader_nama" db:"leader_nama" gorm:"-"`
+	TenantID       int     `json:"tenant_id" db:"tenant_id" gorm:"default:1;not null"`
 }
 
 type KaryawanLeader struct {
-	ID     int    `json:"id" db:"id" gorm:"primaryKey;autoIncrement"`
-	Nama   string `json:"nama" db:"nama" gorm:"size:100;not null"`
-	Divisi string `json:"divisi" db:"divisi" gorm:"size:100;default:'Operations'"`
-	Status int    `json:"status" db:"status" gorm:"default:1"`
+	ID       int    `json:"id" db:"id" gorm:"primaryKey;autoIncrement"`
+	Nama     string `json:"nama" db:"nama" gorm:"size:100;not null"`
+	Divisi   string `json:"divisi" db:"divisi" gorm:"size:100;default:'Operations'"`
+	Status   int    `json:"status" db:"status" gorm:"default:1"`
+	TenantID int    `json:"tenant_id" db:"tenant_id" gorm:"default:1;not null"`
 }
 
 type UserAccountCRUD struct {
@@ -99,4 +113,5 @@ type UserAccountCRUD struct {
 	NamaLeader   string    `json:"nama_leader" db:"nama_leader"`
 	CreatedAt    time.Time `json:"created_at" db:"created_at"`
 	UpdatedAt    time.Time `json:"updated_at" db:"updated_at"`
+	TenantID     int       `json:"tenant_id" db:"tenant_id"`
 }

@@ -116,6 +116,7 @@ func main() {
 		api.POST("/user/register", userHandler.Register)
 		api.GET("/user/registered", userHandler.Registered)
 		api.GET("/user/leaders", userHandler.GetLeaders)
+		api.GET("/tenants", userHandler.GetTenants)
 		api.GET("/indHolidays", absensiHandler.GetIndHolidays)
 		api.POST("/absen", absensiHandler.InputAbsenMesin)
 		api.POST("/verify-face", func(c *gin.Context) {

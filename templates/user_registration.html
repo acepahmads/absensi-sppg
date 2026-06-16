@@ -145,7 +145,21 @@
        <div style="margin-bottom: 3rem;">
         <h3 style="font-size: 1.25rem; font-weight: 600; color: #f1f5f9; margin-bottom: 1.5rem;">Informasi Akun</h3>
         <form id="registration-form" @submit.prevent>
-         <div style="display: grid; gap: 1.5rem;"><!-- Name Field -->
+         <div style="display: grid; gap: 1.5rem;">
+          <!-- Tenant Selection Field -->
+          <div><label id="tenant-label" style="display: block; font-size: 0.875rem; font-weight: 500; color: #cbd5e1; margin-bottom: 0.5rem;">Perusahaan / Tenant</label>
+           <div style="position: relative;">
+            <svg style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; color: #64748b;" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+            </svg>
+            <select id="tenant-select" class="input-field" style="width: 100%; padding: 0.875rem 1rem 0.875rem 3rem; border-radius: 0.5rem; color: #e2e8f0; font-size: 1rem;" v-model="selectedTenant" @change="onTenantChange" :disabled="tenantsLoading" required>
+             <option value="" v-if="tenantsLoading">Memuat daftar perusahaan...</option>
+             <option value="" v-else-if="tenantsError">Gagal memuat daftar perusahaan</option>
+             <option value="" v-else>Pilih perusahaan</option>
+             <option v-for="tenant in tenants" :key="tenant.id" :value="tenant.id">{{ tenant.name }}</option>
+            </select>
+           </div>
+          </div>
+          <!-- Name Field -->
           <div><label id="name-label" style="display: block; font-size: 0.875rem; font-weight: 500; color: #cbd5e1; margin-bottom: 0.5rem;">{{ configState.name_label }}</label>
            <div style="position: relative;">
             <svg style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; color: #64748b;" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -340,6 +354,12 @@
       setup() {
         const configState = reactive({ ...defaultConfig });
         
+        // Multi-Tenant Fields
+        const tenants = ref([]);
+        const selectedTenant = ref('');
+        const tenantsLoading = ref(true);
+        const tenantsError = ref(false);
+
         // Form Fields
         const selectedName = ref('');
         const selectedLeader = ref('');
@@ -348,8 +368,8 @@
         const confirmPassword = ref('');
         const names = ref([]);
         const leaders = ref([]);
-        const namesLoading = ref(true);
-        const leadersLoading = ref(true);
+        const namesLoading = ref(false);
+        const leadersLoading = ref(false);
         const namesError = ref(false);
         const leadersError = ref(false);
 
@@ -384,13 +404,40 @@
         });
 
         const isFormValid = computed(() => {
-          return selectedName.value && selectedLeader.value && email.value && password.value && passwordsMatch.value && photosCompleted.value === 3;
+          return selectedTenant.value && selectedName.value && selectedLeader.value && email.value && password.value && passwordsMatch.value && photosCompleted.value === 3;
         });
+
+        // Load tenants
+        const loadTenants = async () => {
+          tenantsLoading.value = true;
+          tenantsError.value = false;
+          try {
+            const response = await fetch('/api/tenants');
+            if (!response.ok) throw new Error();
+            const data = await response.json();
+            tenants.value = data || [];
+            if (tenants.value.length > 0) {
+              selectedTenant.value = tenants.value[0].id;
+              loadRegisteredUsers();
+              loadLeaders();
+            }
+            tenantsLoading.value = false;
+          } catch (e) {
+            tenantsError.value = true;
+            tenantsLoading.value = false;
+          }
+        };
 
         // Load lists
         const loadRegisteredUsers = async () => {
+          if (!selectedTenant.value) {
+            names.value = [];
+            return;
+          }
+          namesLoading.value = true;
+          namesError.value = false;
           try {
-            const response = await fetch('/api/user/registered');
+            const response = await fetch(`/api/user/registered?tenant_id=${selectedTenant.value}`);
             if (!response.ok) throw new Error();
             const data = await response.json();
             names.value = data.names || [];
@@ -402,8 +449,14 @@
         };
 
         const loadLeaders = async () => {
+          if (!selectedTenant.value) {
+            leaders.value = [];
+            return;
+          }
+          leadersLoading.value = true;
+          leadersError.value = false;
           try {
-            const response = await fetch('/api/user/leaders');
+            const response = await fetch(`/api/user/leaders?tenant_id=${selectedTenant.value}`);
             if (!response.ok) throw new Error();
             const data = await response.json();
             leaders.value = data.names || [];
@@ -412,6 +465,13 @@
             leadersError.value = true;
             leadersLoading.value = false;
           }
+        };
+
+        const onTenantChange = () => {
+          selectedName.value = '';
+          selectedLeader.value = '';
+          loadRegisteredUsers();
+          loadLeaders();
         };
 
         // Camera actions
@@ -479,7 +539,8 @@
               leader: selectedLeader.value,
               email: email.value,
               password: password.value,
-              photos: capturedPhotos.value.filter(p => p !== null)
+              photos: capturedPhotos.value.filter(p => p !== null),
+              tenant_id: parseInt(selectedTenant.value)
             };
 
             const response = await fetch('/api/user/register', {
@@ -508,8 +569,7 @@
         };
 
         onMounted(() => {
-          loadRegisteredUsers();
-          loadLeaders();
+          loadTenants();
 
           if (window.elementSdk) {
             window.elementSdk.init({
@@ -573,6 +633,10 @@
 
         return {
           configState,
+          tenants,
+          selectedTenant,
+          tenantsLoading,
+          tenantsError,
           selectedName,
           selectedLeader,
           email,
@@ -584,6 +648,7 @@
           leadersLoading,
           namesError,
           leadersError,
+          onTenantChange,
           currentStep,
           photosCompleted,
           capturedPhotos,

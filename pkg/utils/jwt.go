@@ -8,27 +8,28 @@ import (
 )
 
 var jwtSecret = []byte("supersecret") // Ganti dengan ENV di production
-
 type Claims struct {
-	UserID string `json:"userID"`
-	Email  string `json:"email"`
+	UserID   string `json:"userID"`
+	Email    string `json:"email"`
+	TenantID int    `json:"tenantID"`
 	jwt.RegisteredClaims
 }
 
 // GenerateJWT membuat token untuk user yang login
-func GenerateJWT(userID string, email string) (string, error) {
+func GenerateJWT(userID string, email string, tenantID int) (string, error) {
 	claims := Claims{
-		UserID: userID,
-		Email:  email,
+		UserID:   userID,
+		Email:    email,
+		TenantID: tenantID,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(80784 * time.Hour)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
-			// NotBefore: jwt.NewNumericDate(time.Now()),
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString(jwtSecret)
 }
+
 
 // ParseJWT memverifikasi dan mengurai token
 func ParseJWT(tokenString string) (*jwt.Token, error) {

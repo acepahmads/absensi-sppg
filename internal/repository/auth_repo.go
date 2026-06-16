@@ -29,7 +29,7 @@ func (r *authRepository) FindUserByEmail(email string) (*model.UserAccount, stri
 			COALESCE(uk.nama_mesin_absen, '') AS nama_karyawan, 
 			uk.jabatan
 		FROM user_accounts ua
-		LEFT JOIN user_karyawan uk ON uk.id = ua.id_karyawan
+		LEFT JOIN user_karyawan uk ON uk.id = ua.id_karyawan AND uk.tenant_id = ua.tenant_id
 		WHERE ua.email = ?
 		LIMIT 1
 	`

@@ -23,8 +23,8 @@ type UserRepository interface {
 	Create(user *model.RegisterAccount) (string, error)
 	FindByEmail(email string) (string, error) // return user_id, error
 	FindUserInfoByID(id string) (*model.UserAccount, error)
-	Registered() ([]string, error)
-	GetLeaders() ([]string, error)
+	Registered(tenantID int) ([]string, error)
+	GetLeaders(tenantID int) ([]string, error)
 	GetAllUserKaryawan(ctx context.Context) ([]model.UserKaryawan, error)
 	CreateUserKaryawan(ctx context.Context, uk *model.UserKaryawan) error
 	UpdateUserKaryawan(ctx context.Context, uk *model.UserKaryawan) error
@@ -42,6 +42,9 @@ type UserRepository interface {
 	CreateUserAccount(ctx context.Context, ua *model.UserAccountCRUD) error
 	UpdateUserAccount(ctx context.Context, ua *model.UserAccountCRUD) error
 	DeleteUserAccount(ctx context.Context, id string) error
+
+	// Tenants
+	GetTenants(ctx context.Context) ([]model.Tenant, error)
 }
 
 type userRepository struct {
@@ -53,6 +56,9 @@ func NewUserRepository(db *sqlx.DB) UserRepository {
 }
 
 func (r *userRepository) Create(userp *model.RegisterAccount) (string, error) {
+	if userp.TenantID == 0 {
+		userp.TenantID = 1
+	}
 	role := "Operator"
 
 	photoFilenames := []string{}
@@ -91,10 +97,10 @@ func (r *userRepository) Create(userp *model.RegisterAccount) (string, error) {
 		}
 	}()
 
-	query := `SELECT id FROM karyawan_leader WHERE nama = ?`
+	query := `SELECT id FROM karyawan_leader WHERE nama = ? AND tenant_id = ?`
 
 	var idLeader string
-	err = tx.Get(&idLeader, query, userp.Leader)
+	err = tx.Get(&idLeader, query, userp.Leader, userp.TenantID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			fmt.Println("Leader tidak ditemukan:", userp.Leader)
@@ -105,17 +111,17 @@ func (r *userRepository) Create(userp *model.RegisterAccount) (string, error) {
 		return userp.Email, err
 	}
 
-	query = "INSERT INTO user_karyawan (nama_mesin_absen, status, id_leader) VALUES (?, ?, ?)"
-	_, err = tx.Exec(query, userp.Name, 1, idLeader)
+	query = "INSERT INTO user_karyawan (nama_mesin_absen, status, id_leader, tenant_id) VALUES (?, ?, ?, ?)"
+	_, err = tx.Exec(query, userp.Name, 1, idLeader, userp.TenantID)
 	if err != nil {
 		fmt.Println("Error creating userKaryawan:", err)
 		return userp.Email, err
 	}
 
-	query = `SELECT id FROM user_karyawan WHERE nama_mesin_absen = ?`
+	query = `SELECT id FROM user_karyawan WHERE nama_mesin_absen = ? AND tenant_id = ?`
 
 	var idKaryawan string
-	err = tx.Get(&idKaryawan, query, userp.Name)
+	err = tx.Get(&idKaryawan, query, userp.Name, userp.TenantID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			fmt.Println("Karyawan tidak ditemukan:", userp.Name)
@@ -127,9 +133,9 @@ func (r *userRepository) Create(userp *model.RegisterAccount) (string, error) {
 	}
 
 	// 1️⃣ Insert ke user_accounts
-	query = `INSERT INTO user_accounts (id, email, password, role, status, created_at, updated_at, photos, id_karyawan, name, id_leader) 
-              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-	_, err = tx.Exec(query, UserID, userp.Email, userp.Password, role, 1, time.Now(), time.Now(), photosJSON, idKaryawan, userp.Name, idLeader)
+	query = `INSERT INTO user_accounts (id, email, password, role, status, created_at, updated_at, photos, id_karyawan, name, id_leader, tenant_id) 
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+	_, err = tx.Exec(query, UserID, userp.Email, userp.Password, role, 1, time.Now(), time.Now(), photosJSON, idKaryawan, userp.Name, idLeader, userp.TenantID)
 	if err != nil {
 		fmt.Println("Error creating userAccount:", err)
 		return userp.Email, err
@@ -249,20 +255,20 @@ func uploadPicture(Data map[string]interface{}) (string, error) {
 	return newFilename, nil
 }
 
-func (r *userRepository) Registered() ([]string, error) {
-	query := `SELECT names FROM karyawan_terdaftar order by names asc`
+func (r *userRepository) Registered(tenantID int) ([]string, error) {
+	query := `SELECT names FROM karyawan_terdaftar WHERE tenant_id = ? ORDER BY names ASC`
 	var names []string
-	err := r.db.Select(&names, query)
+	err := r.db.Select(&names, query, tenantID)
 	if err != nil {
 		return nil, err
 	}
 	return names, nil
 }
 
-func (r *userRepository) GetLeaders() ([]string, error) {
-	query := `SELECT nama FROM karyawan_leader order by id asc`
+func (r *userRepository) GetLeaders(tenantID int) ([]string, error) {
+	query := `SELECT nama FROM karyawan_leader WHERE tenant_id = ? ORDER BY id ASC`
 	var names []string
-	err := r.db.Select(&names, query)
+	err := r.db.Select(&names, query, tenantID)
 	if err != nil {
 		return nil, err
 	}
@@ -270,14 +276,19 @@ func (r *userRepository) GetLeaders() ([]string, error) {
 }
 
 func (r *userRepository) GetAllUserKaryawan(ctx context.Context) ([]model.UserKaryawan, error) {
+	tenantID, _ := ctx.Value("tenantID").(int)
+	if tenantID == 0 {
+		tenantID = 1
+	}
 	query := `
 		SELECT uk.id, uk.nama_mesin_absen, uk.status, uk.id_leader, uk.uang_makan, uk.uang_harian, uk.jabatan, COALESCE(kl.nama, '') as leader_nama
 		FROM user_karyawan uk
-		LEFT JOIN karyawan_leader kl ON uk.id_leader = kl.id
+		LEFT JOIN karyawan_leader kl ON uk.id_leader = kl.id AND kl.tenant_id = uk.tenant_id
+		WHERE uk.tenant_id = ?
 		ORDER BY uk.id DESC
 	`
 	var list []model.UserKaryawan
-	err := r.db.SelectContext(ctx, &list, query)
+	err := r.db.SelectContext(ctx, &list, query, tenantID)
 	if err != nil {
 		return nil, err
 	}
@@ -285,34 +296,50 @@ func (r *userRepository) GetAllUserKaryawan(ctx context.Context) ([]model.UserKa
 }
 
 func (r *userRepository) CreateUserKaryawan(ctx context.Context, uk *model.UserKaryawan) error {
+	tenantID, _ := ctx.Value("tenantID").(int)
+	if tenantID == 0 {
+		tenantID = 1
+	}
 	query := `
-		INSERT INTO user_karyawan (nama_mesin_absen, status, id_leader, uang_makan, uang_harian, jabatan)
-		VALUES (?, ?, ?, ?, ?, ?)
+		INSERT INTO user_karyawan (nama_mesin_absen, status, id_leader, uang_makan, uang_harian, jabatan, tenant_id)
+		VALUES (?, ?, ?, ?, ?, ?, ?)
 	`
-	_, err := r.db.ExecContext(ctx, query, uk.NamaMesinAbsen, uk.Status, uk.IDLeader, uk.UangMakan, uk.UangHarian, uk.Jabatan)
+	_, err := r.db.ExecContext(ctx, query, uk.NamaMesinAbsen, uk.Status, uk.IDLeader, uk.UangMakan, uk.UangHarian, uk.Jabatan, tenantID)
 	return err
 }
 
 func (r *userRepository) UpdateUserKaryawan(ctx context.Context, uk *model.UserKaryawan) error {
+	tenantID, _ := ctx.Value("tenantID").(int)
+	if tenantID == 0 {
+		tenantID = 1
+	}
 	query := `
 		UPDATE user_karyawan
 		SET nama_mesin_absen = ?, status = ?, id_leader = ?, uang_makan = ?, uang_harian = ?, jabatan = ?
-		WHERE id = ?
+		WHERE id = ? AND tenant_id = ?
 	`
-	_, err := r.db.ExecContext(ctx, query, uk.NamaMesinAbsen, uk.Status, uk.IDLeader, uk.UangMakan, uk.UangHarian, uk.Jabatan, uk.ID)
+	_, err := r.db.ExecContext(ctx, query, uk.NamaMesinAbsen, uk.Status, uk.IDLeader, uk.UangMakan, uk.UangHarian, uk.Jabatan, uk.ID, tenantID)
 	return err
 }
 
 func (r *userRepository) DeleteUserKaryawan(ctx context.Context, id int) error {
-	query := `DELETE FROM user_karyawan WHERE id = ?`
-	_, err := r.db.ExecContext(ctx, query, id)
+	tenantID, _ := ctx.Value("tenantID").(int)
+	if tenantID == 0 {
+		tenantID = 1
+	}
+	query := `DELETE FROM user_karyawan WHERE id = ? AND tenant_id = ?`
+	_, err := r.db.ExecContext(ctx, query, id, tenantID)
 	return err
 }
 
 func (r *userRepository) GetLeadersList(ctx context.Context) ([]model.KaryawanLeader, error) {
-	query := `SELECT id, nama, divisi, status FROM karyawan_leader ORDER BY id ASC`
+	tenantID, _ := ctx.Value("tenantID").(int)
+	if tenantID == 0 {
+		tenantID = 1
+	}
+	query := `SELECT id, nama, divisi, status FROM karyawan_leader WHERE tenant_id = ? ORDER BY id ASC`
 	var list []model.KaryawanLeader
-	err := r.db.SelectContext(ctx, &list, query)
+	err := r.db.SelectContext(ctx, &list, query, tenantID)
 	if err != nil {
 		return nil, err
 	}
@@ -321,78 +348,118 @@ func (r *userRepository) GetLeadersList(ctx context.Context) ([]model.KaryawanLe
 
 // Leader CRUD
 func (r *userRepository) GetAllLeaders(ctx context.Context) ([]model.KaryawanLeader, error) {
-	query := `SELECT id, nama, divisi, status FROM karyawan_leader ORDER BY id DESC`
+	tenantID, _ := ctx.Value("tenantID").(int)
+	if tenantID == 0 {
+		tenantID = 1
+	}
+	query := `SELECT id, nama, divisi, status FROM karyawan_leader WHERE tenant_id = ? ORDER BY id DESC`
 	var list []model.KaryawanLeader
-	err := r.db.SelectContext(ctx, &list, query)
+	err := r.db.SelectContext(ctx, &list, query, tenantID)
 	return list, err
 }
 
 func (r *userRepository) CreateLeader(ctx context.Context, leader *model.KaryawanLeader) error {
-	query := `INSERT INTO karyawan_leader (nama, divisi, status) VALUES (?, ?, ?)`
-	_, err := r.db.ExecContext(ctx, query, leader.Nama, leader.Divisi, leader.Status)
+	tenantID, _ := ctx.Value("tenantID").(int)
+	if tenantID == 0 {
+		tenantID = 1
+	}
+	query := `INSERT INTO karyawan_leader (nama, divisi, status, tenant_id) VALUES (?, ?, ?, ?)`
+	_, err := r.db.ExecContext(ctx, query, leader.Nama, leader.Divisi, leader.Status, tenantID)
 	return err
 }
 
 func (r *userRepository) UpdateLeader(ctx context.Context, leader *model.KaryawanLeader) error {
-	query := `UPDATE karyawan_leader SET nama = ?, divisi = ?, status = ? WHERE id = ?`
-	_, err := r.db.ExecContext(ctx, query, leader.Nama, leader.Divisi, leader.Status, leader.ID)
+	tenantID, _ := ctx.Value("tenantID").(int)
+	if tenantID == 0 {
+		tenantID = 1
+	}
+	query := `UPDATE karyawan_leader SET nama = ?, divisi = ?, status = ? WHERE id = ? AND tenant_id = ?`
+	_, err := r.db.ExecContext(ctx, query, leader.Nama, leader.Divisi, leader.Status, leader.ID, tenantID)
 	return err
 }
 
 func (r *userRepository) DeleteLeader(ctx context.Context, id int) error {
-	query := `DELETE FROM karyawan_leader WHERE id = ?`
-	_, err := r.db.ExecContext(ctx, query, id)
+	tenantID, _ := ctx.Value("tenantID").(int)
+	if tenantID == 0 {
+		tenantID = 1
+	}
+	query := `DELETE FROM karyawan_leader WHERE id = ? AND tenant_id = ?`
+	_, err := r.db.ExecContext(ctx, query, id, tenantID)
 	return err
 }
 
 // User Account CRUD
 func (r *userRepository) GetAllUserAccounts(ctx context.Context) ([]model.UserAccountCRUD, error) {
+	tenantID, _ := ctx.Value("tenantID").(int)
+	if tenantID == 0 {
+		tenantID = 1
+	}
 	query := `
 		SELECT 
 			ua.id, ua.name, ua.email, ua.role, ua.status, ua.id_karyawan, ua.id_leader, ua.created_at, ua.updated_at,
 			COALESCE(uk.nama_mesin_absen, '') AS nama_karyawan,
 			COALESCE(kl.nama, '') AS nama_leader
 		FROM user_accounts ua
-		LEFT JOIN user_karyawan uk ON ua.id_karyawan = uk.id
-		LEFT JOIN karyawan_leader kl ON ua.id_leader = kl.id
+		LEFT JOIN user_karyawan uk ON ua.id_karyawan = uk.id AND uk.tenant_id = ua.tenant_id
+		LEFT JOIN karyawan_leader kl ON ua.id_leader = kl.id AND kl.tenant_id = ua.tenant_id
+		WHERE ua.tenant_id = ?
 		ORDER BY ua.created_at DESC
 	`
 	var list []model.UserAccountCRUD
-	err := r.db.SelectContext(ctx, &list, query)
+	err := r.db.SelectContext(ctx, &list, query, tenantID)
 	return list, err
 }
 
 func (r *userRepository) CreateUserAccount(ctx context.Context, ua *model.UserAccountCRUD) error {
+	tenantID, _ := ctx.Value("tenantID").(int)
+	if tenantID == 0 {
+		tenantID = 1
+	}
 	query := `
-		INSERT INTO user_accounts (id, name, email, password, role, status, id_karyawan, id_leader, created_at, updated_at, photos)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '[]')
+		INSERT INTO user_accounts (id, name, email, password, role, status, id_karyawan, id_leader, created_at, updated_at, photos, tenant_id)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '[]', ?)
 	`
-	_, err := r.db.ExecContext(ctx, query, ua.ID, ua.Name, ua.Email, ua.Password, ua.Role, ua.Status, ua.IDKaryawan, ua.IDLeader, ua.CreatedAt, ua.UpdatedAt)
+	_, err := r.db.ExecContext(ctx, query, ua.ID, ua.Name, ua.Email, ua.Password, ua.Role, ua.Status, ua.IDKaryawan, ua.IDLeader, ua.CreatedAt, ua.UpdatedAt, tenantID)
 	return err
 }
 
 func (r *userRepository) UpdateUserAccount(ctx context.Context, ua *model.UserAccountCRUD) error {
+	tenantID, _ := ctx.Value("tenantID").(int)
+	if tenantID == 0 {
+		tenantID = 1
+	}
 	var err error
 	if ua.Password != "" {
 		query := `
 			UPDATE user_accounts
 			SET name = ?, email = ?, password = ?, role = ?, status = ?, id_karyawan = ?, id_leader = ?, updated_at = ?
-			WHERE id = ?
+			WHERE id = ? AND tenant_id = ?
 		`
-		_, err = r.db.ExecContext(ctx, query, ua.Name, ua.Email, ua.Password, ua.Role, ua.Status, ua.IDKaryawan, ua.IDLeader, ua.UpdatedAt, ua.ID)
+		_, err = r.db.ExecContext(ctx, query, ua.Name, ua.Email, ua.Password, ua.Role, ua.Status, ua.IDKaryawan, ua.IDLeader, ua.UpdatedAt, ua.ID, tenantID)
 	} else {
 		query := `
 			UPDATE user_accounts
 			SET name = ?, email = ?, role = ?, status = ?, id_karyawan = ?, id_leader = ?, updated_at = ?
-			WHERE id = ?
+			WHERE id = ? AND tenant_id = ?
 		`
-		_, err = r.db.ExecContext(ctx, query, ua.Name, ua.Email, ua.Role, ua.Status, ua.IDKaryawan, ua.IDLeader, ua.UpdatedAt, ua.ID)
+		_, err = r.db.ExecContext(ctx, query, ua.Name, ua.Email, ua.Role, ua.Status, ua.IDKaryawan, ua.IDLeader, ua.UpdatedAt, ua.ID, tenantID)
 	}
 	return err
 }
 
 func (r *userRepository) DeleteUserAccount(ctx context.Context, id string) error {
-	query := `DELETE FROM user_accounts WHERE id = ?`
-	_, err := r.db.ExecContext(ctx, query, id)
+	tenantID, _ := ctx.Value("tenantID").(int)
+	if tenantID == 0 {
+		tenantID = 1
+	}
+	query := `DELETE FROM user_accounts WHERE id = ? AND tenant_id = ?`
+	_, err := r.db.ExecContext(ctx, query, id, tenantID)
 	return err
+}
+
+func (r *userRepository) GetTenants(ctx context.Context) ([]model.Tenant, error) {
+	query := `SELECT id, name, code, status, created_at, updated_at FROM tenants WHERE status = 1 ORDER BY name ASC`
+	var list []model.Tenant
+	err := r.db.SelectContext(ctx, &list, query)
+	return list, err
 }

@@ -92,7 +92,15 @@ func (h *UserHandler) GetUserInfoByID(c *gin.Context) {
 }
 
 func (h *UserHandler) Registered(c *gin.Context) {
-	names, err := h.userService.Registered()
+	tenantIDStr := c.Query("tenant_id")
+	var tenantID int
+	if tenantIDStr != "" {
+		fmt.Sscanf(tenantIDStr, "%d", &tenantID)
+	}
+	if tenantID <= 0 {
+		tenantID = 1
+	}
+	names, err := h.userService.Registered(tenantID)
 	if err != nil {
 		fmt.Println("Error get names user:", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get name of user"})
@@ -102,13 +110,30 @@ func (h *UserHandler) Registered(c *gin.Context) {
 }
 
 func (h *UserHandler) GetLeaders(c *gin.Context) {
-	leaders, err := h.userService.GetLeaders()
+	tenantIDStr := c.Query("tenant_id")
+	var tenantID int
+	if tenantIDStr != "" {
+		fmt.Sscanf(tenantIDStr, "%d", &tenantID)
+	}
+	if tenantID <= 0 {
+		tenantID = 1
+	}
+	leaders, err := h.userService.GetLeaders(tenantID)
 	if err != nil {
 		fmt.Println("Error get names user:", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get name of user"})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"names": leaders})
+}
+
+func (h *UserHandler) GetTenants(c *gin.Context) {
+	tenants, err := h.userService.GetTenants(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get tenants list"})
+		return
+	}
+	c.JSON(http.StatusOK, tenants)
 }
 
 func (h *UserHandler) GetAllUserKaryawan(c *gin.Context) {

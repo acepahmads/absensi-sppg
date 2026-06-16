@@ -23,34 +23,34 @@ import (
 )
 
 type AbsensiRepository interface {
-	GetAll(page int, limit int, per_page int, date_from string, date_to string, nameSearch string, id_leader int, activeFilters string, hide_dup bool) ([]model.Absensi, int, error)
+	GetAll(ctx context.Context, page int, limit int, per_page int, date_from string, date_to string, nameSearch string, id_leader int, activeFilters string, hide_dup bool) ([]model.Absensi, int, error)
 	UpdateValidation(ctx context.Context, id int64, isValidated bool) error
 	UpdateHide(ctx context.Context, id int64) error
 	Insert(ctx context.Context, req model.Absensi) error
-	GetLastAbsensi(id_karyawan int64, date string) (model.AbsensiKeterlambatan, error)
+	GetLastAbsensi(ctx context.Context, id_karyawan int64, date string) (model.AbsensiKeterlambatan, error)
 	KonfirmasiAbsensi(ctx context.Context, konfirmasi model.AbsensiKonfirmasi) error
-	GetAbsensi(start, end string, id_leader int) (map[int]map[string]AbsensiRow, error)
-	GetEmployees(id_leader int) ([]EmployeeMaster, error)
-	GetIndHolidays() (map[string]string, error)
-	GetAbsensiByKaryawan(nama string, fromDate string, toDate string) ([]model.Absensi, error)
+	GetAbsensi(ctx context.Context, start, end string, id_leader int) (map[int]map[string]AbsensiRow, error)
+	GetEmployees(ctx context.Context, id_leader int) ([]EmployeeMaster, error)
+	GetIndHolidays(ctx context.Context) (map[string]string, error)
+	GetAbsensiByKaryawan(ctx context.Context, nama string, fromDate string, toDate string) ([]model.Absensi, error)
 	InputLembur(ctx context.Context, absensiLembur model.AbsensiLembur) error
-	GetUangMakan(nama string) (float64, error)
+	GetUangMakan(ctx context.Context, nama string) (float64, error)
 	InputAbsensiLeader(ctx context.Context, req model.AbsensiInputLeader) error
 	DeleteAbsensiLeader(ctx context.Context, absensiLeader model.AbsensiInputLeader) error
 	UpdateAbsensiLeader(ctx context.Context, req model.AbsensiInputLeader) error
-	GetAbsensiUangLembur(nama string, date string) (float64, int, error)
-	GetRekapAbsensiByKaryawan(nama string, fromDate string, toDate string) (model.RekapAbsensiByKaryawan, error)
-	GetAbsensiSaya(nama string) (model.AbsensiSaya, error)
+	GetAbsensiUangLembur(ctx context.Context, nama string, date string) (float64, int, error)
+	GetRekapAbsensiByKaryawan(ctx context.Context, nama string, fromDate string, toDate string) (model.RekapAbsensiByKaryawan, error)
+	GetAbsensiSaya(ctx context.Context, nama string) (model.AbsensiSaya, error)
 	InputSiteReport(ctx context.Context, req model.AbsensiSiteReport) error
-	GetSiteReports(page int, per_page int, nama string, fromDate string, toDate string) ([]model.AbsensiSiteReport, error)
-	GetLemburList(page int, per_page int, nama string, fromDate string, toDate string, status string) ([]model.AbsensiLembur, int, error)
+	GetSiteReports(ctx context.Context, page int, per_page int, nama string, fromDate string, toDate string) ([]model.AbsensiSiteReport, error)
+	GetLemburList(ctx context.Context, page int, per_page int, nama string, fromDate string, toDate string, status string) ([]model.AbsensiLembur, int, error)
 	ApproveLembur(ctx context.Context, id int64, nama string, tanggal string) error
 	RejectLembur(ctx context.Context, id int64, nama string, tanggal string, catatan string) error
 	ReviseLembur(ctx context.Context, id int64, nama string, tanggal string, catatan string) error
-	GetLemburDetail(nama string, tanggal string) (model.AbsensiLembur, error)
+	GetLemburDetail(ctx context.Context, nama string, tanggal string) (model.AbsensiLembur, error)
 	InputDailyReport(ctx context.Context, req model.AbsensiDailyReport) error
-	GetDailyReports(page int, per_page int, nama string, fromDate string, toDate string, role string) ([]model.AbsensiDailyReport, error)
-	GetDailyReportByID(id int64) (model.AbsensiDailyReport, error)
+	GetDailyReports(ctx context.Context, page int, per_page int, nama string, fromDate string, toDate string, role string) ([]model.AbsensiDailyReport, error)
+	GetDailyReportByID(ctx context.Context, id int64) (model.AbsensiDailyReport, error)
 	InputAbsenMesin(ctx context.Context, nama string, timestamp string, status string) error
 	GetDashboardStats(ctx context.Context) (model.DashboardStats, error)
 	GetAttendanceStats(ctx context.Context) (model.AbsensiStatistik, error)
@@ -82,7 +82,29 @@ type absensiRepository struct {
 func NewAbsensiRepository(db *sqlx.DB) AbsensiRepository {
 	return &absensiRepository{db: db}
 }
-func (r *absensiRepository) GetAll(page int, limit int, per_page int, date_from string, date_to string, nameSearch string, id_leader int, activeFilters string, hide_dup bool) ([]model.Absensi, int, error) {
+
+func (r *absensiRepository) getTenantIDByKaryawanName(nama string) int {
+	var tenantID int
+	err := r.db.Get(&tenantID, "SELECT tenant_id FROM user_karyawan WHERE nama_mesin_absen = ? LIMIT 1", nama)
+	if err != nil || tenantID == 0 {
+		return 1
+	}
+	return tenantID
+}
+
+func (r *absensiRepository) getTenantIDByLeaderID(idLeader int) int {
+	var tenantID int
+	err := r.db.Get(&tenantID, "SELECT tenant_id FROM karyawan_leader WHERE id = ? LIMIT 1", idLeader)
+	if err != nil || tenantID == 0 {
+		return 1
+	}
+	return tenantID
+}
+func (r *absensiRepository) GetAll(ctx context.Context, page int, limit int, per_page int, date_from string, date_to string, nameSearch string, id_leader int, activeFilters string, hide_dup bool) ([]model.Absensi, int, error) {
+	tenantID, _ := ctx.Value("tenantID").(int)
+	if tenantID == 0 {
+		tenantID = 1
+	}
 
 	if per_page > 0 {
 		limit = per_page
@@ -98,10 +120,11 @@ func (r *absensiRepository) GetAll(page int, limit int, per_page int, date_from 
             ka.status, ka.keterlambatan, ka.validasi_atasan, 
             ka.jumlah_potongan, ka.photo_masuk, ka.photo_pulang, ka.bukti_photo1, ka.bukti_photo2, ka.keterangan, ka.keterangan_ybs, kl.nama as atasan, ka.attendance_type
         FROM karyawan_absensi ka
-		INNER JOIN user_karyawan uk ON uk.nama_mesin_absen = ka.nama
-		INNER JOIN karyawan_leader kl ON kl.id = uk.id_leader
+		INNER JOIN user_karyawan uk ON uk.nama_mesin_absen = ka.nama AND uk.tenant_id = ka.tenant_id
+		INNER JOIN karyawan_leader kl ON kl.id = uk.id_leader AND kl.tenant_id = uk.tenant_id
     `
 
+	params := []interface{}{}
 	if hide_dup {
 		query += ` 
 		INNER JOIN (
@@ -110,20 +133,20 @@ func (r *absensiRepository) GetAll(page int, limit int, per_page int, date_from 
 				DATE(jam_masuk) AS tanggal,
 				MIN(jam_masuk) AS min_jam_masuk
 			FROM karyawan_absensi
-			WHERE (hide = 0 OR hide IS NULL OR hide = '')
+			WHERE (hide = 0 OR hide IS NULL OR hide = '') AND tenant_id = ?
 			GROUP BY nama, DATE(jam_masuk)
 		) x 
 			ON x.nama = ka.nama
 			AND DATE(ka.jam_masuk) = x.tanggal
 			AND ka.jam_masuk = x.min_jam_masuk
 
-		where ( ka.hide = 0 or ka.hide is null or ka.hide = '') `
+		where ( ka.hide = 0 or ka.hide is null or ka.hide = '') AND ka.tenant_id = ? `
+		params = append(params, tenantID, tenantID)
 	} else {
-		query += ` where ( ka.hide = 0 or ka.hide is null or ka.hide = '') `
+		query += ` where ( ka.hide = 0 or ka.hide is null or ka.hide = '') AND ka.tenant_id = ? `
+		params = append(params, tenantID)
 	}
 
-	params := []interface{}{}
-	// fmt.Println("query", query, params)
 	// filter tanggal
 	if date_from != "" && date_to != "" {
 		if len(date_from) == 10 {
@@ -140,28 +163,6 @@ func (r *absensiRepository) GetAll(page int, limit int, per_page int, date_from 
             )
         `
 		params = append(params, date_from, date_to, date_from, date_to)
-	} else {
-		// query += `
-		// 	AND
-		// 		COALESCE(
-		// 			ka.jam_masuk,
-		// 			ka.lembur_masuk
-		// 		) BETWEEN
-		// 		(
-		// 			CASE
-		// 				WHEN DAY(CURDATE()) >= 21
-		// 					THEN DATE_FORMAT(CURDATE(), '%Y-%m-21')
-		// 				ELSE
-		// 					DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 1 MONTH), '%Y-%m-21')
-		// 			END
-		// 		)
-		// 		AND CURDATE() + INTERVAL 1 DAY
-		// `
-		//query today
-		query += `
-			-- AND DATE(ka.jam_masuk) = CURRENT_DATE
-		`
-
 	}
 
 	// filter nama
@@ -172,31 +173,12 @@ func (r *absensiRepository) GetAll(page int, limit int, per_page int, date_from 
 		params = append(params, "%"+nameSearch+"%")
 	}
 
-	// where DATE(ka.jam_masuk) = CURRENT_DATE or DATE(ka.lembur_masuk) = CURRENT_DATE or DATE(ka.jam_pulang) = CURRENT_DATE or DATE(ka.lembur_pulang) = CURRENT_DATE
-	// AND (
-	// 	DATE(ka.jam_masuk) = (
-	// 		SELECT MAX(DATE(jam_masuk)) FROM karyawan_absensi
-	// 	)
-	// 	OR DATE(ka.lembur_masuk) = (
-	// 		SELECT MAX(DATE(jam_masuk)) FROM karyawan_absensi
-	// 	)
-	// 	OR DATE(ka.jam_pulang) = (
-	// 		SELECT MAX(DATE(jam_masuk)) FROM karyawan_absensi
-	// 	)
-	// 	OR DATE(ka.lembur_pulang) = (
-	// 		SELECT MAX(DATE(jam_masuk)) FROM karyawan_absensi
-	// 	)
-	// )
-
-	// fmt.Println("id_leader", id_leader)
 	if id_leader != 1 && id_leader != 0 {
 		query += `
 				AND uk.id_leader = ?
 			`
 		params = append(params, id_leader)
 	}
-
-	// fmt.Println("activeFilters", activeFilters)
 
 	if activeFilters != "" {
 		query += "AND ("
@@ -223,10 +205,8 @@ func (r *absensiRepository) GetAll(page int, limit int, per_page int, date_from 
     `
 	params = append(params, limit, offset)
 
-	// fmt.Println("Query", query, params)
-
 	// eksekusi query utama
-	err := r.db.Select(&results, query, params...)
+	err := r.db.SelectContext(ctx, &results, query, params...)
 	if err != nil {
 		fmt.Println("Error executing query:", err)
 		return nil, 0, err
@@ -236,9 +216,10 @@ func (r *absensiRepository) GetAll(page int, limit int, per_page int, date_from 
 	countQuery := `
         SELECT COUNT(*)
         FROM karyawan_absensi ka
-		where ( ka.hide = 0 or ka.hide is null or ka.hide = '')
+		INNER JOIN user_karyawan uk ON uk.nama_mesin_absen = ka.nama AND uk.tenant_id = ka.tenant_id
+		where ( ka.hide = 0 or ka.hide is null or ka.hide = '') AND ka.tenant_id = ?
     `
-	countParams := []interface{}{}
+	countParams := []interface{}{tenantID}
 
 	if date_from != "" && date_to != "" {
 		if len(date_from) == 10 {
@@ -255,29 +236,6 @@ func (r *absensiRepository) GetAll(page int, limit int, per_page int, date_from 
             )
         `
 		countParams = append(countParams, date_from, date_to, date_from, date_to)
-	} else {
-		// countQuery += `
-		// 	AND
-		// 		COALESCE(
-		// 			ka.jam_masuk,
-		// 			ka.lembur_masuk
-		// 		) BETWEEN
-		// 		(
-		// 			CASE
-		// 				WHEN DAY(CURDATE()) >= 21
-		// 					THEN DATE_FORMAT(CURDATE(), '%Y-%m-21')
-		// 				ELSE
-		// 					DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 1 MONTH), '%Y-%m-21')
-		// 			END
-		// 		)
-		// 		AND CURDATE() + INTERVAL 1 DAY
-
-		// `
-		//query today
-		countQuery += `
-			-- AND DATE(ka.jam_masuk) = CURRENT_DATE
-		`
-
 	}
 
 	// filter nama
@@ -289,14 +247,13 @@ func (r *absensiRepository) GetAll(page int, limit int, per_page int, date_from 
 	}
 
 	if id_leader != 1 && id_leader != 0 {
-		query += `
+		countQuery += `
 				AND uk.id_leader = ?
 			`
-		params = append(params, id_leader)
-		// fmt.Println("Query", countQuery, countParams)
+		countParams = append(countParams, id_leader)
 	}
 	var total int
-	err = r.db.Get(&total, countQuery, countParams...)
+	err = r.db.GetContext(ctx, &total, countQuery, countParams...)
 	if err != nil {
 		fmt.Println("Error executing count query:", err)
 		return nil, 0, err
@@ -327,6 +284,14 @@ func (r *absensiRepository) UpdateHide(ctx context.Context, id int64) error {
 	return err
 }
 func (r *absensiRepository) Insert(ctx context.Context, a model.Absensi) error {
+	var namaMesin string
+	if a.Nama != nil {
+		namaMesin = *a.Nama
+	}
+	tenantID, _ := ctx.Value("tenantID").(int)
+	if tenantID == 0 {
+		tenantID = r.getTenantIDByKaryawanName(namaMesin)
+	}
 	var jamMasuk string
 	var err error
 	status := *a.Status
@@ -411,11 +376,11 @@ func (r *absensiRepository) Insert(ctx context.Context, a model.Absensi) error {
 				UangHarian int64 `db:"uang_harian"`
 			}
 			var p Potongan
-			err = r.db.Get(&p, `
+			err = r.db.GetContext(ctx, &p, `
 				SELECT uang_makan, uang_harian
 				FROM user_karyawan
-				WHERE nama_mesin_absen = ?
-			`, a.Nama)
+				WHERE nama_mesin_absen = ? AND tenant_id = ?
+			`, a.Nama, tenantID)
 
 			if err != nil {
 				err = errors.New("Anda belum terdaftar untuk mendapatkan uang makan!")
@@ -543,7 +508,7 @@ func (r *absensiRepository) Insert(ctx context.Context, a model.Absensi) error {
 	if *a.ShiftType == "masuk" {
 		//get id_user_karyawan from table user_karyawan dari inner join nama
 		var id_user_karyawan int64
-		err = r.db.Get(&id_user_karyawan, "SELECT id FROM user_karyawan WHERE nama_mesin_absen = ?", a.Nama)
+		err = r.db.GetContext(ctx, &id_user_karyawan, "SELECT id FROM user_karyawan WHERE nama_mesin_absen = ? AND tenant_id = ?", a.Nama, tenantID)
 		if err != nil {
 			return err
 		}
@@ -666,10 +631,10 @@ cc Pak Sri Winardono, Pak Acep Ahmad S, Pak Djuhartono, Pak Dani Gumilar, Pak Al
 				dateInput := t.Format("2006-01-02")
 
 				query = `
-					SELECT id from karyawan_absensi where nama = ? and DATE(jam_masuk) = ? AND (hide is null or hide='') 
+					SELECT id from karyawan_absensi where nama = ? and DATE(jam_masuk) = ? AND (hide is null or hide='') AND tenant_id = ?
 				`
 				var id int64
-				err = r.db.Get(&id, query, a.Nama, dateInput)
+				err = r.db.GetContext(ctx, &id, query, a.Nama, dateInput, tenantID)
 				//check if no rows
 				if err != nil {
 					if err == sql.ErrNoRows {
@@ -682,7 +647,7 @@ cc Pak Sri Winardono, Pak Acep Ahmad S, Pak Djuhartono, Pak Dani Gumilar, Pak Al
 				fmt.Println("Get id", a.Nama, id)
 				if id <= 0 {
 					weekend := isWeekend(dateInput)
-					holidays, err := r.GetIndHolidays()
+					holidays, err := r.GetIndHolidays(ctx)
 					if err != nil {
 						return err
 					}
@@ -705,8 +670,9 @@ cc Pak Sri Winardono, Pak Acep Ahmad S, Pak Djuhartono, Pak Dani Gumilar, Pak Al
 								jumlah_potongan,
 								keterangan,
 								keterlambatan,
-								id_user_karyawan
-							) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?)
+								id_user_karyawan,
+								tenant_id
+							) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?)
 						`
 
 						_, err = r.db.ExecContext(ctx, query,
@@ -726,6 +692,7 @@ cc Pak Sri Winardono, Pak Acep Ahmad S, Pak Djuhartono, Pak Dani Gumilar, Pak Al
 							keterangan,
 							keterlambatanStr,
 							id_user_karyawan,
+							tenantID,
 						)
 						if err != nil {
 							fmt.Println(err)
@@ -780,10 +747,10 @@ cc Pak Sri Winardono, Pak Acep Ahmad S, Pak Djuhartono, Pak Dani Gumilar, Pak Al
 			dateInput := t.Format("2006-01-02")
 
 			query = `
-					SELECT id from karyawan_absensi where nama = ? and DATE(jam_masuk) = ? AND (hide is null or hide='') 
+					SELECT id from karyawan_absensi where nama = ? and DATE(jam_masuk) = ? AND (hide is null or hide='') AND tenant_id = ?
 				`
 			var id int64
-			err = r.db.Get(&id, query, a.Nama, dateInput)
+			err = r.db.GetContext(ctx, &id, query, a.Nama, dateInput, tenantID)
 			//check if no rows
 			if err != nil {
 				if err == sql.ErrNoRows {
@@ -812,12 +779,13 @@ cc Pak Sri Winardono, Pak Acep Ahmad S, Pak Djuhartono, Pak Dani Gumilar, Pak Al
 					jumlah_potongan,
 					keterangan,
 					keterlambatan,
-					id_user_karyawan
-				) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?)
+					id_user_karyawan,
+					tenant_id
+				) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?)
 			`
 				//get id_user_karyawan from table user_karyawan dari inner join nama
 				var id_user_karyawan int64
-				err = r.db.Get(&id_user_karyawan, "SELECT id FROM user_karyawan WHERE nama_mesin_absen = ?", a.Nama)
+				err = r.db.GetContext(ctx, &id_user_karyawan, "SELECT id FROM user_karyawan WHERE nama_mesin_absen = ? AND tenant_id = ?", a.Nama, tenantID)
 				if err != nil {
 					return err
 				}
@@ -838,6 +806,7 @@ cc Pak Sri Winardono, Pak Acep Ahmad S, Pak Djuhartono, Pak Dani Gumilar, Pak Al
 					keterangan,
 					keterlambatanStr,
 					id_user_karyawan,
+					tenantID,
 				)
 				if err != nil {
 					fmt.Println(err)
@@ -862,7 +831,7 @@ cc Pak Sri Winardono, Pak Acep Ahmad S, Pak Djuhartono, Pak Dani Gumilar, Pak Al
 			location_name = ?,
 			photo_pulang = ?
 		WHERE nama = ?
-		AND DATE(jam_masuk) = CURDATE()
+		AND DATE(jam_masuk) = CURDATE() AND tenant_id = ?
 		ORDER BY created_at DESC
 		`
 
@@ -873,6 +842,7 @@ cc Pak Sri Winardono, Pak Acep Ahmad S, Pak Djuhartono, Pak Dani Gumilar, Pak Al
 			a.LocationName,
 			photoFilename,
 			a.Nama,
+			tenantID,
 		)
 		if err != nil {
 			fmt.Println(err)
@@ -906,9 +876,10 @@ func (r *absensiRepository) InputAbsenMesin(ctx context.Context, nama string, ti
 		UangMakan      float64 `db:"uang_makan"`
 		UangHarian     float64 `db:"uang_harian"`
 		NamaMesinAbsen string  `db:"nama_mesin_absen"`
+		TenantID       int     `db:"tenant_id"`
 	}
 	var uk UserKaryawan
-	err := r.db.Get(&uk, "SELECT id, uang_makan, uang_harian, nama_mesin_absen FROM user_karyawan WHERE LOWER(REPLACE(nama_mesin_absen, ' ', '')) = LOWER(REPLACE(?, ' ', ''))", nama)
+	err := r.db.GetContext(ctx, &uk, "SELECT id, uang_makan, uang_harian, nama_mesin_absen, tenant_id FROM user_karyawan WHERE LOWER(REPLACE(nama_mesin_absen, ' ', '')) = LOWER(REPLACE(?, ' ', '')) LIMIT 1", nama)
 	if err != nil {
 		return fmt.Errorf("user_karyawan not found for name %s: %v", nama, err)
 	}
@@ -980,8 +951,8 @@ func (r *absensiRepository) InputAbsenMesin(ctx context.Context, nama string, ti
 	if flagMasuk == 1 || flagMasuk == 3 {
 		query := `
 			INSERT INTO karyawan_absensi
-			(nama, jam_masuk, jam_pulang, lembur_masuk, lembur_pulang, status, keterlambatan, jumlah_potongan, keterangan, created_at, id_user_karyawan, attendance_type)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?)
+			(nama, jam_masuk, jam_pulang, lembur_masuk, lembur_pulang, status, keterlambatan, jumlah_potongan, keterangan, created_at, id_user_karyawan, attendance_type, tenant_id)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?)
 		`
 		var latenessStr string
 		if flagMasuk == 1 {
@@ -1002,6 +973,7 @@ func (r *absensiRepository) InputAbsenMesin(ctx context.Context, nama string, ti
 			"",
 			uk.ID,
 			"kantor",
+			uk.TenantID,
 		)
 		return err
 
@@ -1013,9 +985,9 @@ func (r *absensiRepository) InputAbsenMesin(ctx context.Context, nama string, ti
 		query := `
 			UPDATE karyawan_absensi
 			SET jam_pulang = ?
-			WHERE nama = ? AND jam_masuk >= ? AND jam_masuk < ?
+			WHERE nama = ? AND jam_masuk >= ? AND jam_masuk < ? AND tenant_id = ?
 		`
-		_, err = r.db.ExecContext(ctx, query, mysqlTimeStr, uk.NamaMesinAbsen, startDate, endDate)
+		_, err = r.db.ExecContext(ctx, query, mysqlTimeStr, uk.NamaMesinAbsen, startDate, endDate, uk.TenantID)
 		return err
 
 	} else if flagMasuk == 4 {
@@ -1026,23 +998,24 @@ func (r *absensiRepository) InputAbsenMesin(ctx context.Context, nama string, ti
 		query := `
 			UPDATE karyawan_absensi
 			SET lembur_pulang = ?
-			WHERE nama = ? AND lembur_masuk >= ? AND lembur_masuk < ?
+			WHERE nama = ? AND lembur_masuk >= ? AND lembur_masuk < ? AND tenant_id = ?
 		`
-		_, err = r.db.ExecContext(ctx, query, mysqlTimeStr, uk.NamaMesinAbsen, startDate, endDate)
+		_, err = r.db.ExecContext(ctx, query, mysqlTimeStr, uk.NamaMesinAbsen, startDate, endDate, uk.TenantID)
 		return err
 	}
 
 	return nil
 }
-func (r *absensiRepository) GetLastAbsensi(id_karyawan int64, date string) (model.AbsensiKeterlambatan, error) {
+func (r *absensiRepository) GetLastAbsensi(ctx context.Context, id_karyawan int64, date string) (model.AbsensiKeterlambatan, error) {
+	tenantID, _ := ctx.Value("tenantID").(int)
+	if tenantID == 0 {
+		_ = r.db.Get(&tenantID, "SELECT tenant_id FROM user_karyawan WHERE id = ? LIMIT 1", id_karyawan)
+		if tenantID == 0 {
+			tenantID = 1
+		}
+	}
 	var a model.AbsensiKeterlambatan
-	//make query join table user_karyawan and karyawan_absensi
 	fmt.Println("GetLastAbsensi Date", date)
-	// CASE
-	// 	WHEN ka.keterlambatan > 5  AND ka.keterlambatan <= 30 THEN 'ANDA TERLAMBAT'
-	// 	WHEN ka.keterlambatan > 30 THEN 'ALPHA'
-	// 	ELSE 'HEBAAAT ANDA DATANG TEPAT WAKTU'
-	// END AS status,
 	query := `SELECT
 		COALESCE(ka.id, '')           AS id, 
 		COALESCE(ka.nama, '')           AS nama,
@@ -1052,13 +1025,13 @@ func (r *absensiRepository) GetLastAbsensi(id_karyawan int64, date string) (mode
 
 		COALESCE(ka.location_name, '')  AS lokasi
 		FROM user_karyawan uk
-		INNER JOIN karyawan_absensi ka ON uk.nama_mesin_absen = ka.nama
+		INNER JOIN karyawan_absensi ka ON uk.nama_mesin_absen = ka.nama AND ka.tenant_id = uk.tenant_id
 		where uk.id = ?
-	    AND DATE(ka.jam_masuk) = ?
+	    AND DATE(ka.jam_masuk) = ? AND uk.tenant_id = ?
 		ORDER BY ka.created_at asc
 		LIMIT 1;`
 
-	err := r.db.Get(&a, query, id_karyawan, date)
+	err := r.db.GetContext(ctx, &a, query, id_karyawan, date, tenantID)
 	if err != nil {
 		return model.AbsensiKeterlambatan{}, err
 	}
@@ -1094,31 +1067,23 @@ func (r *absensiRepository) KonfirmasiAbsensi(ctx context.Context, konfirmasi mo
 	}
 	return nil
 }
-func (r *absensiRepository) GetEmployees(id_leader int) ([]EmployeeMaster, error) {
-	// rows, err := r.db.Query(`
-	// 	SELECT uk.id, uk.nama_mesin_absen, kl.divisi
-	// 	FROM user_karyawan uk
-	// 	INNER JOIN karyawan_leader kl ON kl.id = uk.id_leader
-	// 	WHERE uk.status = '1'
-	// 	AND uk.id_leader = ?
-	// 	order by kl.divisi asc, uk.nama_mesin_absen asc
-	// `, id_leader)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// defer rows.Close()
+func (r *absensiRepository) GetEmployees(ctx context.Context, id_leader int) ([]EmployeeMaster, error) {
+	tenantID, _ := ctx.Value("tenantID").(int)
+	if tenantID == 0 {
+		tenantID = 1
+	}
 
 	var rows *sql.Rows
 	var err error
 
 	if id_leader != 0 && id_leader != 1 {
-		rows, err = r.db.Query(`
+		rows, err = r.db.QueryContext(ctx, `
         SELECT 
             uk.id,
             uk.nama_mesin_absen,
             kl.divisi
         FROM user_karyawan uk
-        INNER JOIN karyawan_leader kl ON kl.id = uk.id_leader
+        INNER JOIN karyawan_leader kl ON kl.id = uk.id_leader AND kl.tenant_id = uk.tenant_id
         WHERE uk.status = '1'
         AND uk.id_leader = ?
 		AND uk.nama_mesin_absen != 'ACEP AHMAD S'
@@ -1126,24 +1091,26 @@ func (r *absensiRepository) GetEmployees(id_leader int) ([]EmployeeMaster, error
 		AND uk.nama_mesin_absen != 'DJUHARTONO'
 		AND uk.nama_mesin_absen != 'ABDA ALIF L'
 		AND uk.nama_mesin_absen != 'SRI WINARDONO'
+		AND uk.tenant_id = ?
         ORDER BY kl.divisi ASC, uk.nama_mesin_absen ASC
-    `, id_leader)
+    `, id_leader, tenantID)
 	} else {
-		rows, err = r.db.Query(`
+		rows, err = r.db.QueryContext(ctx, `
         SELECT 
             uk.id,
             uk.nama_mesin_absen,
             kl.divisi
         FROM user_karyawan uk
-        INNER JOIN karyawan_leader kl ON kl.id = uk.id_leader
+        INNER JOIN karyawan_leader kl ON kl.id = uk.id_leader AND kl.tenant_id = uk.tenant_id
         WHERE uk.status = '1'
 		AND uk.nama_mesin_absen != 'ACEP AHMAD S'
 		AND uk.nama_mesin_absen != 'DANI GUMILAR'
 		AND uk.nama_mesin_absen != 'DJUHARTONO'
 		AND uk.nama_mesin_absen != 'ABDA ALIF L'
 		AND uk.nama_mesin_absen != 'SRI WINARDONO'
+		AND uk.tenant_id = ?
         ORDER BY kl.divisi ASC, uk.nama_mesin_absen ASC
-    `)
+    `, tenantID)
 	}
 
 	if err != nil {
@@ -1159,7 +1126,11 @@ func (r *absensiRepository) GetEmployees(id_leader int) ([]EmployeeMaster, error
 	}
 	return list, nil
 }
-func (r *absensiRepository) GetAbsensi(start, end string, id_leader int) (map[int]map[string]AbsensiRow, error) {
+func (r *absensiRepository) GetAbsensi(ctx context.Context, start, end string, id_leader int) (map[int]map[string]AbsensiRow, error) {
+	tenantID, _ := ctx.Value("tenantID").(int)
+	if tenantID == 0 {
+		tenantID = 1
+	}
 	var (
 		rows *sql.Rows
 		err  error
@@ -1186,29 +1157,25 @@ func (r *absensiRepository) GetAbsensi(start, end string, id_leader int) (map[in
 				DATE(jam_masuk) AS tanggal,
 				MIN(jam_masuk) AS min_jam_masuk
 			FROM karyawan_absensi
-			WHERE (hide = 0 OR hide IS NULL OR hide = '')
+			WHERE (hide = 0 OR hide IS NULL OR hide = '') AND tenant_id = ?
 			GROUP BY nama, DATE(jam_masuk)
 		) x 
 			ON x.nama = ka.nama
 			AND DATE(ka.jam_masuk) = x.tanggal
 			AND ka.jam_masuk = x.min_jam_masuk
 		WHERE ( ka.hide = 0 OR ka.hide IS NULL OR ka.hide = '' )
-		AND DATE(jam_masuk) BETWEEN ? AND ?
+		AND DATE(jam_masuk) BETWEEN ? AND ? AND ka.tenant_id = ?
 		`
 	if id_leader != 0 && id_leader != 1 {
 		baseQuery += `
 			AND id_user_karyawan IN (
-				SELECT id FROM user_karyawan WHERE id_leader = ?
+				SELECT id FROM user_karyawan WHERE id_leader = ? AND tenant_id = ?
 			)
 			`
-		rows, err = r.db.Query(baseQuery+" ORDER BY ka.jam_masuk ASC", start, end, id_leader)
+		rows, err = r.db.QueryContext(ctx, baseQuery+" ORDER BY ka.jam_masuk ASC", tenantID, start, end, tenantID, id_leader, tenantID)
 	} else {
-		// baseQuery += `
-		// 	AND id_user_karyawan IN ()
-		// 	`
-		rows, err = r.db.Query(baseQuery+" ORDER BY ka.jam_masuk ASC", start, end)
+		rows, err = r.db.QueryContext(ctx, baseQuery+" ORDER BY ka.jam_masuk ASC", tenantID, start, end, tenantID)
 	}
-	// fmt.Println("query ", baseQuery, start, end)
 	if err != nil {
 		fmt.Println(err)
 		return nil, err
@@ -1233,25 +1200,28 @@ func (r *absensiRepository) GetAbsensi(start, end string, id_leader int) (map[in
 			log.Println("[ERROR] scan absensi:", err)
 			continue // skip row bermasalah
 		}
-		// fmt.Printf("ROW: %+v\n", a)
 
 		if _, ok := data[a.ID]; !ok {
 			data[a.ID] = map[string]AbsensiRow{}
 		}
 		dateKey := a.Tanggal.Format("2006-01-02")
 		data[a.ID][dateKey] = a
-		// fmt.Printf("data: %+v\n", data[a.ID][dateKey])
 	}
 	return data, nil
 }
-func (r *absensiRepository) GetIndHolidays() (map[string]string, error) {
-	rows, err := r.db.Query(`
+func (r *absensiRepository) GetIndHolidays(ctx context.Context) (map[string]string, error) {
+	tenantID, _ := ctx.Value("tenantID").(int)
+	if tenantID == 0 {
+		tenantID = 1
+	}
+	rows, err := r.db.QueryContext(ctx, `
 		SELECT 
 			DATE_FORMAT(date, '%Y-%m-%d') AS date,
 			name
 		FROM karyawan_holidays
+		WHERE tenant_id = ?
 		ORDER BY date ASC
-	`)
+	`, tenantID)
 	if err != nil {
 		return nil, err
 	}
@@ -1272,9 +1242,14 @@ func (r *absensiRepository) GetIndHolidays() (map[string]string, error) {
 
 	return holidays, nil
 }
-func (r *absensiRepository) GetAbsensiByKaryawan(nama string, fromDate string, toDate string) ([]model.Absensi, error) {
+func (r *absensiRepository) GetAbsensiByKaryawan(ctx context.Context, nama string, fromDate string, toDate string) ([]model.Absensi, error) {
+	tenantID, _ := ctx.Value("tenantID").(int)
+	if tenantID == 0 {
+		tenantID = r.getTenantIDByKaryawanName(nama)
+	}
 	var absensi []model.Absensi
-	err := r.db.Select(
+	err := r.db.SelectContext(
+		ctx,
 		&absensi,
 		`
 			SELECT 
@@ -1297,7 +1272,7 @@ func (r *absensiRepository) GetAbsensiByKaryawan(nama string, fromDate string, t
 					DATE(jam_masuk) AS tanggal,
 					MIN(jam_masuk) AS min_jam_masuk
 				FROM karyawan_absensi
-				WHERE (hide = 0 OR hide IS NULL OR hide = '')
+				WHERE (hide = 0 OR hide IS NULL OR hide = '') AND tenant_id = ?
 				GROUP BY nama, DATE(jam_masuk)
 			) x 
 				ON x.nama = ka.nama
@@ -1306,13 +1281,15 @@ func (r *absensiRepository) GetAbsensiByKaryawan(nama string, fromDate string, t
 			WHERE (ka.hide = 0 OR ka.hide IS NULL OR ka.hide = '')
 			AND ka.nama = ?
 			AND DATE(ka.jam_masuk) BETWEEN ? AND ?
+			AND ka.tenant_id = ?
 			ORDER BY ka.jam_masuk DESC
 			`,
+		tenantID,
 		nama,
 		fromDate,
 		toDate,
+		tenantID,
 	)
-	// fmt.Println("nama", nama, fromDate, toDate)
 	if err != nil {
 		fmt.Println("Error AbsensiKaryawan", err)
 		return nil, err
@@ -1403,8 +1380,11 @@ func (r *absensiRepository) InputLembur(ctx context.Context, absensiLembur model
 	}
 	return err
 }
-func (r *absensiRepository) GetAbsensiUangLembur(nama string, date string) (float64, int, error) {
-
+func (r *absensiRepository) GetAbsensiUangLembur(ctx context.Context, nama string, date string) (float64, int, error) {
+	tenantID, _ := ctx.Value("tenantID").(int)
+	if tenantID == 0 {
+		tenantID = r.getTenantIDByKaryawanName(nama)
+	}
 	type Lembur struct {
 		JumlahBayar float64 `db:"jumlah_bayar"`
 		Approval    int64   `db:"approval"`
@@ -1412,27 +1392,30 @@ func (r *absensiRepository) GetAbsensiUangLembur(nama string, date string) (floa
 	var l Lembur
 
 	query := `
-		SELECT jumlah_bayar, COALESCE(approval, 0) AS approval FROM karyawan_lembur WHERE nama = ? AND tanggal_lembur = ? order by tanggal_lembur, id desc limit 1`
-	// fmt.Println("GetAbsensiUangLembur1 ", query)
-	// fmt.Println("Name", nama, "date", date)
-	err := r.db.Get(&l, query, nama, date)
+		SELECT jumlah_bayar, COALESCE(approval, 0) AS approval FROM karyawan_lembur WHERE nama = ? AND tanggal_lembur = ? AND tenant_id = ? order by tanggal_lembur, id desc limit 1`
+	err := r.db.GetContext(ctx, &l, query, nama, date, tenantID)
 	if err != nil {
-		// fmt.Println("Error GetAbsensiUangLembur", err)
 		return 0, 0, err
 	}
-	// fmt.Println("Jumlah Bayar", l.JumlahBayar)
 
 	return float64(l.JumlahBayar), int(l.Approval), err
 }
-func (r *absensiRepository) GetUangMakan(nama string) (float64, error) {
+func (r *absensiRepository) GetUangMakan(ctx context.Context, nama string) (float64, error) {
+	tenantID, _ := ctx.Value("tenantID").(int)
+	if tenantID == 0 {
+		tenantID = r.getTenantIDByKaryawanName(nama)
+	}
 	query := `
-		SELECT uang_makan FROM user_karyawan WHERE nama_mesin_absen = ?`
+		SELECT uang_makan FROM user_karyawan WHERE nama_mesin_absen = ? AND tenant_id = ?`
 	var uangMakan float64
-	err := r.db.Get(&uangMakan, query, nama)
+	err := r.db.GetContext(ctx, &uangMakan, query, nama, tenantID)
 	return uangMakan, err
 }
 func (r *absensiRepository) InputAbsensiLeader(ctx context.Context, absensiLeader model.AbsensiInputLeader) error {
-	// fmt.Println("DateISO", absensiLeader.Date, "status", absensiLeader.Status, "note", absensiLeader.Notes)
+	tenantID, _ := ctx.Value("tenantID").(int)
+	if tenantID == 0 {
+		tenantID = r.getTenantIDByKaryawanName(absensiLeader.Name)
+	}
 	jamMasuk, err := parseISOToMySQL1(absensiLeader.Date)
 	if err != nil {
 		fmt.Println("err", err)
@@ -1457,9 +1440,8 @@ func (r *absensiRepository) InputAbsensiLeader(ctx context.Context, absensiLeade
 		attendanceType = "dinas_lapangan"
 		status = "Dinas Lapangan"
 	}
-	// fmt.Println("jamMasuk", jamMasuk, "jamPulang", jamPulang, "attendanceType", attendanceType, "status", status)
 	var id_user_karyawan int64
-	err = r.db.Get(&id_user_karyawan, "SELECT id FROM user_karyawan WHERE nama_mesin_absen = ?", absensiLeader.Name)
+	err = r.db.GetContext(ctx, &id_user_karyawan, "SELECT id FROM user_karyawan WHERE nama_mesin_absen = ? AND tenant_id = ?", absensiLeader.Name, tenantID)
 	if err != nil {
 		return err
 	}
@@ -1474,8 +1456,9 @@ func (r *absensiRepository) InputAbsensiLeader(ctx context.Context, absensiLeade
 			status,
 			created_at,
 			keterangan,
-			id_user_karyawan
-		) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+			id_user_karyawan,
+			tenant_id
+		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`
 	_, err = r.db.ExecContext(ctx, query,
 		absensiLeader.Name,
@@ -1486,21 +1469,28 @@ func (r *absensiRepository) InputAbsensiLeader(ctx context.Context, absensiLeade
 		time.Now(),
 		absensiLeader.Notes,
 		id_user_karyawan,
+		tenantID,
 	)
 	fmt.Println("Error InputAbsensiLeader", err)
 	return err
 }
 func (r *absensiRepository) DeleteAbsensiLeader(ctx context.Context, absensiLeader model.AbsensiInputLeader) error {
+	tenantID, _ := ctx.Value("tenantID").(int)
+	if tenantID == 0 {
+		tenantID = r.getTenantIDByKaryawanName(absensiLeader.Name)
+	}
 	query := `
 		DELETE FROM karyawan_absensi
-		WHERE nama = ? AND DATE(jam_masuk) = ?
+		WHERE nama = ? AND DATE(jam_masuk) = ? AND tenant_id = ?
 	`
-	// fmt.Println("DeleteAbsensiLeader", query, absensiLeader.Name, absensiLeader.Date)
-	_, err := r.db.ExecContext(ctx, query, absensiLeader.Name, absensiLeader.Date)
-	// err := errors.New("Fitur hapus absensi sementara dinonaktifkan, silahkan hubungi admin!")
+	_, err := r.db.ExecContext(ctx, query, absensiLeader.Name, absensiLeader.Date, tenantID)
 	return err
 }
 func (r *absensiRepository) UpdateAbsensiLeader(ctx context.Context, absensiLeader model.AbsensiInputLeader) error {
+	tenantID, _ := ctx.Value("tenantID").(int)
+	if tenantID == 0 {
+		tenantID = r.getTenantIDByKaryawanName(absensiLeader.Name)
+	}
 	AttendanceType := ""
 	if absensiLeader.Status == "Kantor" || absensiLeader.Status == "Hadir" {
 		AttendanceType = "kantor"
@@ -1515,7 +1505,7 @@ func (r *absensiRepository) UpdateAbsensiLeader(ctx context.Context, absensiLead
 	query := `
 		UPDATE karyawan_absensi
 		SET attendance_type = ?, status = ?, keterangan = ?
-		WHERE nama = ? AND DATE(jam_masuk) = ?
+		WHERE nama = ? AND DATE(jam_masuk) = ? AND tenant_id = ?
 	`
 	_, err := r.db.ExecContext(ctx, query,
 		AttendanceType,
@@ -1523,11 +1513,16 @@ func (r *absensiRepository) UpdateAbsensiLeader(ctx context.Context, absensiLead
 		absensiLeader.Notes,
 		absensiLeader.Name,
 		absensiLeader.Date,
+		tenantID,
 	)
 	fmt.Println("UpdateAbsensiLeader", query, AttendanceType, absensiLeader.Status, absensiLeader.Notes, absensiLeader.Name, absensiLeader.Date, err)
 	return err
 }
-func (r *absensiRepository) GetRekapAbsensiByKaryawan(nama string, fromDate string, toDate string) (model.RekapAbsensiByKaryawan, error) {
+func (r *absensiRepository) GetRekapAbsensiByKaryawan(ctx context.Context, nama string, fromDate string, toDate string) (model.RekapAbsensiByKaryawan, error) {
+	tenantID, _ := ctx.Value("tenantID").(int)
+	if tenantID == 0 {
+		tenantID = r.getTenantIDByKaryawanName(nama)
+	}
 	var rekap model.RekapAbsensiByKaryawan
 
 	// Ensure dates are in proper format
@@ -1553,9 +1548,9 @@ func (r *absensiRepository) GetRekapAbsensiByKaryawan(nama string, fromDate stri
 		AND (
 			(jam_masuk IS NOT NULL AND jam_masuk BETWEEN ? AND ?)
 		)
+		AND tenant_id = ?
 	`
-	// fmt.Println("query", query, nama, fromDate, toDate)
-	err := r.db.Get(&rekap, query, nama, fromDate, toDate)
+	err := r.db.GetContext(ctx, &rekap, query, nama, fromDate, toDate, tenantID)
 	if err != nil {
 		fmt.Println("Error GetRekapAbsensiByKaryawan", err)
 		return rekap, err
@@ -1563,7 +1558,11 @@ func (r *absensiRepository) GetRekapAbsensiByKaryawan(nama string, fromDate stri
 
 	return rekap, nil
 }
-func (r *absensiRepository) GetAbsensiSaya(nama string) (model.AbsensiSaya, error) {
+func (r *absensiRepository) GetAbsensiSaya(ctx context.Context, nama string) (model.AbsensiSaya, error) {
+	tenantID, _ := ctx.Value("tenantID").(int)
+	if tenantID == 0 {
+		tenantID = r.getTenantIDByKaryawanName(nama)
+	}
 	var a model.AbsensiSaya
 	query := `SELECT
 		COALESCE(ka.status, '')      AS status,
@@ -1572,14 +1571,13 @@ func (r *absensiRepository) GetAbsensiSaya(nama string) (model.AbsensiSaya, erro
 		FROM karyawan_absensi ka
 		where ka.nama = ?
 	    AND DATE(ka.jam_masuk) = CURDATE()
+		AND ka.tenant_id = ?
 		ORDER BY ka.created_at asc
 		LIMIT 1;`
 	fmt.Println("query GetAbsensiSaya", query, nama)
-	err := r.db.Get(&a, query, nama)
+	err := r.db.GetContext(ctx, &a, query, nama, tenantID)
 	if err != nil {
-		//cek no result
 		if err == sql.ErrNoRows {
-			//make error new
 			err = errors.New("Anda belum absen hari ini")
 			return a, err
 		}
@@ -1589,6 +1587,10 @@ func (r *absensiRepository) GetAbsensiSaya(nama string) (model.AbsensiSaya, erro
 	return a, nil
 }
 func (r *absensiRepository) InputSiteReport(ctx context.Context, siteReport model.AbsensiSiteReport) error {
+	tenantID, _ := ctx.Value("tenantID").(int)
+	if tenantID == 0 {
+		tenantID = r.getTenantIDByKaryawanName(siteReport.Nama)
+	}
 	buktiFoto1, err := utils.SaveBase64Image(
 		siteReport.BuktiFoto1,
 		strings.ReplaceAll(siteReport.Nama, " ", "_")+"_site_report_1",
@@ -1658,9 +1660,10 @@ func (r *absensiRepository) InputSiteReport(ctx context.Context, siteReport mode
 		foto_sparepart_sebelum,
 		foto_sparepart_sesudah,
 		calibration_attachment,
-		submitted_at
+		submitted_at,
+		tenant_id
 	) VALUES (
-		?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW()
+		?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?
 	)
 	`, siteReport.IDKaryawan,
 		siteReport.Nama,
@@ -1681,18 +1684,23 @@ func (r *absensiRepository) InputSiteReport(ctx context.Context, siteReport mode
 		fotoSparepartSebelum,
 		fotoSparepartSesudah,
 		calibrationAttachment,
+		tenantID,
 	)
 	fmt.Println("err", err)
 	return err
 }
-func (r *absensiRepository) GetSiteReports(page int, per_page int, nama string, fromDate string, toDate string) ([]model.AbsensiSiteReport, error) {
+func (r *absensiRepository) GetSiteReports(ctx context.Context, page int, per_page int, nama string, fromDate string, toDate string) ([]model.AbsensiSiteReport, error) {
+	tenantID, _ := ctx.Value("tenantID").(int)
+	if tenantID == 0 {
+		tenantID = 1
+	}
 	var reports []model.AbsensiSiteReport
 	query := `SELECT
 			*
 		FROM karyawan_absensi_site_report
-		Where 1=1`
+		Where tenant_id = ?`
 
-	params := []interface{}{}
+	params := []interface{}{tenantID}
 	if nama != "" {
 		query += `
 		AND nama LIKE ?
@@ -1712,18 +1720,22 @@ func (r *absensiRepository) GetSiteReports(page int, per_page int, nama string, 
 	`
 	params = append(params, per_page, (page-1)*per_page)
 	fmt.Println("query GetSiteReports", query, params, "fromDate", fromDate, "toDate", toDate)
-	err := r.db.Select(&reports, query, params...)
+	err := r.db.SelectContext(ctx, &reports, query, params...)
 	if err != nil {
 		return nil, err
 	}
 
 	return reports, nil
 }
-func (r *absensiRepository) GetLemburList(page int, per_page int, nama string, fromDate string, toDate string, status string) ([]model.AbsensiLembur, int, error) {
+func (r *absensiRepository) GetLemburList(ctx context.Context, page int, per_page int, nama string, fromDate string, toDate string, status string) ([]model.AbsensiLembur, int, error) {
+	tenantID, _ := ctx.Value("tenantID").(int)
+	if tenantID == 0 {
+		tenantID = 1
+	}
 	lemburList := []model.AbsensiLembur{}
-	filterQuery := " WHERE 1=1"
-	params := []interface{}{}
-	countParams := []interface{}{}
+	filterQuery := " WHERE tenant_id = ?"
+	params := []interface{}{tenantID}
+	countParams := []interface{}{tenantID}
 
 	if nama != "" {
 		filterQuery += ` AND nama LIKE ?`
@@ -1751,7 +1763,7 @@ func (r *absensiRepository) GetLemburList(page int, per_page int, nama string, f
 
 	var total int
 	countQuery := `SELECT COUNT(*) FROM karyawan_lembur` + filterQuery
-	err := r.db.QueryRowx(countQuery, countParams...).Scan(&total)
+	err := r.db.GetContext(ctx, &total, countQuery, countParams...)
 	if err != nil {
 		fmt.Println("err count", err)
 		return nil, 0, err
@@ -1770,7 +1782,7 @@ func (r *absensiRepository) GetLemburList(page int, per_page int, nama string, f
 	params = append(params, per_page, (page-1)*per_page)
 
 	fmt.Println("query GetLemburList", query, params)
-	rows, err := r.db.Queryx(query, params...)
+	rows, err := r.db.QueryxContext(ctx, query, params...)
 	if err != nil {
 		fmt.Println("err", err)
 		return nil, 0, err
@@ -1800,7 +1812,6 @@ func (r *absensiRepository) GetLemburList(page int, per_page int, nama string, f
 		if err != nil {
 			return nil, 0, err
 		}
-		fmt.Println("buktiRaw", buktiRaw)
 		if buktiRaw.Valid && buktiRaw.String != "" {
 			raw := strings.TrimSpace(buktiRaw.String)
 			switch {
@@ -1825,26 +1836,42 @@ func (r *absensiRepository) GetLemburList(page int, per_page int, nama string, f
 }
 
 func (r *absensiRepository) ApproveLembur(ctx context.Context, id int64, nama string, date string) error {
-	query := `UPDATE karyawan_lembur SET approval = '1' WHERE id = ? AND nama = ? AND tanggal_lembur = ?`
-	_, err := r.db.ExecContext(ctx, query, id, nama, date)
+	tenantID, _ := ctx.Value("tenantID").(int)
+	if tenantID == 0 {
+		tenantID = r.getTenantIDByKaryawanName(nama)
+	}
+	query := `UPDATE karyawan_lembur SET approval = '1' WHERE id = ? AND nama = ? AND tanggal_lembur = ? AND tenant_id = ?`
+	_, err := r.db.ExecContext(ctx, query, id, nama, date, tenantID)
 	fmt.Println("err", err)
 	return err
 }
 func (r *absensiRepository) RejectLembur(ctx context.Context, id int64, nama string, date string, catatan string) error {
-	query := `UPDATE karyawan_lembur SET approval = '2', keterangan = ? WHERE id = ? AND nama = ? AND tanggal_lembur = ?`
-	_, err := r.db.ExecContext(ctx, query, catatan, id, nama, date)
+	tenantID, _ := ctx.Value("tenantID").(int)
+	if tenantID == 0 {
+		tenantID = r.getTenantIDByKaryawanName(nama)
+	}
+	query := `UPDATE karyawan_lembur SET approval = '2', keterangan = ? WHERE id = ? AND nama = ? AND tanggal_lembur = ? AND tenant_id = ?`
+	_, err := r.db.ExecContext(ctx, query, catatan, id, nama, date, tenantID)
 	fmt.Println("err", err)
 	return err
 }
 
 func (r *absensiRepository) ReviseLembur(ctx context.Context, id int64, nama string, date string, catatan string) error {
-	query := `UPDATE karyawan_lembur SET approval = '3', keterangan = ? WHERE id = ? AND nama = ? AND tanggal_lembur = ?`
-	_, err := r.db.ExecContext(ctx, query, catatan, id, nama, date)
+	tenantID, _ := ctx.Value("tenantID").(int)
+	if tenantID == 0 {
+		tenantID = r.getTenantIDByKaryawanName(nama)
+	}
+	query := `UPDATE karyawan_lembur SET approval = '3', keterangan = ? WHERE id = ? AND nama = ? AND tanggal_lembur = ? AND tenant_id = ?`
+	_, err := r.db.ExecContext(ctx, query, catatan, id, nama, date, tenantID)
 	fmt.Println("err", err)
 	return err
 }
 
-func (r *absensiRepository) GetLemburDetail(nama string, tanggal string) (model.AbsensiLembur, error) {
+func (r *absensiRepository) GetLemburDetail(ctx context.Context, nama string, tanggal string) (model.AbsensiLembur, error) {
+	tenantID, _ := ctx.Value("tenantID").(int)
+	if tenantID == 0 {
+		tenantID = r.getTenantIDByKaryawanName(nama)
+	}
 	query := `
         SELECT 
             id, nama, tanggal_lembur,
@@ -1854,11 +1881,11 @@ func (r *absensiRepository) GetLemburDetail(nama string, tanggal string) (model.
             bukti_persetujuan_atasan,
             CAST(bukti_pekerjaan AS CHAR) AS bukti_pekerjaan
         FROM karyawan_lembur
-        WHERE nama = ? AND tanggal_lembur = ?
+        WHERE nama = ? AND tanggal_lembur = ? AND tenant_id = ?
         ORDER BY id DESC
         LIMIT 1
     `
-	rows, err := r.db.Queryx(query, nama, tanggal)
+	rows, err := r.db.QueryxContext(ctx, query, nama, tanggal, tenantID)
 	if err != nil {
 		fmt.Println("Error GetLemburDetail", err)
 		return model.AbsensiLembur{}, err
@@ -1914,27 +1941,27 @@ func (r *absensiRepository) GetLemburDetail(nama string, tanggal string) (model.
 }
 
 func (r *absensiRepository) InputDailyReport(ctx context.Context, dailyReport model.AbsensiDailyReport) error {
-	// parse pekerjaan_list
+	tenantID, _ := ctx.Value("tenantID").(int)
+	if tenantID == 0 {
+		tenantID = r.getTenantIDByKaryawanName(dailyReport.Nama)
+	}
 	var pekerjaan []model.PekerjaanItem
 	err := json.Unmarshal([]byte(dailyReport.PekerjaanList), &pekerjaan)
 	if err != nil {
 		return err
 	}
 
-	// proses file upload & replace dengan path
 	for i, p := range pekerjaan {
 		fmt.Println("pekerjaan", p)
-		// kendala_doc
 		if p.KendalaDoc != nil {
 			path, err := saveBase64File(p.KendalaDoc, "static/uploads/kendala/"+dailyReport.Nama)
 			if err != nil {
 				return err
 			}
-			p.KendalaDoc.Data = "" // hapus base64
+			p.KendalaDoc.Data = ""
 			p.KendalaDoc.Name = path
 		}
 
-		// solusi_doc
 		if p.SolusiDoc != nil {
 			path, err := saveBase64File(p.SolusiDoc, "static/uploads/solusi/"+dailyReport.Nama)
 			if err != nil {
@@ -1944,7 +1971,6 @@ func (r *absensiRepository) InputDailyReport(ctx context.Context, dailyReport mo
 			p.SolusiDoc.Name = path
 		}
 
-		// save_document
 		if p.SaveDocument != nil {
 			path, err := saveBase64File(p.SaveDocument, "static/uploads/dokumen/"+dailyReport.Nama)
 			if err != nil {
@@ -1957,13 +1983,11 @@ func (r *absensiRepository) InputDailyReport(ctx context.Context, dailyReport mo
 		pekerjaan[i] = p
 	}
 
-	// encode ulang ke JSON (sekarang sudah path, bukan base64)
 	updatedJSON, err := json.Marshal(pekerjaan)
 	if err != nil {
 		return err
 	}
 
-	// insert ke DB (FIX jumlah param)
 	_, err = r.db.ExecContext(ctx, `
 		INSERT INTO karyawan_daily_report (
 			nama,
@@ -1973,8 +1997,9 @@ func (r *absensiRepository) InputDailyReport(ctx context.Context, dailyReport mo
 			jam_selesai,
 			pekerjaan_list,
 			rencana_besok,
-			created_at
-		) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())
+			created_at,
+			tenant_id
+		) VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), ?)
 	`,
 		dailyReport.Nama,
 		dailyReport.LokasiKerja,
@@ -1983,6 +2008,7 @@ func (r *absensiRepository) InputDailyReport(ctx context.Context, dailyReport mo
 		dailyReport.JamSelesai,
 		string(updatedJSON),
 		dailyReport.RencanaBesok,
+		tenantID,
 	)
 
 	return err
@@ -1993,13 +2019,16 @@ type absensiDailyReportRaw struct {
 	PekerjaanListRaw []byte `db:"pekerjaan_list"`
 }
 
-func (r *absensiRepository) GetDailyReports(page int, per_page int, nama string, fromDate string, toDate string, role string) ([]model.AbsensiDailyReport, error) {
-
+func (r *absensiRepository) GetDailyReports(ctx context.Context, page int, per_page int, nama string, fromDate string, toDate string, role string) ([]model.AbsensiDailyReport, error) {
+	tenantID, _ := ctx.Value("tenantID").(int)
+	if tenantID == 0 {
+		tenantID = 1
+	}
 	var rawReports []absensiDailyReportRaw
 	var reports []model.AbsensiDailyReport
 
-	query := `SELECT * FROM karyawan_daily_report WHERE 1=1`
-	params := []interface{}{}
+	query := `SELECT * FROM karyawan_daily_report WHERE tenant_id = ?`
+	params := []interface{}{tenantID}
 
 	if nama != "" && role == "Operator" {
 		query += ` AND nama LIKE ?`
@@ -2013,7 +2042,7 @@ func (r *absensiRepository) GetDailyReports(page int, per_page int, nama string,
 	query += ` ORDER BY tanggal DESC LIMIT ? OFFSET ?`
 	params = append(params, per_page, (page-1)*per_page)
 
-	err := r.db.Select(&rawReports, query, params...)
+	err := r.db.SelectContext(ctx, &rawReports, query, params...)
 	if err != nil {
 		fmt.Println("err", err)
 		return nil, err
@@ -2025,14 +2054,12 @@ func (r *absensiRepository) GetDailyReports(page int, per_page int, nama string,
 		if len(rdb.PekerjaanListRaw) > 0 {
 			var temp interface{}
 
-			// decode string JSON → object
 			err := json.Unmarshal(rdb.PekerjaanListRaw, &temp)
 			if err != nil {
 				fmt.Println("err", err)
 				return nil, err
 			}
 
-			// encode ulang → JSON clean (tanpa escape)
 			clean, err := json.Marshal(temp)
 			if err != nil {
 				fmt.Println("err", err)
@@ -2048,10 +2075,17 @@ func (r *absensiRepository) GetDailyReports(page int, per_page int, nama string,
 	return reports, nil
 }
 
-func (r *absensiRepository) GetDailyReportByID(id int64) (model.AbsensiDailyReport, error) {
+func (r *absensiRepository) GetDailyReportByID(ctx context.Context, id int64) (model.AbsensiDailyReport, error) {
+	tenantID, _ := ctx.Value("tenantID").(int)
 	var a model.AbsensiDailyReport
-	query := `SELECT * FROM karyawan_daily_report WHERE id = ?`
-	err := r.db.Get(&a, query, id)
+	var err error
+	if tenantID > 0 {
+		query := `SELECT * FROM karyawan_daily_report WHERE id = ? AND tenant_id = ?`
+		err = r.db.GetContext(ctx, &a, query, id, tenantID)
+	} else {
+		query := `SELECT * FROM karyawan_daily_report WHERE id = ?`
+		err = r.db.GetContext(ctx, &a, query, id)
+	}
 	if err != nil {
 		fmt.Println("err GetDailyReportByID", err)
 		return model.AbsensiDailyReport{}, err

@@ -78,7 +78,7 @@ func (h *AbsensiHandler) GetAll1(c *gin.Context) {
 		showDupBool = false
 	}
 
-	result, err := h.AbsensiService.GetAbsensi(page, per_page, dateFrom, dateTo, nameSearch, idLeader, activeFilters, showDupBool)
+	result, err := h.AbsensiService.GetAbsensi(c.Request.Context(), page, per_page, dateFrom, dateTo, nameSearch, idLeader, activeFilters, showDupBool)
 	// b, _ := json.MarshalIndent(result, "", "  ")
 	// fmt.Println(string(b))
 	if err != nil {
@@ -129,7 +129,7 @@ func (h *AbsensiHandler) GetAll(c *gin.Context) {
 	}
 
 	// LOAD
-	result, err := h.AbsensiService.GetAbsensi(page, perPage, dateFrom, dateTo, nameSearch, idLeader, activeFilters, hideDup)
+	result, err := h.AbsensiService.GetAbsensi(c.Request.Context(), page, perPage, dateFrom, dateTo, nameSearch, idLeader, activeFilters, hideDup)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Failed load Absensi data",
@@ -412,7 +412,7 @@ func (h *AbsensiHandler) GetLast(c *gin.Context) {
 
 	date := c.Query("date_konfirmasi_absen")
 
-	absensi, err := h.AbsensiService.GetLastAbsensi(id_karyawan, date)
+	absensi, err := h.AbsensiService.GetLastAbsensi(c.Request.Context(), id_karyawan, date)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
@@ -474,7 +474,7 @@ func (h *AbsensiHandler) GetAllPerhitungan(c *gin.Context) {
 		return
 	}
 
-	data, err := h.AbsensiService.RekapAbsensi(start, end, idLeaderInt)
+	data, err := h.AbsensiService.RekapAbsensi(c.Request.Context(), start, end, idLeaderInt)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
@@ -487,7 +487,7 @@ func (h *AbsensiHandler) GetAllPerhitungan(c *gin.Context) {
 }
 
 func (h *AbsensiHandler) GetIndHolidays(c *gin.Context) {
-	data, err := h.AbsensiService.GetIndHolidays()
+	data, err := h.AbsensiService.GetIndHolidays(c.Request.Context())
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
@@ -506,7 +506,7 @@ func (h *AbsensiHandler) GetAbsensiByKaryawan(c *gin.Context) {
 	fromDate := c.Query("dateFrom")
 	toDate := c.Query("dateTo")
 
-	data, err := h.AbsensiService.GetAbsensiAPI(namaKaryawan, fromDate, toDate)
+	data, err := h.AbsensiService.GetAbsensiAPI(c.Request.Context(), namaKaryawan, fromDate, toDate)
 	if err != nil {
 		c.JSON(500, gin.H{"error": err.Error()})
 		return
@@ -634,7 +634,7 @@ func (h *AbsensiHandler) GetRekapAbsensiByKaryawan(c *gin.Context) {
 	fromDate := c.Query("dateFrom")
 	toDate := c.Query("dateTo")
 
-	data, err := h.AbsensiService.GetRekapAbsensiByKaryawan(namaKaryawan, fromDate, toDate)
+	data, err := h.AbsensiService.GetRekapAbsensiByKaryawan(c.Request.Context(), namaKaryawan, fromDate, toDate)
 	if err != nil {
 		c.JSON(500, gin.H{"error": err.Error()})
 		return
@@ -655,7 +655,7 @@ func (h *AbsensiHandler) GetAbsensiSaya(c *gin.Context) {
 	//buang + string
 	namaKaryawan = strings.ReplaceAll(namaKaryawan, "+", " ")
 
-	data, err := h.AbsensiService.GetAbsensiSaya(namaKaryawan)
+	data, err := h.AbsensiService.GetAbsensiSaya(c.Request.Context(), namaKaryawan)
 	if err != nil {
 		c.JSON(500, gin.H{"error": err.Error()})
 		return
@@ -713,7 +713,7 @@ func (h *AbsensiHandler) GetSiteReports(c *gin.Context) {
 	dateFrom := c.Query("start_date")
 	dateTo := c.Query("end_date")
 
-	data, err := h.AbsensiService.GetSiteReports(pageInt, perPageInt, nameSearch, dateFrom, dateTo)
+	data, err := h.AbsensiService.GetSiteReports(c.Request.Context(), pageInt, perPageInt, nameSearch, dateFrom, dateTo)
 	if err != nil {
 		c.JSON(500, gin.H{"error": err.Error()})
 		return
@@ -743,7 +743,7 @@ func (h *AbsensiHandler) GetLemburList(c *gin.Context) {
 	dateTo := c.Query("end_date")
 	status := c.Query("status")
 
-	data, total, err := h.AbsensiService.GetLemburList(pageInt, perPageInt, nameSearch, dateFrom, dateTo, status)
+	data, total, err := h.AbsensiService.GetLemburList(c.Request.Context(), pageInt, perPageInt, nameSearch, dateFrom, dateTo, status)
 	if err != nil {
 		c.JSON(500, gin.H{"error": err.Error()})
 		return
@@ -858,7 +858,7 @@ func (h *AbsensiHandler) GetLemburDetail(c *gin.Context) {
 		return
 	}
 
-	data, err := h.AbsensiService.GetLemburDetail(nama, tanggal)
+	data, err := h.AbsensiService.GetLemburDetail(c.Request.Context(), nama, tanggal)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
 			"success": false,
@@ -977,7 +977,7 @@ func (h *AbsensiHandler) GetDailyReportByID(c *gin.Context) {
 		})
 		return
 	}
-	result, err := h.AbsensiService.GetDailyReportByID(id)
+	result, err := h.AbsensiService.GetDailyReportByID(c.Request.Context(), id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
@@ -1018,7 +1018,7 @@ func (h *AbsensiHandler) GetDailyReports(c *gin.Context) {
 	fmt.Println("pageInt", pageInt)
 	fmt.Println("role", role)
 
-	result, err := h.AbsensiService.GetDailyReports(pageInt, perPageInt, nama, dateFrom, dateTo, role)
+	result, err := h.AbsensiService.GetDailyReports(c.Request.Context(), pageInt, perPageInt, nama, dateFrom, dateTo, role)
 	jsonBytes, _ := json.MarshalIndent(result, "", "  ")
 	fmt.Println("Data send:\n", string(jsonBytes))
 	if err != nil {

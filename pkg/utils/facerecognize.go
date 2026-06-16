@@ -338,7 +338,7 @@ func getToken(subject string, db *sqlx.DB) (string, string, error) {
 		fmt.Println("Error checking status:", err)
 		return s, user.Jabatan.String, err
 	}
-	token, err := GenerateJWT(user.ID, user.Email)
+	token, err := GenerateJWT(user.ID, user.Email, user.TenantID)
 	if err != nil {
 		return "", "", err
 	}

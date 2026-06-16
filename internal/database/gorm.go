@@ -49,6 +49,7 @@ func InitGorm(cfg *config.Config) (*gorm.DB, error) {
 
 	// AutoMigrate akan membuat atau update tabel berdasarkan model
 	err = db.AutoMigrate(
+		&model.Tenant{},
 		&model.UserAccount{},
 		&model.UserInfo{},
 	)

@@ -5,6 +5,7 @@ import (
 )
 
 const ContextUserIDKey = "userID"
+const ContextTenantIDKey = "tenantID"
 
 // SetUserID menyimpan user_id ke dalam Gin Context
 func SetUserID(c *gin.Context, userID string) {
@@ -22,3 +23,20 @@ func GetUserID(c *gin.Context) (string, bool) {
 	// println("GetUserID berhasil:", userID)
 	return userID, ok
 }
+
+// SetTenantID menyimpan tenant_id ke dalam Gin Context
+func SetTenantID(c *gin.Context, tenantID int) {
+	c.Set(ContextTenantIDKey, tenantID)
+}
+
+// GetTenantID mengambil tenant_id dari Gin Context
+func GetTenantID(c *gin.Context) (int, bool) {
+	id, exists := c.Get(ContextTenantIDKey)
+	if !exists {
+		return 0, false
+	}
+
+	tenantID, ok := id.(int)
+	return tenantID, ok
+}
+

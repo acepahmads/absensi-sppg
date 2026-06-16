@@ -31,7 +31,7 @@ func (s *authService) Login(email, password string) (string, string, string, str
 		return "", "", "", "", "", 0, 0, errors.New("Password salah")
 	}
 
-	token, err := utils.GenerateJWT(user.ID, user.Email)
+	token, err := utils.GenerateJWT(user.ID, user.Email, user.TenantID)
 	if err != nil {
 		return "", "", "", "", "", 0, 0, err
 	}

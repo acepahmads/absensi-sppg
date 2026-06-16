@@ -48,12 +48,16 @@ func (s *UserService) GetUserInfoByID(id string) (*model.UserAccount, error) {
 	return s.repo.FindUserInfoByID(id)
 }
 
-func (s *UserService) Registered() ([]string, error) {
-	return s.repo.Registered()
+func (s *UserService) Registered(tenantID int) ([]string, error) {
+	return s.repo.Registered(tenantID)
 }
 
-func (s *UserService) GetLeaders() ([]string, error) {
-	return s.repo.GetLeaders()
+func (s *UserService) GetLeaders(tenantID int) ([]string, error) {
+	return s.repo.GetLeaders(tenantID)
+}
+
+func (s *UserService) GetTenants(ctx context.Context) ([]model.Tenant, error) {
+	return s.repo.GetTenants(ctx)
 }
 
 func (s *UserService) GetAllUserKaryawan(ctx context.Context) ([]model.UserKaryawan, error) {

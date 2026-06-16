@@ -1,8 +1,7 @@
 package middleware
 
 import (
-	// "fmt"
-
+	"context"
 	"fmt"
 	"net/http"
 	"os"
@@ -34,9 +33,16 @@ func JWTAuth() gin.HandlerFunc {
 			return
 		}
 
-		// Simpan user ID ke context
-		// c.Set("userID", claims.UserID)
+		// Simpan user ID dan tenant ID ke context
 		utils.SetUserID(c, claims.UserID)
+		utils.SetTenantID(c, claims.TenantID)
+		c.Set("claims", claims)
+
+		// Inject into standard Go request context so repositories/services can extract it
+		ctx := context.WithValue(c.Request.Context(), "tenantID", claims.TenantID)
+		ctx = context.WithValue(ctx, "userID", claims.UserID)
+		c.Request = c.Request.WithContext(ctx)
+
 		c.Next()
 	}
 }
@@ -112,6 +118,14 @@ func JWTAuthDashboard() gin.HandlerFunc {
 		}
 
 		c.Set("claims", claims)
+		utils.SetUserID(c, claims.UserID)
+		utils.SetTenantID(c, claims.TenantID)
+
+		// Inject into standard Go request context so repositories/services can extract it
+		ctx := context.WithValue(c.Request.Context(), "tenantID", claims.TenantID)
+		ctx = context.WithValue(ctx, "userID", claims.UserID)
+		c.Request = c.Request.WithContext(ctx)
+
 		c.Next()
 	}
 }

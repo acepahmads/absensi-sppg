@@ -21,10 +21,10 @@ func NewAbsensiService(repo repository.AbsensiRepository) AbsensiService {
 	}
 }
 
-func (s *AbsensiService) GetAbsensi(page int, per_page int, date_from string, date_to string, nameSearch string, id_leader int, activeFilters string, hide_dup bool) (map[string]interface{}, error) {
+func (s *AbsensiService) GetAbsensi(ctx context.Context, page int, per_page int, date_from string, date_to string, nameSearch string, id_leader int, activeFilters string, hide_dup bool) (map[string]interface{}, error) {
 	limit := per_page
 
-	data, total, err := s.repo.GetAll(page, limit, per_page, date_from, date_to, nameSearch, id_leader, activeFilters, hide_dup)
+	data, total, err := s.repo.GetAll(ctx, page, limit, per_page, date_from, date_to, nameSearch, id_leader, activeFilters, hide_dup)
 	if err != nil {
 		return nil, err
 	}
@@ -71,8 +71,8 @@ func (s *AbsensiService) InputAbsensi(ctx context.Context, req model.AbsensiInpu
 	return s.repo.Insert(ctx, model)
 }
 
-func (s *AbsensiService) GetLastAbsensi(id_karyawan int64, date string) (model.AbsensiKeterlambatan, error) {
-	return s.repo.GetLastAbsensi(id_karyawan, date)
+func (s *AbsensiService) GetLastAbsensi(ctx context.Context, id_karyawan int64, date string) (model.AbsensiKeterlambatan, error) {
+	return s.repo.GetLastAbsensi(ctx, id_karyawan, date)
 }
 
 func (s *AbsensiService) KonfirmasiAbsensi(ctx context.Context, req model.AbsensiKonfirmasi) error {
@@ -89,22 +89,22 @@ func generateDates(start, end time.Time) []string {
 }
 
 // 🔹 Rekapan utama
-func (s *AbsensiService) RekapAbsensi(start, end string, id_leader int) (*model.RekapResponse, error) {
+func (s *AbsensiService) RekapAbsensi(ctx context.Context, start, end string, id_leader int) (*model.RekapResponse, error) {
 	startDate, _ := time.Parse("2006-01-02", start)
 	endDate, _ := time.Parse("2006-01-02", end)
 	dates := generateDates(startDate, endDate)
 
-	employees, err := s.repo.GetEmployees(id_leader)
+	employees, err := s.repo.GetEmployees(ctx, id_leader)
 	if err != nil {
 		return nil, err
 	}
 
-	absensi, err := s.repo.GetAbsensi(start, end, id_leader)
+	absensi, err := s.repo.GetAbsensi(ctx, start, end, id_leader)
 	if err != nil {
 		return nil, err
 	}
 
-	holidays, err := s.repo.GetIndHolidays()
+	holidays, err := s.repo.GetIndHolidays(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -126,11 +126,11 @@ func (s *AbsensiService) RekapAbsensi(start, end string, id_leader int) (*model.
 
 		resp.Attendance[idStr] = map[string]model.DayLog{}
 		// fmt.Println("nama", emp.Name, "ID", emp.ID, "absensi", absensi[emp.ID])
-		uangMakan, _ := s.repo.GetUangMakan(emp.Name)
+		uangMakan, _ := s.repo.GetUangMakan(ctx, emp.Name)
 		for _, tgl := range dates {
 			// fmt.Println("Nama0", emp.Name, "tgl", tgl, "absensi", tgl, "uang makan", uangMakan, "AttendanceType", absensi[emp.ID][tgl].AttendanceType, "JHari", summary.Total)
 			if day, ok := absensi[emp.ID][tgl]; ok {
-				uangLembur, approval, err := s.repo.GetAbsensiUangLembur(emp.Name, tgl)
+				uangLembur, approval, err := s.repo.GetAbsensiUangLembur(ctx, emp.Name, tgl)
 				if err != nil {
 					uangLembur = 0
 				}
@@ -246,12 +246,12 @@ func (s *AbsensiService) RekapAbsensi(start, end string, id_leader int) (*model.
 	return &resp, nil
 }
 
-func (s *AbsensiService) GetIndHolidays() (map[string]string, error) {
-	return s.repo.GetIndHolidays()
+func (s *AbsensiService) GetIndHolidays(ctx context.Context) (map[string]string, error) {
+	return s.repo.GetIndHolidays(ctx)
 }
 
-func (s *AbsensiService) GetAbsensiAPI(nama string, fromDate string, toDate string) ([]model.AbsensiKaryawan, error) {
-	rows, err := s.repo.GetAbsensiByKaryawan(nama, fromDate, toDate)
+func (s *AbsensiService) GetAbsensiAPI(ctx context.Context, nama string, fromDate string, toDate string) ([]model.AbsensiKaryawan, error) {
+	rows, err := s.repo.GetAbsensiByKaryawan(ctx, nama, fromDate, toDate)
 	if err != nil {
 		return nil, err
 	}
@@ -279,7 +279,7 @@ func (s *AbsensiService) GetAbsensiAPI(nama string, fromDate string, toDate stri
 			booleanPhotoPulang = true
 		}
 		statusApproval := ""
-		uangLembur, approval, err := s.repo.GetAbsensiUangLembur(nama, formatDateFromString(JamMasuk))
+		uangLembur, approval, err := s.repo.GetAbsensiUangLembur(ctx, nama, formatDateFromString(JamMasuk))
 		if err != nil {
 			uangLembur = 0
 		}
@@ -317,8 +317,8 @@ func (s *AbsensiService) GetAbsensiAPI(nama string, fromDate string, toDate stri
 	return result, nil
 }
 
-func (s *AbsensiService) GetDailyReportByID(id int64) (model.AbsensiDailyReport, error) {
-	return s.repo.GetDailyReportByID(id)
+func (s *AbsensiService) GetDailyReportByID(ctx context.Context, id int64) (model.AbsensiDailyReport, error) {
+	return s.repo.GetDailyReportByID(ctx, id)
 }
 
 func (s *AbsensiService) InputAbsenMesin(ctx context.Context, nama string, timestamp string, status string) error {
@@ -373,24 +373,24 @@ func (s *AbsensiService) UpdateAbsensiLeader(ctx context.Context, req model.Abse
 	return s.repo.UpdateAbsensiLeader(ctx, req)
 }
 
-func (s *AbsensiService) GetRekapAbsensiByKaryawan(nama string, fromDate string, toDate string) (model.RekapAbsensiByKaryawan, error) {
-	return s.repo.GetRekapAbsensiByKaryawan(nama, fromDate, toDate)
+func (s *AbsensiService) GetRekapAbsensiByKaryawan(ctx context.Context, nama string, fromDate string, toDate string) (model.RekapAbsensiByKaryawan, error) {
+	return s.repo.GetRekapAbsensiByKaryawan(ctx, nama, fromDate, toDate)
 }
 
-func (s *AbsensiService) GetAbsensiSaya(nama string) (model.AbsensiSaya, error) {
-	return s.repo.GetAbsensiSaya(nama)
+func (s *AbsensiService) GetAbsensiSaya(ctx context.Context, nama string) (model.AbsensiSaya, error) {
+	return s.repo.GetAbsensiSaya(ctx, nama)
 }
 
 func (s *AbsensiService) InputSiteReport(ctx context.Context, req model.AbsensiSiteReport) error {
 	return s.repo.InputSiteReport(ctx, req)
 }
 
-func (s *AbsensiService) GetSiteReports(page int, per_page int, nama string, fromDate string, toDate string) ([]model.AbsensiSiteReport, error) {
-	return s.repo.GetSiteReports(page, per_page, nama, fromDate, toDate)
+func (s *AbsensiService) GetSiteReports(ctx context.Context, page int, per_page int, nama string, fromDate string, toDate string) ([]model.AbsensiSiteReport, error) {
+	return s.repo.GetSiteReports(ctx, page, per_page, nama, fromDate, toDate)
 }
 
-func (s *AbsensiService) GetLemburList(page int, per_page int, nama string, fromDate string, toDate string, status string) ([]model.AbsensiLembur, int, error) {
-	return s.repo.GetLemburList(page, per_page, nama, fromDate, toDate, status)
+func (s *AbsensiService) GetLemburList(ctx context.Context, page int, per_page int, nama string, fromDate string, toDate string, status string) ([]model.AbsensiLembur, int, error) {
+	return s.repo.GetLemburList(ctx, page, per_page, nama, fromDate, toDate, status)
 }
 
 func (s *AbsensiService) ApproveLembur(ctx context.Context, id int64, nama string, tanggal string) error {
@@ -405,16 +405,16 @@ func (s *AbsensiService) ReviseLembur(ctx context.Context, id int64, nama string
 	return s.repo.ReviseLembur(ctx, id, nama, tanggal, catatan)
 }
 
-func (s *AbsensiService) GetLemburDetail(nama string, tanggal string) (model.AbsensiLembur, error) {
-	return s.repo.GetLemburDetail(nama, tanggal)
+func (s *AbsensiService) GetLemburDetail(ctx context.Context, nama string, tanggal string) (model.AbsensiLembur, error) {
+	return s.repo.GetLemburDetail(ctx, nama, tanggal)
 }
 
 func (s *AbsensiService) InputDailyReport(ctx context.Context, req model.AbsensiDailyReport) error {
 	return s.repo.InputDailyReport(ctx, req)
 }
 
-func (s *AbsensiService) GetDailyReports(page int, per_page int, nama string, fromDate string, toDate string, role string) ([]model.AbsensiDailyReport, error) {
-	return s.repo.GetDailyReports(page, per_page, nama, fromDate, toDate, role)
+func (s *AbsensiService) GetDailyReports(ctx context.Context, page int, per_page int, nama string, fromDate string, toDate string, role string) ([]model.AbsensiDailyReport, error) {
+	return s.repo.GetDailyReports(ctx, page, per_page, nama, fromDate, toDate, role)
 }
 
 func isWeekend(dateStr string) bool {

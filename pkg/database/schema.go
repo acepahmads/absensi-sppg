@@ -12,6 +12,50 @@ import (
 )
 
 func EnsureSchema(db *sqlx.DB) error {
+	// 1. Create tenants table if not exists
+	_, errTenant := db.Exec(`CREATE TABLE IF NOT EXISTS tenants (
+		id INT AUTO_INCREMENT PRIMARY KEY,
+		name VARCHAR(100) NOT NULL,
+		code VARCHAR(50) NOT NULL UNIQUE,
+		status TINYINT DEFAULT 1,
+		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+		updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+	) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;`)
+	if errTenant != nil {
+		log.Printf("Warning: failed to create tenants table: %v", errTenant)
+	} else {
+		// Insert default tenant if none exists
+		_, _ = db.Exec("INSERT IGNORE INTO tenants (id, name, code, status) VALUES (1, 'PT. Cakrawala Bima Instrument', 'cbi', 1)")
+		_, _ = db.Exec("INSERT IGNORE INTO tenants (id, name, code, status) VALUES (2, 'PT. Bintang Baru', 'bintang', 1)")
+	}
+
+	// 2. Add tenant_id column to existing tables if they exist
+	alterQueries := []string{
+		"ALTER TABLE user_accounts ADD COLUMN tenant_id INT NOT NULL DEFAULT 1",
+		"ALTER TABLE user_infos ADD COLUMN tenant_id INT NOT NULL DEFAULT 1",
+		"ALTER TABLE user_karyawan ADD COLUMN tenant_id INT NOT NULL DEFAULT 1",
+		"ALTER TABLE karyawan_leader ADD COLUMN tenant_id INT NOT NULL DEFAULT 1",
+		"ALTER TABLE karyawan_terdaftar ADD COLUMN tenant_id INT NOT NULL DEFAULT 1",
+		"ALTER TABLE karyawan_absensi ADD COLUMN tenant_id INT NOT NULL DEFAULT 1",
+		"ALTER TABLE karyawan_lembur ADD COLUMN tenant_id INT NOT NULL DEFAULT 1",
+		"ALTER TABLE karyawan_absensi_site_report ADD COLUMN tenant_id INT NOT NULL DEFAULT 1",
+		"ALTER TABLE karyawan_daily_report ADD COLUMN tenant_id INT NOT NULL DEFAULT 1",
+		"ALTER TABLE inventory ADD COLUMN tenant_id INT NOT NULL DEFAULT 1",
+		"ALTER TABLE inventory_masuk ADD COLUMN tenant_id INT NOT NULL DEFAULT 1",
+		"ALTER TABLE inventory_keluar ADD COLUMN tenant_id INT NOT NULL DEFAULT 1",
+		"ALTER TABLE karyawan_holidays ADD COLUMN tenant_id INT NOT NULL DEFAULT 1",
+	}
+	for _, q := range alterQueries {
+		_, err := db.Exec(q)
+		if err != nil {
+			errStr := strings.ToLower(err.Error())
+			// Ignore "Duplicate column name" error (1060 in MySQL)
+			if !strings.Contains(err.Error(), "1060") && !strings.Contains(errStr, "duplicate column") && !strings.Contains(errStr, "already exists") {
+				log.Printf("Warning: alter query failed (%s): %v", q, err)
+			}
+		}
+	}
+
 	// Modify user_accounts role column to VARCHAR(50) to support all roles dynamically if table exists
 	var tableExists int
 	_ = db.Get(&tableExists, "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'user_accounts'")
@@ -40,6 +84,10 @@ func EnsureSchema(db *sqlx.DB) error {
 				log.Printf("Warning: database seeding failed: %v", errSeed)
 			}
 		}
+		// Seed PT. Bintang Baru data for verification
+		_, _ = db.Exec("INSERT IGNORE INTO tenants (id, name, code, status) VALUES (2, 'PT. Bintang Baru', 'bintang', 1)")
+		_, _ = db.Exec("INSERT INTO karyawan_leader (id, nama, status, tenant_id) VALUES (100, 'Budi Santoso', 1, 2) ON DUPLICATE KEY UPDATE nama=VALUES(nama)")
+		_, _ = db.Exec("INSERT INTO karyawan_terdaftar (names, tenant_id) SELECT 'Ahmad Subarjo', 2 WHERE NOT EXISTS (SELECT 1 FROM karyawan_terdaftar WHERE names = 'Ahmad Subarjo' AND tenant_id = 2)")
 		return nil
 	}
 
@@ -51,7 +99,8 @@ func EnsureSchema(db *sqlx.DB) error {
 			id INT AUTO_INCREMENT PRIMARY KEY,
 			nama VARCHAR(100) NOT NULL,
 			divisi VARCHAR(100) DEFAULT 'Operations',
-			status TINYINT(1) DEFAULT 1
+			status TINYINT(1) DEFAULT 1,
+			tenant_id INT NOT NULL DEFAULT 1
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;`,
 
 		`CREATE TABLE IF NOT EXISTS user_karyawan (
@@ -61,12 +110,14 @@ func EnsureSchema(db *sqlx.DB) error {
 			id_leader INT NOT NULL,
 			uang_makan DOUBLE DEFAULT 0,
 			uang_harian DOUBLE DEFAULT 0,
-			jabatan VARCHAR(100) DEFAULT NULL
+			jabatan VARCHAR(100) DEFAULT NULL,
+			tenant_id INT NOT NULL DEFAULT 1
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;`,
 
 		`CREATE TABLE IF NOT EXISTS karyawan_terdaftar (
 			id INT AUTO_INCREMENT PRIMARY KEY,
-			names VARCHAR(100) NOT NULL
+			names VARCHAR(100) NOT NULL,
+			tenant_id INT NOT NULL DEFAULT 1
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;`,
 
 		`CREATE TABLE IF NOT EXISTS karyawan_absensi (
@@ -95,7 +146,8 @@ func EnsureSchema(db *sqlx.DB) error {
 			id_user_karyawan INT DEFAULT 0,
 			keterangan_ybs TEXT DEFAULT NULL,
 			validasi_atasan INT DEFAULT 0,
-			hide VARCHAR(10) DEFAULT NULL
+			hide VARCHAR(10) DEFAULT NULL,
+			tenant_id INT NOT NULL DEFAULT 1
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;`,
 
 		`CREATE TABLE IF NOT EXISTS karyawan_lembur (
@@ -112,7 +164,8 @@ func EnsureSchema(db *sqlx.DB) error {
 			bukti_pekerjaan TEXT DEFAULT NULL,
 			jumlah_bayar DOUBLE DEFAULT 0,
 			approval VARCHAR(10) DEFAULT '0',
-			keterangan TEXT DEFAULT NULL
+			keterangan TEXT DEFAULT NULL,
+			tenant_id INT NOT NULL DEFAULT 1
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;`,
 
 		`CREATE TABLE IF NOT EXISTS karyawan_absensi_site_report (
@@ -136,7 +189,8 @@ func EnsureSchema(db *sqlx.DB) error {
 			foto_sparepart_sebelum VARCHAR(255) DEFAULT NULL,
 			foto_sparepart_sesudah VARCHAR(255) DEFAULT NULL,
 			calibration_attachment VARCHAR(255) DEFAULT NULL,
-			submitted_at DATETIME DEFAULT NULL
+			submitted_at DATETIME DEFAULT NULL,
+			tenant_id INT NOT NULL DEFAULT 1
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;`,
 
 		`CREATE TABLE IF NOT EXISTS karyawan_daily_report (
@@ -148,7 +202,8 @@ func EnsureSchema(db *sqlx.DB) error {
 			jam_selesai VARCHAR(50) DEFAULT NULL,
 			pekerjaan_list TEXT DEFAULT NULL,
 			rencana_besok TEXT DEFAULT NULL,
-			created_at DATETIME DEFAULT NULL
+			created_at DATETIME DEFAULT NULL,
+			tenant_id INT NOT NULL DEFAULT 1
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;`,
 
 		`CREATE TABLE IF NOT EXISTS inventory (
@@ -168,7 +223,8 @@ func EnsureSchema(db *sqlx.DB) error {
 			harga_beli INT DEFAULT 0,
 			harga_jual INT DEFAULT 0,
 			keterangan TEXT DEFAULT NULL,
-			created_at VARCHAR(50) DEFAULT NULL
+			created_at VARCHAR(50) DEFAULT NULL,
+			tenant_id INT NOT NULL DEFAULT 1
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;`,
 
 		`CREATE TABLE IF NOT EXISTS inventory_masuk (
@@ -179,7 +235,8 @@ func EnsureSchema(db *sqlx.DB) error {
 			kategori VARCHAR(100) DEFAULT NULL,
 			jenis_barang VARCHAR(100) DEFAULT NULL,
 			jumlah INT DEFAULT 0,
-			keterangan TEXT DEFAULT NULL
+			keterangan TEXT DEFAULT NULL,
+			tenant_id INT NOT NULL DEFAULT 1
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;`,
 
 		`CREATE TABLE IF NOT EXISTS inventory_keluar (
@@ -190,13 +247,15 @@ func EnsureSchema(db *sqlx.DB) error {
 			kategori VARCHAR(100) DEFAULT NULL,
 			jenis_barang VARCHAR(100) DEFAULT NULL,
 			jumlah INT DEFAULT 0,
-			keterangan TEXT DEFAULT NULL
+			keterangan TEXT DEFAULT NULL,
+			tenant_id INT NOT NULL DEFAULT 1
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;`,
 
 		`CREATE TABLE IF NOT EXISTS karyawan_holidays (
 			id INT AUTO_INCREMENT PRIMARY KEY,
 			date DATE NOT NULL,
-			name VARCHAR(255) NOT NULL
+			name VARCHAR(255) NOT NULL,
+			tenant_id INT NOT NULL DEFAULT 1
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;`,
 	}
 
@@ -238,11 +297,13 @@ func runSeeds(db *sqlx.DB) error {
 	}
 
 	for i, l := range leaders {
-		_, err := db.Exec("INSERT INTO karyawan_leader (id, nama, status) VALUES (?, ?, 1) ON DUPLICATE KEY UPDATE nama=VALUES(nama)", i+1, l)
+		_, err := db.Exec("INSERT INTO karyawan_leader (id, nama, status, tenant_id) VALUES (?, ?, 1, 1) ON DUPLICATE KEY UPDATE nama=VALUES(nama)", i+1, l)
 		if err != nil {
 			return fmt.Errorf("failed to seed leader %s: %v", l, err)
 		}
 	}
+	// Seed a leader for tenant 2 (PT. Bintang Baru)
+	_, _ = db.Exec("INSERT INTO karyawan_leader (id, nama, status, tenant_id) VALUES (100, 'Budi Santoso', 1, 2) ON DUPLICATE KEY UPDATE nama=VALUES(nama)")
 
 	// 4. Seed Registered Employees
 	registeredEmployees := []string{
@@ -324,11 +385,13 @@ func runSeeds(db *sqlx.DB) error {
 	}
 
 	for _, emp := range registeredEmployees {
-		_, err := db.Exec("INSERT INTO karyawan_terdaftar (names) SELECT ? WHERE NOT EXISTS (SELECT 1 FROM karyawan_terdaftar WHERE names = ?)", emp, emp)
+		_, err := db.Exec("INSERT INTO karyawan_terdaftar (names, tenant_id) SELECT ?, 1 WHERE NOT EXISTS (SELECT 1 FROM karyawan_terdaftar WHERE names = ? AND tenant_id = 1)", emp, emp)
 		if err != nil {
 			return fmt.Errorf("failed to seed employee %s: %v", emp, err)
 		}
 	}
+	// Seed registered employee for tenant 2 (PT. Bintang Baru)
+	_, _ = db.Exec("INSERT INTO karyawan_terdaftar (names, tenant_id) SELECT 'Ahmad Subarjo', 2 WHERE NOT EXISTS (SELECT 1 FROM karyawan_terdaftar WHERE names = 'Ahmad Subarjo' AND tenant_id = 2)")
 
 	// 5. Seed user_karyawan and link user_accounts
 	type UserMapping struct {
