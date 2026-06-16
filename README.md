@@ -1,0 +1,1 @@
+CBI Automation & Integrated System merupakan inisiatif strategis yang dikembangkan untuk meningkatkan efisiensi dan efektivitas proses operasional perusahaan dalam pengelolaan data lingkungan, pemantauan sistem otomatis, serta koordinasi antar divisi melalui sistem terintegrasi

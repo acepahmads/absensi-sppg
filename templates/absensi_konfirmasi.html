@@ -1,0 +1,482 @@
+<!doctype html>
+<html lang="id" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Konfirmasi Keterlambatan</title>
+  <script src="/_sdk/data_sdk.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      box-sizing: border-box;
+    }
+    
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    
+    * {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+    
+    .status-badge {
+      animation: pulse-subtle 2s ease-in-out infinite;
+    }
+    
+    @keyframes pulse-subtle {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.85; }
+    }
+    
+    .photo-preview {
+      max-height: 200px;
+      object-fit: cover;
+      border-radius: 12px;
+    }
+    
+    .toast {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-100px);
+      background: #10b981;
+      color: white;
+      padding: 16px 24px;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      z-index: 1000;
+      opacity: 0;
+      transition: all 0.3s ease;
+      max-width: 90%;
+      text-align: center;
+    }
+    
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+    
+    input[type="file"] {
+      display: none;
+    }
+    
+    .camera-button {
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+      transition: all 0.2s ease;
+    }
+    
+    .camera-button:active {
+      transform: scale(0.98);
+    }
+    
+    .submit-button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+ </head>
+ <body class="h-full overflow-auto" style="margin: 0; padding: 0;">
+  <div id="app" class="w-full h-full" style="background: #0f172a; min-height: 100%; padding: 16px;"><!-- Header -->
+   <div style="background: #1e293b; border-radius: 16px; padding: 20px; margin-bottom: 16px; border-left: 4px solid #3b82f6; display: flex; justify-content: space-between; align-items: center;">
+    <h1 id="judul-halaman" style="color: #f1f5f9; font-size: 22px; font-weight: 700; margin: 0;">Konfirmasi Keterlambatan</h1><button id="back-button" style="background: #475569; border: none; border-radius: 10px; padding: 12px 18px; color: white; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s ease;"> <span style="font-size: 18px;">←</span> <span>Back</span> </button>
+   </div><!-- Info Absensi (READ-ONLY) -->
+   <div style="background: #1e293b; border-radius: 16px; padding: 20px; margin-bottom: 16px;">
+    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;"><span style="font-size: 24px;">⏰</span>
+     <h2 style="color: #f1f5f9; font-size: 18px; font-weight: 600; margin: 0;">Data Absensi</h2>
+    </div>
+    <div style="background: #0f172a; border-radius: 12px; padding: 16px; margin-bottom: 12px;">
+     <div style="display: grid; gap: 12px;">
+      <div style="display: flex; justify-content: space-between; align-items: center;"><span style="color: #94a3b8; font-size: 14px;">Nama</span> <span id="nama-display" style="color: #f1f5f9; font-size: 15px; font-weight: 600;">Ujang</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; align-items: center;"><span style="color: #94a3b8; font-size: 14px;">Tanggal</span> <span id="tanggal-display" style="color: #f1f5f9; font-size: 15px; font-weight: 600;">22 Januari 2026</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; align-items: center;"><span style="color: #94a3b8; font-size: 14px;">Jam Masuk</span> <span id="jam-display" style="color: #f1f5f9; font-size: 15px; font-weight: 600;">09:23</span>
+      </div>
+
+        <div style="display:flex;flex-direction:column;gap:4px;">
+        <span style="color:#94a3b8;font-size:14px;text-align:left;">
+            Lokasi
+        </span>
+        <span id="lokasi-display"
+                style="
+                color:#f1f5f9;
+                font-size:15px;
+                font-weight:600;
+                line-height:1.4;
+                text-align:right;
+                max-width:260px;
+                margin-left:auto;
+                ">
+            Jalan Nanjung, Kecamatan Katapang, Kabupaten Bandung
+        </span>
+        </div>
+      
+
+      </div>
+    </div>
+    <div class="status-badge" style="background: linear-gradient(135deg, #ecedd9 0%, #5eee91 100%); border-radius: 8px; padding: 12px; text-align: center;"><span id="status-display" style="color: white; font-size: 16px; font-weight: 700;">🔴 TERLAMBAT</span>
+    </div>
+   </div><!-- Form Alasan -->
+   <div style="background: #1e293b; border-radius: 16px; padding: 20px; margin-bottom: 16px;">
+    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;"><span style="font-size: 24px;">📝</span>
+     <h2 style="color: #f1f5f9; font-size: 18px; font-weight: 600; margin: 0;">Alasan Keterlambatan</h2>
+    </div>
+    <div style="margin-bottom: 16px;"><label for="alasan-dropdown" style="color: #cbd5e1; font-size: 14px; font-weight: 500; display: block; margin-bottom: 8px;">Pilih Alasan <span style="color: #ef4444;">*</span></label> <select id="alasan-dropdown" style="width: 100%; background: #0f172a; color: #f1f5f9; border: 2px solid #334155; border-radius: 12px; padding: 14px; font-size: 16px; outline: none;"> <option value="">-- Pilih Alasan --</option> <option value="Macet">Macet</option> <option value="Kendaraan Bermasalah">Kendaraan Bermasalah</option> <option value="Urusan Keluarga">Urusan Keluarga</option> <option value="Gangguan Kesehatan">Gangguan Kesehatan</option> <option value="Lainnya">Lainnya</option> </select>
+    </div>
+    <div><label for="keterangan-text" style="color: #cbd5e1; font-size: 14px; font-weight: 500; display: block; margin-bottom: 8px;">Keterangan Tambahan</label> <textarea id="keterangan-text" rows="4" placeholder="Jelaskan secara singkat penyebab keterlambatan Anda" style="width: 100%; background: #0f172a; color: #f1f5f9; border: 2px solid #334155; border-radius: 12px; padding: 14px; font-size: 16px; outline: none; resize: vertical;"></textarea>
+    </div>
+   </div><!-- Upload Foto -->
+   <div style="background: #1e293b; border-radius: 16px; padding: 20px; margin-bottom: 16px;">
+    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;"><span style="font-size: 24px;">📸</span>
+     <h2 style="color: #f1f5f9; font-size: 18px; font-weight: 600; margin: 0;">Foto Bukti <span style="color: #ef4444;">*</span></h2>
+    </div>
+    <p style="color: #94a3b8; font-size: 13px; margin: 0 0 16px 0;">Contoh: foto kondisi lalu lintas, kendaraan, atau lokasi Wajib Photo GPS !</p><input type="file" id="foto-camera-input" accept="image/*" capture="environment"> <input type="file" id="foto-gallery-input" accept="image/*">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;"><button id="camera-button" class="camera-button" style="border: none; border-radius: 12px; padding: 16px; color: white; font-size: 15px; font-weight: 600; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;"> <span style="font-size: 28px;">📷</span> <span>Kamera</span> </button> <button id="gallery-button" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); border: none; border-radius: 12px; padding: 16px; color: white; font-size: 15px; font-weight: 600; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;"> <span style="font-size: 28px;">🖼️</span> <span>Galeri</span> </button>
+    </div>
+    <div id="photo-preview-container" style="display: none; margin-top: 16px;"><img id="photo-preview" class="photo-preview" style="width: 100%; border: 2px solid #334155;"> <button id="retake-button" style="width: 100%; background: #475569; border: none; border-radius: 8px; padding: 12px; color: white; font-size: 14px; font-weight: 500; cursor: pointer; margin-top: 8px;"> 🔄 Ambil Ulang </button>
+    </div>
+   </div><!-- Tombol Submit --> <button id="submit-button" class="submit-button" disabled style="width: 100%; background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); border: none; border-radius: 12px; padding: 18px; color: white; font-size: 17px; font-weight: 700; cursor: pointer; margin-bottom: 20px;"> KIRIM KONFIRMASI KETERLAMBATAN </button> <!-- Toast Success -->
+   <div id="toast" class="toast">
+    <div style="font-weight: 600; margin-bottom: 4px;">
+    
+    </div>
+    <div id="toast-message" style="font-size: 14px;">
+     Bukti keterlambatan berhasil dikirim dan menunggu verifikasi HRD.
+    </div>
+   </div>
+  </div>
+  <script>
+    // Default Config
+    const defaultConfig = {
+      judul_halaman: "Konfirmasi Keterlambatan",
+      nama_karyawan: "Ujang",
+      lokasi_absen: "Kantor Pusat",
+      pesan_sukses: "Bukti keterlambatan berhasil dikirim dan menunggu verifikasi HRD."
+    };
+
+    // State
+    let selectedPhoto = null;
+    let currentRecordCount = 0;
+    
+    // Reference data (contoh data absensi yang sudah ada - akan diupdate dari API)
+    let absensiReference = {
+      id: "-",
+      nama: "-",
+      tanggal: "-",
+      jam_masuk: "-",
+      status: "ANDA BELUM ABSEN",
+      lokasi: "-"
+    };
+
+    const authToken = getCookie("authToken");
+    const idKaryawan = getCookie("id_karyawan");
+    const dateKonfirmasiAbsen = getCookie("date_konfirmasi_absen");
+    
+    if (!authToken) {
+      throw new Error('Authentication token not found');
+    }
+    if (!idKaryawan) {
+      throw new Error('User ID not found');
+    }
+
+    // Fetch last absensi data from API
+    async function fetchLastAbsensi() {
+      try {
+        const response = await fetch('/auth/absensi/last?id_karyawan=' + idKaryawan+'&date_konfirmasi_absen=' + dateKonfirmasiAbsen, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+          }        });
+
+        if (response.ok) {
+          const data = await response.json();
+          
+          // Update absensiReference with real data from API
+          if (data) {
+            absensiReference = {
+              id: data.id || absensiReference.id,
+              nama: data.nama || absensiReference.nama,
+              tanggal: data.tanggal || absensiReference.tanggal,
+              jam_masuk: data.jam_masuk || absensiReference.jam_masuk,
+              status: data.status || absensiReference.status,
+              lokasi: data.lokasi || absensiReference.lokasi
+            };
+            console.log("Fetched absensi data:", absensiReference);
+            
+            // Update UI with fetched data
+            updateAbsensiDisplay();
+          }
+        } else {
+          console.error('Failed to fetch absensi data, using default values');
+          updateAbsensiDisplay();
+          }
+      } catch (error) {
+        console.error('Error fetching absensi data:', error);
+        updateAbsensiDisplay();
+        // Use default values if API fails
+      }
+    }
+
+    // Update display with absensi data
+    function updateAbsensiDisplay() {
+      const config = window.elementSdk ? window.elementSdk.config : defaultConfig;
+      let finalStatus = absensiReference.status;
+      if (absensiReference.status === "T3") {
+        finalStatus = "T3 - ANDA TERLAMBAT 16-30 MENIT";
+      } else if (absensiReference.status === "T4") {
+        finalStatus = "T4 - ANDA TERLAMBAT LEBIH DARI 30 MENIT";
+      }
+      document.getElementById('nama-display').textContent = absensiReference.nama;
+      document.getElementById('tanggal-display').textContent = absensiReference.tanggal;
+      document.getElementById('jam-display').textContent = absensiReference.jam_masuk;
+      document.getElementById('lokasi-display').textContent = absensiReference.lokasi;
+      document.getElementById('status-display').textContent = finalStatus;
+      //change warna status
+      if (absensiReference.status === 'T3' || absensiReference.status === 'T4' || absensiReference.status === 'ALPHA' || absensiReference.status === 'ANDA BELUM ABSEN') {
+        document.getElementById('status-display').style.color = 'red';
+      } else {
+        document.getElementById('status-display').style.color = 'black';}
+    }
+
+    // Data Handler
+    const dataHandler = {
+      onDataChanged(data) {
+        currentRecordCount = data.length;
+      }
+    };
+
+    // Initialize Data SDK
+    async function initializeApp() {
+      // Fetch last absensi data first
+      await fetchLastAbsensi();
+      
+      if (window.dataSdk) {
+        const initResult = await window.dataSdk.init(dataHandler);
+        if (!initResult.isOk) {
+          console.error("Failed to initialize data SDK");
+        }
+      }
+    }
+
+    // Camera Handler
+    document.getElementById('camera-button').addEventListener('click', () => {
+      document.getElementById('foto-camera-input').click();
+    });
+    
+    // Gallery Handler
+    document.getElementById('gallery-button').addEventListener('click', () => {
+      document.getElementById('foto-gallery-input').click();
+    });
+
+    // Handle photo from camera
+    document.getElementById('foto-camera-input').addEventListener('change', (e) => {
+      handlePhotoSelection(e);
+    });
+    
+    // Handle photo from gallery
+    document.getElementById('foto-gallery-input').addEventListener('change', (e) => {
+      handlePhotoSelection(e);
+    });
+    
+    // Unified photo handler
+    function handlePhotoSelection(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          selectedPhoto = event.target.result;
+          document.getElementById('photo-preview').src = selectedPhoto;
+          document.getElementById('photo-preview-container').style.display = 'block';
+          document.getElementById('camera-button').parentElement.style.display = 'none';
+          validateForm();
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    document.getElementById('retake-button').addEventListener('click', () => {
+      selectedPhoto = null;
+      document.getElementById('photo-preview-container').style.display = 'none';
+      document.getElementById('camera-button').parentElement.style.display = 'grid';
+      document.getElementById('foto-camera-input').value = '';
+      document.getElementById('foto-gallery-input').value = '';
+      validateForm();
+    });
+
+    // Form Validation
+    function validateForm() {
+      const alasan = document.getElementById('alasan-dropdown').value;
+      const hasFoto = selectedPhoto !== null;
+      const submitButton = document.getElementById('submit-button');
+      
+      submitButton.disabled = !alasan || !hasFoto;
+    }
+
+    document.getElementById('alasan-dropdown').addEventListener('change', validateForm);
+
+    // Submit Handler
+    document.getElementById('submit-button').addEventListener('click', async () => {
+      if (currentRecordCount >= 999) {
+        showToast('⚠️ Batas maksimum 999 data tercapai. Hubungi admin.', false);
+        return;
+      }
+
+      const submitButton = document.getElementById('submit-button');
+      submitButton.disabled = true;
+      submitButton.innerHTML = '<span style="font-size: 20px;">⏳</span> Mengirim...';
+
+      const formData = {
+        id_absensi: absensiReference.id,
+        alasan: document.getElementById('alasan-dropdown').value,
+        keterangan: document.getElementById('keterangan-text').value,
+        foto_bukti: selectedPhoto,
+        waktu_submit: new Date().toISOString(),
+        status_verifikasi: "Menunggu Verifikasi"
+      };
+
+      // Save to Data SDK first
+      let sdkSuccess = false;
+      if (window.dataSdk) {
+        const result = await window.dataSdk.create(formData);
+        sdkSuccess = result.isOk;
+      }
+
+      // Send to Backend API
+      try {
+        const response = await fetch('/auth/absensi/konfirmasi', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+          },
+          body: JSON.stringify(formData)
+        });
+        /* console.log(response.json()); */
+        if (response.ok) {
+          const responseData = await response.json();
+          const config = window.elementSdk ? window.elementSdk.config : defaultConfig;
+          const pesanSukses = config.pesan_sukses || defaultConfig.pesan_sukses;
+          
+          // Reset form
+          setTimeout(() => {
+            document.getElementById('alasan-dropdown').value = '';
+            document.getElementById('keterangan-text').value = '';
+            selectedPhoto = null;
+            document.getElementById('photo-preview-container').style.display = 'none';
+            document.getElementById('camera-button').parentElement.style.display = 'grid';
+            document.getElementById('foto-camera-input').value = '';
+            document.getElementById('foto-gallery-input').value = '';
+            submitButton.disabled = true;
+            submitButton.innerHTML = 'KIRIM KONFIRMASI KETERLAMBATAN';
+          }, 2000);
+          console.log("responseData", responseData);
+          showToast(`✅ ${pesanSukses}`, true);
+        } else {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+          showToast('❌ Gagal mengirim ke server. Silahkan coba lagi.', false);
+        }
+      } catch (error) {
+        showToast('❌ Gagal mengirim ke server. Sila Coba lagi.', false);
+        console.log(error);
+        submitButton.disabled = false;
+        submitButton.innerHTML = 'KIRIM KONFIRMASI KETERLAMBATAN';
+      }
+    });
+
+    // Toast Function
+    function showToast(message, isSuccess) {
+      const toast = document.getElementById('toast');
+      const toastMessage = document.getElementById('toast-message');
+      
+      if (isSuccess) {
+        toast.style.background = '#10b981';
+      } else {
+        toast.style.background = '#ef4444';
+      }
+      
+      toastMessage.textContent = message;
+      toast.classList.add('show');
+      
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 4000);
+    }
+
+    // Element SDK Config Handler
+    async function onConfigChange(config) {
+      document.getElementById('judul-halaman').textContent = config.judul_halaman || defaultConfig.judul_halaman;
+      
+      // Only update if not using API data
+      if (absensiReference.nama === defaultConfig.nama_karyawan) {
+        document.getElementById('nama-display').textContent = config.nama_karyawan || defaultConfig.nama_karyawan;
+      }
+      if (absensiReference.lokasi === defaultConfig.lokasi_absen) {
+        document.getElementById('lokasi-display').textContent = config.lokasi_absen || defaultConfig.lokasi_absen;
+      }
+    }
+
+    // Element SDK Capabilities
+    function mapToCapabilities(config) {
+      return {
+        recolorables: [],
+        borderables: [],
+        fontEditable: undefined,
+        fontSizeable: undefined
+      };
+    }
+
+    function mapToEditPanelValues(config) {
+      return new Map([
+        ["judul_halaman", config.judul_halaman || defaultConfig.judul_halaman],
+        ["nama_karyawan", config.nama_karyawan || defaultConfig.nama_karyawan],
+        ["lokasi_absen", config.lokasi_absen || defaultConfig.lokasi_absen],
+        ["pesan_sukses", config.pesan_sukses || defaultConfig.pesan_sukses]
+      ]);
+    }
+
+    // Initialize Element SDK
+    if (window.elementSdk) {
+      window.elementSdk.init({
+        defaultConfig,
+        onConfigChange,
+        mapToCapabilities,
+        mapToEditPanelValues
+      });
+    }
+
+    function getCookie(name) {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop().split(";").shift();
+      return null;
+    }
+
+    // Back Button Handler
+    document.getElementById('back-button').addEventListener('click', () => {
+      // Go back to previous page or close
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        // If no history, you can redirect to a home page or close
+        window.location.href = '/';
+      }
+    });
+    
+    // Add hover effect to back button
+    const backButton = document.getElementById('back-button');
+    backButton.addEventListener('mouseenter', () => {
+      backButton.style.background = '#64748b';
+      backButton.style.transform = 'translateX(-2px)';
+    });
+    
+    backButton.addEventListener('mouseleave', () => {
+      backButton.style.background = '#475569';
+      backButton.style.transform = 'translateX(0)';
+    });
+
+    // Initialize app
+    initializeApp();
+  </script>
+ </body>
+</html>

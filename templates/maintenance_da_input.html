@@ -1,0 +1,674 @@
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Site Daily Activity Report</title>
+  <script src="/_sdk/data_sdk.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    [v-cloak] { display: none !important; }
+    body {
+      box-sizing: border-box;
+    }
+    
+    * {
+      box-sizing: border-box;
+    }
+
+    .glass-card {
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(59, 130, 246, 0.2);
+    }
+
+    .input-field {
+      background: rgba(30, 41, 59, 0.6);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      color: #e2e8f0;
+      transition: all 0.2s;
+    }
+
+    .input-field:focus {
+      outline: none;
+      border-color: #3b82f6;
+      background: rgba(30, 41, 59, 0.8);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+      transition: all 0.2s;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: linear-gradient(135deg, #2563eb 0%, #1e3a8a 100%);
+      transform: translateY(-1px);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .image-preview {
+      max-width: 100%;
+      max-height: 200px;
+      object-fit: contain;
+    }
+
+    .upload-area {
+      border: 2px dashed rgba(59, 130, 246, 0.3);
+      background: rgba(30, 41, 59, 0.3);
+      transition: all 0.2s;
+    }
+
+    .upload-area:hover {
+      border-color: rgba(59, 130, 246, 0.6);
+      background: rgba(30, 41, 59, 0.5);
+    }
+
+    .toggle-switch {
+      position: relative;
+      width: 60px;
+      height: 30px;
+    }
+
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(71, 85, 105, 0.8);
+      transition: 0.3s;
+      border-radius: 30px;
+    }
+
+    .toggle-slider:before {
+      position: absolute;
+      content: "";
+      height: 22px;
+      width: 22px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: 0.3s;
+      border-radius: 50%;
+    }
+
+    input:checked + .toggle-slider {
+      background-color: #3b82f6;
+    }
+
+    input:checked + .toggle-slider:before {
+      transform: translateX(30px);
+    }
+
+    .loading-spinner {
+      border: 3px solid rgba(59, 130, 246, 0.3);
+      border-top: 3px solid #3b82f6;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 16px 24px;
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid rgba(59, 130, 246, 0.5);
+      border-radius: 8px;
+      color: #e2e8f0;
+      z-index: 1000;
+      animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+ </head>
+ <body class="h-full w-full m-0 p-0" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);">
+  <div id="app" v-cloak class="w-full h-full overflow-auto">
+   <!-- Header -->
+   <header class="w-full glass-card px-4 py-3 md:px-6 md:py-4">
+    <div class="flex justify-between items-center max-w-7xl mx-auto">
+     <h1 id="form-title" class="text-lg md:text-xl font-bold text-white">{{ config.form_title || 'Site Daily Activity Report' }}</h1>
+     <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white font-semibold">
+        <span id="user-avatar">{{ getUserInitials }}</span>
+      </div>
+      <button @click="handleLogout" class="text-gray-300 hover:text-white transition-colors" aria-label="Logout">
+       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewbox="0 0 24 24" stroke="currentColor">
+         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+       </svg>
+      </button>
+     </div>
+    </div>
+   </header>
+
+   <!-- Main Content -->
+   <main class="w-full px-4 py-6 md:px-6 md:py-8">
+    <div class="max-w-4xl mx-auto">
+     <form id="activity-form" @submit.prevent="handleSubmit" class="glass-card rounded-xl p-4 md:p-6 lg:p-8">
+      <!-- General Information Section -->
+      <section class="mb-8">
+       <h2 id="general-info-title" class="text-xl font-semibold text-blue-400 mb-4 flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewbox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        {{ config.general_info_title || 'General Information' }}
+       </h2>
+       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+         <label for="nama" class="block text-sm font-medium text-gray-300 mb-2">Nama *</label>
+         <input type="text" id="nama" v-model="form.nama" required readonly class="w-full px-4 py-2 rounded-lg input-field cursor-not-allowed">
+        </div>
+        <div>
+         <label for="jenis-maintenance" class="block text-sm font-medium text-gray-300 mb-2">Jenis Maintenance *</label>
+         <select id="jenis-maintenance" v-model="form.jenis_maintenance" required class="w-full px-4 py-2 rounded-lg input-field">
+          <option value="">Select type</option>
+          <option value="AQMS">AQMS</option>
+          <option value="ONLIMO">ONLIMO</option>
+          <option value="SPARING">SPARING</option>
+          <option value="AQMS Reference">AQMS Reference</option>
+         </select>
+        </div>
+        <div>
+         <label for="site-maintenance" class="block text-sm font-medium text-gray-300 mb-2">Site Maintenance *</label>
+         <input type="text" id="site-maintenance" v-model="form.site_maintenance" required class="w-full px-4 py-2 rounded-lg input-field" placeholder="Enter site name">
+        </div>
+        <div>
+         <label for="maintenance-day" class="block text-sm font-medium text-gray-300 mb-2">Maintenance Hari ke- *</label>
+         <input type="number" id="maintenance-day" v-model.number="form.maintenance_day" required min="1" class="w-full px-4 py-2 rounded-lg input-field" placeholder="Enter day number">
+        </div>
+       </div>
+      </section>
+
+      <!-- Time & Schedule Section -->
+      <section class="mb-8">
+       <h2 id="time-schedule-title" class="text-xl font-semibold text-blue-400 mb-4 flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewbox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        {{ config.time_schedule_title || 'Time & Schedule' }}
+       </h2>
+       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+         <label for="jam-masuk" class="block text-sm font-medium text-gray-300 mb-2">Jam Masuk *</label>
+         <input type="time" id="jam-masuk" v-model="form.jam_masuk" required class="w-full px-4 py-2 rounded-lg input-field">
+        </div>
+        <div>
+         <label for="jam-pulang" class="block text-sm font-medium text-gray-300 mb-2">Jam Pulang *</label>
+         <input type="time" id="jam-pulang" v-model="form.jam_pulang" required class="w-full px-4 py-2 rounded-lg input-field">
+        </div>
+       </div>
+      </section>
+
+      <!-- Daily Work Description Section -->
+      <section class="mb-8">
+       <h2 id="work-description-title" class="text-xl font-semibold text-blue-400 mb-4 flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewbox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        {{ config.work_description_title || 'Daily Work Description' }}
+       </h2>
+       <div class="space-y-4">
+        <div>
+         <label for="pekerjaan-hari-ini" class="block text-sm font-medium text-gray-300 mb-2">Pekerjaan Hari Ini *</label>
+         <textarea id="pekerjaan-hari-ini" v-model="form.pekerjaan_hari_ini" required rows="3" class="w-full px-4 py-2 rounded-lg input-field resize-none" placeholder="Describe today's work"></textarea>
+        </div>
+        <div>
+         <label for="yang-dikerjakan-esok" class="block text-sm font-medium text-gray-300 mb-2">Yang Dikerjakan Esok Hari *</label>
+         <textarea id="yang-dikerjakan-esok" v-model="form.yang_dikerjakan_esok" required rows="3" class="w-full px-4 py-2 rounded-lg input-field resize-none" placeholder="Describe tomorrow's planned work"></textarea>
+        </div>
+        <div>
+         <label for="hasil-pekerjaan" class="block text-sm font-medium text-gray-300 mb-2">Hasil Pekerjaan *</label>
+         <textarea id="hasil-pekerjaan" v-model="form.hasil_pekerjaan" required rows="3" class="w-full px-4 py-2 rounded-lg input-field resize-none" placeholder="Describe work results"></textarea>
+        </div>
+        <div>
+         <label for="kendala" class="block text-sm font-medium text-gray-300 mb-2">Kendala</label>
+         <textarea id="kendala" v-model="form.kendala" rows="3" class="w-full px-4 py-2 rounded-lg input-field resize-none" placeholder="Describe any issues or constraints (optional)"></textarea>
+        </div>
+       </div>
+      </section>
+
+      <!-- Photo Evidence Section -->
+      <section class="mb-8">
+       <h2 class="text-xl font-semibold text-blue-400 mb-4 flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewbox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+        Photo Evidence
+       </h2>
+       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+         <label class="block text-sm font-medium text-gray-300 mb-2">Bukti Foto 1 *</label>
+         <div class="upload-area rounded-lg p-4 text-center cursor-pointer" @click="triggerUpload('bukti-foto-1')">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-blue-400 mb-2" fill="none" viewbox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+          </svg>
+          <p class="text-sm text-gray-400">Click to upload</p>
+          <input type="file" id="bukti-foto-1" @change="onFileChange($event, 'bukti_foto_1')" required accept="image/*" class="hidden">
+         </div>
+         <div v-show="form.bukti_foto_1" class="mt-2">
+           <img :src="form.bukti_foto_1" class="image-preview rounded-lg mx-auto">
+         </div>
+        </div>
+        <div>
+         <label class="block text-sm font-medium text-gray-300 mb-2">Bukti Foto 2 *</label>
+         <div class="upload-area rounded-lg p-4 text-center cursor-pointer" @click="triggerUpload('bukti-foto-2')">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-blue-400 mb-2" fill="none" viewbox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+          </svg>
+          <p class="text-sm text-gray-400">Click to upload</p>
+          <input type="file" id="bukti-foto-2" @change="onFileChange($event, 'bukti_foto_2')" required accept="image/*" class="hidden">
+         </div>
+         <div v-show="form.bukti_foto_2" class="mt-2">
+           <img :src="form.bukti_foto_2" class="image-preview rounded-lg mx-auto">
+         </div>
+        </div>
+        <div>
+         <label class="block text-sm font-medium text-gray-300 mb-2">Bukti Foto 3 *</label>
+         <div class="upload-area rounded-lg p-4 text-center cursor-pointer" @click="triggerUpload('bukti-foto-3')">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-blue-400 mb-2" fill="none" viewbox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+          </svg>
+          <p class="text-sm text-gray-400">Click to upload</p>
+          <input type="file" id="bukti-foto-3" @change="onFileChange($event, 'bukti_foto_3')" required accept="image/*" class="hidden">
+         </div>
+         <div v-show="form.bukti_foto_3" class="mt-2">
+           <img :src="form.bukti_foto_3" class="image-preview rounded-lg mx-auto">
+         </div>
+        </div>
+       </div>
+      </section>
+
+      <!-- Sparepart Replacement Section -->
+      <section class="mb-8">
+       <h2 class="text-xl font-semibold text-blue-400 mb-4 flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewbox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+        Sparepart Replacement
+       </h2>
+       <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-300 mb-2">Apakah terdapat penggantian sparepart? *</label>
+        <div class="flex items-center gap-4">
+         <label class="flex items-center gap-2 cursor-pointer">
+          <span class="text-gray-300 font-semibold" :style="{ opacity: !form.ada_penggantian_sparepart ? 1 : 0.5 }">No</span>
+          <label class="toggle-switch">
+            <input type="checkbox" v-model="form.ada_penggantian_sparepart" id="ada-penggantian">
+            <span class="toggle-slider"></span>
+          </label>
+          <span class="text-gray-300 font-semibold" :style="{ opacity: form.ada_penggantian_sparepart ? 1 : 0.5 }">Yes</span>
+         </label>
+        </div>
+       </div>
+       <div v-show="form.ada_penggantian_sparepart" class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+         <div>
+          <label class="block text-sm font-medium text-gray-300 mb-2">Photo Sparepart Sebelum Penggantian *</label>
+          <div class="upload-area rounded-lg p-4 text-center cursor-pointer" @click="triggerUpload('foto-sparepart-sebelum')">
+           <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-blue-400 mb-2" fill="none" viewbox="0 0 24 24" stroke="currentColor">
+             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+           </svg>
+           <p class="text-sm text-gray-400">Click to upload</p>
+           <input type="file" id="foto-sparepart-sebelum" @change="onFileChange($event, 'foto_sparepart_sebelum')" :required="form.ada_penggantian_sparepart" accept="image/*" class="hidden">
+          </div>
+          <div v-show="form.foto_sparepart_sebelum" class="mt-2">
+            <img :src="form.foto_sparepart_sebelum" class="image-preview rounded-lg mx-auto">
+          </div>
+         </div>
+         <div>
+          <label class="block text-sm font-medium text-gray-300 mb-2">Photo Sparepart Sesudah Penggantian *</label>
+          <div class="upload-area rounded-lg p-4 text-center cursor-pointer" @click="triggerUpload('foto-sparepart-sesudah')">
+           <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-blue-400 mb-2" fill="none" viewbox="0 0 24 24" stroke="currentColor">
+             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+           </svg>
+           <p class="text-sm text-gray-400">Click to upload</p>
+           <input type="file" id="foto-sparepart-sesudah" @change="onFileChange($event, 'foto_sparepart_sesudah')" :required="form.ada_penggantian_sparepart" accept="image/*" class="hidden">
+          </div>
+          <div v-show="form.foto_sparepart_sesudah" class="mt-2">
+            <img :src="form.foto_sparepart_sesudah" class="image-preview rounded-lg mx-auto">
+          </div>
+         </div>
+        </div>
+        <div class="bg-blue-900 bg-opacity-20 border border-blue-500 border-opacity-30 rounded-lg p-4">
+         <p class="text-sm text-blue-300 flex items-start gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0 mt-0.5" fill="none" viewbox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span><strong>Important:</strong> Barang penggantian yang rusak wajib dibawa ke Kantor</span>
+         </p>
+        </div>
+       </div>
+      </section>
+
+      <!-- Calibration & Measurement Section -->
+      <section class="mb-8">
+       <h2 class="text-xl font-semibold text-blue-400 mb-4 flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewbox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+        </svg>
+        Calibration &amp; Measurement
+       </h2>
+       <div>
+        <label class="block text-sm font-medium text-gray-300 mb-2">Calibration Measurement Results (All Parameters) *</label>
+        <p class="text-xs text-gray-400 mb-3">Upload PDF or image file containing all calibration parameters</p>
+        <div class="upload-area rounded-lg p-6 text-center cursor-pointer" @click="triggerUpload('calibration-attachment')">
+         <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-blue-400 mb-3" fill="none" viewbox="0 0 24 24" stroke="currentColor">
+           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+         </svg>
+         <p class="text-sm text-gray-300 mb-1">Click to upload calibration document</p>
+         <p class="text-xs text-gray-500">PDF, JPG, PNG (Max 10MB)</p>
+         <input type="file" id="calibration-attachment" @change="onCalibrationChange($event)" required accept="application/pdf,image/*" class="hidden">
+        </div>
+        <div v-show="form.calibration_filename" class="mt-3">
+         <div class="flex items-center gap-3 p-3 bg-blue-900 bg-opacity-20 rounded-lg">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-400" fill="none" viewbox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <div class="flex-1">
+           <p class="text-sm text-gray-300 font-medium">{{ form.calibration_filename }}</p>
+           <p class="text-xs text-gray-500">File uploaded successfully</p>
+          </div>
+         </div>
+        </div>
+       </div>
+      </section>
+
+      <!-- Submit Section -->
+      <section class="pt-6 border-t border-gray-700">
+       <div class="bg-blue-900 bg-opacity-20 border border-blue-500 border-opacity-30 rounded-lg p-4 mb-6">
+        <p class="text-sm text-gray-300 flex items-start gap-2">
+         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0 mt-0.5 text-blue-400" fill="none" viewbox="0 0 24 24" stroke="currentColor">
+           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+         </svg>
+         <span>Please ensure all required fields are completed before submitting. Your report will be saved for audit documentation.</span>
+        </p>
+       </div>
+       <button type="submit" id="submit-btn" :disabled="!isValid || isSubmitting" class="w-full btn-primary text-white font-semibold py-4 rounded-lg flex items-center justify-center gap-2">
+         <span>Submit Report</span>
+         <div v-show="isSubmitting" class="loading-spinner"></div>
+       </button>
+      </section>
+     </form>
+    </div>
+   </main>
+  </div>
+
+  <script>
+    const defaultConfig = {
+      form_title: "Site Daily Activity Report",
+      general_info_title: "General Information",
+      time_schedule_title: "Time & Schedule",
+      work_description_title: "Daily Work Description"
+    };
+
+    function getCookie(name) {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop().split(";").shift();
+      return null;
+    }
+
+    const authToken = getCookie("authToken");
+    const idKaryawan = getCookie("id_karyawan");
+    const dateKonfirmasiAbsen = getCookie("date_konfirmasi_absen");
+    
+    if (!authToken || !idKaryawan || !dateKonfirmasiAbsen) {
+      window.location.href = '/';
+    }
+
+    const { createApp, ref, computed, onMounted } = Vue;
+
+    createApp({
+      setup() {
+        const config = ref({ ...defaultConfig });
+        const isSubmitting = ref(false);
+
+        const form = ref({
+          nama: '',
+          jenis_maintenance: '',
+          site_maintenance: '',
+          maintenance_day: 1,
+          jam_masuk: '',
+          jam_pulang: '',
+          pekerjaan_hari_ini: '',
+          yang_dikerjakan_esok: '',
+          hasil_pekerjaan: '',
+          kendala: '',
+          bukti_foto_1: '',
+          bukti_foto_2: '',
+          bukti_foto_3: '',
+          ada_penggantian_sparepart: false,
+          foto_sparepart_sebelum: '',
+          foto_sparepart_sesudah: '',
+          calibration_attachment: '',
+          calibration_filename: ''
+        });
+
+        const getUserInitials = computed(() => {
+          const name = form.value.nama || 'User';
+          return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+        });
+
+        const isValid = computed(() => {
+          const f = form.value;
+          // General requirements
+          if (!f.nama || !f.jenis_maintenance || !f.site_maintenance || !f.maintenance_day || !f.jam_masuk || !f.jam_pulang || !f.pekerjaan_hari_ini || !f.yang_dikerjakan_esok || !f.hasil_pekerjaan) {
+            return false;
+          }
+          // Evidence photos
+          if (!f.bukti_foto_1 || !f.bukti_foto_2 || !f.bukti_foto_3) {
+            return false;
+          }
+          // Sparepart photos if active
+          if (f.ada_penggantian_sparepart) {
+            if (!f.foto_sparepart_sebelum || !f.foto_sparepart_sesudah) {
+              return false;
+            }
+          }
+          // Calibration parameters document
+          if (!f.calibration_attachment) {
+            return false;
+          }
+          return true;
+        });
+
+        const fetchAbsensiData = async () => {
+          // Default jam_pulang to current time
+          const now = new Date();
+          form.value.jam_pulang = now.toTimeString().slice(0, 5);
+
+          try {
+            const res = await fetch(`/auth/absensi/last?id_karyawan=${idKaryawan}&date_konfirmasi_absen=${dateKonfirmasiAbsen}`, {
+              method: 'GET',
+              headers: {
+                'Authorization': `Bearer ${authToken}`,
+                'Content-Type': 'application/json'
+              }
+            });
+            if (res.ok) {
+              const data = await res.json();
+              if (data.nama) form.value.nama = data.nama;
+              if (data.jam_masuk) form.value.jam_masuk = data.jam_masuk.substring(0, 5);
+              if (data.jam_pulang) form.value.jam_pulang = data.jam_pulang.substring(0, 5);
+            }
+          } catch(e) {
+            console.error('Failed to fetch last absensi:', e);
+          }
+        };
+
+        const triggerUpload = (id) => {
+          const input = document.getElementById(id);
+          if (input) input.click();
+        };
+
+        const onFileChange = (e, fieldName) => {
+          const file = e.target.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+              form.value[fieldName] = event.target.result;
+            };
+            reader.readAsDataURL(file);
+          }
+        };
+
+        const onCalibrationChange = (e) => {
+          const file = e.target.files[0];
+          if (file) {
+            form.value.calibration_filename = file.name;
+            const reader = new FileReader();
+            reader.onload = (event) => {
+              form.value.calibration_attachment = event.target.result;
+            };
+            reader.readAsDataURL(file);
+          }
+        };
+
+        const showToast = (message) => {
+          const toast = document.createElement('div');
+          toast.className = 'toast';
+          toast.textContent = message;
+          document.body.appendChild(toast);
+          setTimeout(() => toast.remove(), 3000);
+        };
+
+        const handleSubmit = async () => {
+          if (isSubmitting.value) return;
+
+          isSubmitting.value = true;
+          const payload = {
+            nama: form.value.nama,
+            jenis_maintenance: form.value.jenis_maintenance,
+            site_maintenance: form.value.site_maintenance,
+            maintenance_day: form.value.maintenance_day,
+            jam_masuk: form.value.jam_masuk,
+            jam_pulang: form.value.jam_pulang,
+            pekerjaan_hari_ini: form.value.pekerjaan_hari_ini,
+            yang_dikerjakan_esok: form.value.yang_dikerjakan_esok,
+            hasil_pekerjaan: form.value.hasil_pekerjaan,
+            kendala: form.value.kendala || '',
+            bukti_foto_1: form.value.bukti_foto_1,
+            bukti_foto_2: form.value.bukti_foto_2,
+            bukti_foto_3: form.value.bukti_foto_3,
+            ada_penggantian_sparepart: form.value.ada_penggantian_sparepart,
+            foto_sparepart_sebelum: form.value.ada_penggantian_sparepart ? form.value.foto_sparepart_sebelum : '',
+            foto_sparepart_sesudah: form.value.ada_penggantian_sparepart ? form.value.foto_sparepart_sesudah : '',
+            calibration_attachment: form.value.calibration_attachment,
+            submitted_at: new Date().toISOString()
+          };
+
+          try {
+            const res = await window.dataSdk.create(payload);
+            if (res.isOk) {
+              showToast('Report submitted successfully!');
+              
+              // Keep name and basic details, clear the work contents and photos
+              form.value.jenis_maintenance = '';
+              form.value.site_maintenance = '';
+              form.value.maintenance_day = 1;
+              form.value.pekerjaan_hari_ini = '';
+              form.value.yang_dikerjakan_esok = '';
+              form.value.hasil_pekerjaan = '';
+              form.value.kendala = '';
+              form.value.bukti_foto_1 = '';
+              form.value.bukti_foto_2 = '';
+              form.value.bukti_foto_3 = '';
+              form.value.ada_penggantian_sparepart = false;
+              form.value.foto_sparepart_sebelum = '';
+              form.value.foto_sparepart_sesudah = '';
+              form.value.calibration_attachment = '';
+              form.value.calibration_filename = '';
+
+              // reset input DOM files
+              document.querySelectorAll('input[type="file"]').forEach(el => el.value = '');
+            } else {
+              showToast('Failed to submit report. Please try again.');
+            }
+          } catch(e) {
+            showToast('Connection error, failed to submit.');
+          } finally {
+            isSubmitting.value = false;
+          }
+        };
+
+        const handleLogout = () => {
+          showToast('Logout successfully!');
+        };
+
+        onMounted(async () => {
+          if (window.dataSdk) {
+            const result = await window.dataSdk.init({ onDataChanged() {} });
+            if (!result.isOk) console.error("Failed to init data SDK");
+          }
+
+          if (window.elementSdk) {
+            window.elementSdk.init({
+              defaultConfig,
+              onConfigChange: (newConfig) => {
+                config.value = { ...defaultConfig, ...newConfig };
+              },
+              mapToCapabilities: () => ({ recolorables: [], borderables: [], fontEditable: undefined, fontSizeable: undefined }),
+              mapToEditPanelValues: (cfg) => {
+                const c = { ...defaultConfig, ...cfg };
+                return new Map([
+                  ["form_title", c.form_title],
+                  ["general_info_title", c.general_info_title],
+                  ["time_schedule_title", c.time_schedule_title],
+                  ["work_description_title", c.work_description_title]
+                ]);
+              }
+            });
+          }
+
+          await fetchAbsensiData();
+        });
+
+        return {
+          config,
+          isSubmitting,
+          form,
+          getUserInitials,
+          isValid,
+          triggerUpload,
+          onFileChange,
+          onCalibrationChange,
+          handleSubmit,
+          handleLogout
+        };
+      }
+    }).mount('#app');
+  </script>
+  
+ </body>
+</html>

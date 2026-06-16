@@ -1,0 +1,1590 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Site Daily Activity Reports</title><!-- Export Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/exceljs@4.3.0/dist/exceljs.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+  <style>
+    body {
+      box-sizing: border-box;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      width: 100%;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #0a1628 0%, #1a2332 100%);
+      color: #e0e7f1;
+      overflow-x: hidden;
+    }
+
+    .app-wrapper {
+      width: 100%;
+      height: 100%;
+      overflow-auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header */
+    .header {
+      background: rgba(10, 22, 40, 0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(0, 174, 255, 0.3);
+      padding: 0.625rem 1rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #00aeff;
+    }
+
+    .header-user {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .user-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #00aeff, #0066cc);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 0.75rem;
+    }
+
+    .user-role {
+      font-size: 0.75rem;
+      color: #00aeff;
+      display: none;
+    }
+
+    .logout-btn {
+      background: none;
+      border: none;
+      color: #e0e7f1;
+      cursor: pointer;
+      padding: 0.375rem;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+    }
+
+    .logout-btn:hover {
+      color: #00aeff;
+    }
+
+    /* Filter Toolbar */
+    .filter-toolbar {
+      background: rgba(15, 30, 50, 0.9);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(0, 174, 255, 0.2);
+      padding: 0.625rem 1rem;
+      position: sticky;
+      top: 52px;
+      z-index: 99;
+    }
+
+    .filter-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 0.5rem;
+      margin-bottom: 0.625rem;
+    }
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.125rem;
+    }
+
+    .filter-label {
+      font-size: 0.6875rem;
+      color: #8b9bb3;
+      font-weight: 500;
+    }
+
+    .filter-input, .filter-select {
+      background: rgba(26, 35, 50, 0.8);
+      border: 1px solid rgba(0, 174, 255, 0.3);
+      border-radius: 4px;
+      padding: 0.375rem 0.5rem;
+      color: #e0e7f1;
+      font-size: 0.75rem;
+      width: 100%;
+    }
+
+    .filter-input:focus, .filter-select:focus {
+      outline: none;
+      border-color: #00aeff;
+    }
+
+    .filter-actions {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .btn {
+      padding: 0.4rem 0.875rem;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.75rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 0.375rem;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #00aeff, #0066cc);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #0099dd, #0055bb);
+    }
+
+    .btn-secondary {
+      background: rgba(0, 174, 255, 0.1);
+      color: #00aeff;
+      border: 1px solid rgba(0, 174, 255, 0.3);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(0, 174, 255, 0.2);
+    }
+
+    /* Main Content */
+    .main-content {
+      flex: 1;
+      padding: 0.875rem;
+      overflow: auto;
+    }
+
+    .content-card {
+      background: rgba(15, 30, 50, 0.6);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(0, 174, 255, 0.2);
+      border-radius: 8px;
+      padding: 0.875rem;
+    }
+
+    /* Table - Desktop */
+    .report-table {
+      width: 100%;
+      border-collapse: collapse;
+      display: table;
+    }
+
+    .report-table thead {
+      background: rgba(0, 174, 255, 0.1);
+      border-bottom: 2px solid rgba(0, 174, 255, 0.3);
+    }
+
+    .report-table th {
+      padding: 0.5rem;
+      text-align: left;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      color: #00aeff;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .report-table td {
+      padding: 0.5rem;
+      border-bottom: 1px solid rgba(0, 174, 255, 0.1);
+      font-size: 0.75rem;
+    }
+
+    .report-table tbody tr:hover {
+      background: rgba(0, 174, 255, 0.05);
+    }
+
+    /* Mobile Cards */
+    .report-cards {
+      display: none;
+      gap: 1rem;
+    }
+
+    .report-card {
+      background: rgba(26, 35, 50, 0.8);
+      border: 1px solid rgba(0, 174, 255, 0.3);
+      border-radius: 8px;
+      padding: 1rem;
+    }
+
+    .card-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid rgba(0, 174, 255, 0.1);
+      font-size: 0.875rem;
+    }
+
+    .card-row:last-of-type {
+      border-bottom: none;
+    }
+
+    .card-label {
+      color: #8b9bb3;
+      font-weight: 500;
+    }
+
+    .card-value {
+      color: #e0e7f1;
+    }
+
+    .card-actions {
+      display: flex;
+      gap: 0.5rem;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(0, 174, 255, 0.2);
+      margin-top: 0.5rem;
+    }
+
+    /* Badges */
+    .badge {
+      display: inline-block;
+      padding: 0.125rem 0.4rem;
+      border-radius: 10px;
+      font-size: 0.625rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .badge-aqms {
+      background: rgba(255, 159, 64, 0.2);
+      color: #ff9f40;
+      border: 1px solid rgba(255, 159, 64, 0.4);
+    }
+
+    .badge-onlimo {
+      background: rgba(75, 192, 192, 0.2);
+      color: #4bc0c0;
+      border: 1px solid rgba(75, 192, 192, 0.4);
+    }
+
+    .badge-sparing {
+      background: rgba(153, 102, 255, 0.2);
+      color: #9966ff;
+      border: 1px solid rgba(153, 102, 255, 0.4);
+    }
+
+    .badge-yes {
+      background: rgba(75, 192, 192, 0.2);
+      color: #4bc0c0;
+    }
+
+    .badge-no {
+      background: rgba(255, 99, 132, 0.2);
+      color: #ff6384;
+    }
+
+    .badge-draft {
+      background: rgba(139, 155, 179, 0.2);
+      color: #8b9bb3;
+    }
+
+    .badge-submitted {
+      background: rgba(0, 174, 255, 0.2);
+      color: #00aeff;
+    }
+
+    .badge-approved {
+      background: rgba(75, 192, 192, 0.2);
+      color: #4bc0c0;
+    }
+
+    .badge-rejected {
+      background: rgba(255, 99, 132, 0.2);
+      color: #ff6384;
+    }
+
+    /* Action Buttons */
+    .action-btns {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .action-btn {
+      background: none;
+      border: none;
+      color: #00aeff;
+      cursor: pointer;
+      padding: 0.125rem 0.25rem;
+      font-size: 0.875rem;
+      display: flex;
+      align-items: center;
+      gap: 0.125rem;
+    }
+
+    .action-btn:hover {
+      color: #0099dd;
+    }
+
+    .action-btn-delete {
+      color: #ff6384;
+    }
+
+    .action-btn-delete:hover {
+      color: #ff4466;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      overflow-y: auto;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: linear-gradient(135deg, #0f1e32 0%, #1a2332 100%);
+      border: 1px solid rgba(0, 174, 255, 0.3);
+      border-radius: 8px;
+      padding: 1.25rem;
+      max-width: 700px;
+      width: 100%;
+      max-height: 90%;
+      overflow-y: auto;
+      position: relative;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      padding-bottom: 0.625rem;
+      border-bottom: 1px solid rgba(0, 174, 255, 0.3);
+    }
+
+    .modal-title {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: #00aeff;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      color: #e0e7f1;
+      cursor: pointer;
+      font-size: 1.25rem;
+      padding: 0.125rem;
+    }
+
+    .modal-close:hover {
+      color: #00aeff;
+    }
+
+    .modal-section {
+      margin-bottom: 1rem;
+    }
+
+    .section-title {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #00aeff;
+      margin-bottom: 0.5rem;
+      padding-bottom: 0.375rem;
+      border-bottom: 1px solid rgba(0, 174, 255, 0.2);
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 0.625rem;
+    }
+
+    .info-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.125rem;
+    }
+
+    .info-label {
+      font-size: 0.6875rem;
+      color: #8b9bb3;
+      font-weight: 500;
+    }
+
+    .info-value {
+      font-size: 0.75rem;
+      color: #e0e7f1;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: flex-end;
+      margin-top: 1rem;
+      padding-top: 0.625rem;
+      border-top: 1px solid rgba(0, 174, 255, 0.2);
+    }
+
+    /* Pagination */
+    .pagination {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 0.875rem;
+      padding-top: 0.625rem;
+      border-top: 1px solid rgba(0, 174, 255, 0.2);
+    }
+
+    .pagination-info {
+      font-size: 0.75rem;
+      color: #8b9bb3;
+    }
+
+    .pagination-nav {
+      display: flex;
+      gap: 0.375rem;
+    }
+
+    .page-btn {
+      padding: 0.375rem 0.625rem;
+      background: rgba(0, 174, 255, 0.1);
+      border: 1px solid rgba(0, 174, 255, 0.3);
+      border-radius: 4px;
+      color: #00aeff;
+      cursor: pointer;
+      font-size: 0.75rem;
+    }
+
+    .page-btn:hover:not(:disabled) {
+      background: rgba(0, 174, 255, 0.2);
+    }
+
+    .page-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .page-btn.active {
+      background: #00aeff;
+      color: white;
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: #8b9bb3;
+    }
+
+    .empty-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    .empty-text {
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .empty-subtext {
+      font-size: 0.875rem;
+    }
+
+    /* Loading State */
+    .loading-spinner {
+      display: none;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+    }
+
+    .spinner {
+      border: 3px solid rgba(0, 174, 255, 0.2);
+      border-top: 3px solid #00aeff;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Responsive */
+    @media (min-width: 640px) {
+      .user-role {
+        display: block;
+      }
+    }
+
+    @media (max-width: 1024px) {
+      .report-table {
+        display: none;
+      }
+
+      .report-cards {
+        display: flex;
+        flex-direction: column;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .header {
+        padding: 0.875rem 1rem;
+      }
+
+      .header-title {
+        font-size: 1rem;
+      }
+
+      .filter-toolbar {
+        padding: 0.875rem 1rem;
+        top: 60px;
+      }
+
+      .filter-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .main-content {
+        padding: 1rem;
+      }
+
+      .content-card {
+        padding: 1rem;
+      }
+
+      .filter-actions {
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .modal-content {
+        padding: 1.5rem;
+      }
+
+      .modal-actions {
+        flex-direction: column;
+      }
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
+ </head>
+ <body>
+  <div class="app-wrapper" id="appWrapper"><!-- Header -->
+   <header class="header">
+    <h1 class="header-title" id="pageTitle">Site Daily Activity Reports</h1>
+    <div class="header-user">
+     <div class="user-avatar">
+      AD
+     </div><span class="user-role" id="userRole">Supervisor</span> <button class="logout-btn" title="Logout">⎋</button>
+    </div>
+   </header><!-- Filter Toolbar -->
+   <div class="filter-toolbar">
+    <div class="filter-grid">
+     <div class="filter-group"><label class="filter-label">Start Date</label> <input type="date" class="filter-input" id="filterStartDate">
+     </div>
+     <div class="filter-group"><label class="filter-label">End Date</label> <input type="date" class="filter-input" id="filterEndDate">
+     </div>
+     <div class="filter-group"><label class="filter-label">Jenis Report</label> <select class="filter-select" id="filterJenisReport"> <option value="">All Report Types</option> <option value="MC0">MC0</option> <option value="Instalasi">Instalasi</option> <option value="Commissioning">Commissioning</option> <option value="Maintenance">Maintenance</option> <option value="Visit">Visit</option> <option value="Kalibrasi">Kalibrasi</option> <option value="Lainnya">Lainnya</option> </select>
+     </div>
+     <div class="filter-group"><label class="filter-label">Nama Engineer</label> <input type="text" class="filter-input" id="filterEngineer" placeholder="Search engineer...">
+     </div>
+     <div class="filter-group"><label class="filter-label">Site</label> <input type="text" class="filter-input" id="filterSite" placeholder="Search site...">
+     </div>
+     <div class="filter-group"><label class="filter-label">Nama System</label> <select class="filter-select" id="filterSystem"> <option value="">All Systems</option> <option value="AQMS">AQMS</option> <option value="ONLIMO">ONLIMO</option> <option value="SPARING">SPARING</option> </select>
+     </div>
+     <div class="filter-group"><label class="filter-label">Status Report</label> <select class="filter-select" id="filterStatus"> <option value="">All Status</option> <option value="Draft">Draft</option> <option value="Submitted">Submitted</option> <option value="Approved">Approved</option> <option value="Rejected">Rejected</option> </select>
+     </div>
+    </div>
+    <div class="filter-actions"><button class="btn btn-secondary" id="refreshApiBtn"> <span>🔄</span> <span>Refresh from API</span> </button> <button class="btn btn-secondary" id="exportXlsBtn"> <span>📥</span> <span id="exportXlsText">Export XLS</span> </button> <button class="btn btn-secondary" id="exportPdfBtn"> <span>📄</span> <span id="exportPdfText">Export PDF</span> </button>
+    </div>
+   </div><!-- Main Content -->
+   <main class="main-content">
+    <div class="content-card"><!-- Loading State -->
+     <div class="loading-spinner" id="loadingSpinner">
+      <div class="spinner"></div>
+     </div><!-- Desktop Table -->
+     <table class="report-table" id="reportTable">
+      <thead>
+       <tr>
+        <th style="width: 50px;">No</th>
+        <th>Tanggal</th>
+        <th>Jenis Report</th>
+        <th>Nama</th>
+        <th>Nama System</th>
+        <th>Site</th>
+        <th style="width: 80px;">Hari ke-</th>
+        <th>Jam Masuk</th>
+        <th>Jam Pulang</th>
+        <th>Pekerjaan Hari Ini</th>
+        <th>Pekerjaan Esok Hari</th>
+        <th>Hasil Pekerjaan</th>
+        <th>Kendala</th>
+        <th style="width: 100px;">Sparepart</th>
+        <th>Bukti Foto 1</th>
+        <th>Bukti Foto 2</th>
+        <th>Bukti Foto 3</th>
+        <th>Foto Sparepart Sebelum</th>
+        <th>Foto Sparepart Sesudah</th>
+        <th>Doc Kalibrasi Sebelum</th>
+        <th style="width: 120px;">Status</th>
+        <th style="width: 140px;">Action</th>
+       </tr>
+      </thead>
+      <tbody id="reportTableBody">
+      </tbody>
+     </table><!-- Mobile Cards -->
+     <div class="report-cards" id="reportCards">
+     </div><!-- Empty State -->
+     <div class="empty-state" id="emptyState" style="display: none;">
+      <div class="empty-icon">
+       📋
+      </div>
+      <div class="empty-text">
+       No reports found
+      </div>
+      <div class="empty-subtext">
+       Add a new report or adjust your filters
+      </div>
+     </div><!-- Pagination -->
+     <div class="pagination" id="pagination" style="display: none;">
+      <div class="pagination-info" id="paginationInfo">
+       Showing 1-20 of 0 reports
+      </div>
+      <div class="pagination-nav"><button class="page-btn" id="prevPageBtn">← Prev</button> <button class="page-btn active">1</button> <button class="page-btn" id="nextPageBtn">Next →</button>
+      </div>
+     </div>
+    </div>
+   </main><!-- Photo Viewer Modal -->
+   <div class="modal-overlay" id="photoModal">
+    <div class="modal-content" style="max-width: 90%; max-height: 90%;">
+     <div class="modal-header">
+      <h2 class="modal-title">Photo Viewer</h2><button class="modal-close" id="closePhotoModalBtn">✕</button>
+     </div>
+     <div style="text-align: center; padding: 1rem;"><img id="photoViewerImg" src="" alt="Photo" style="max-width: 100%; max-height: 70vh; border-radius: 8px; border: 1px solid rgba(0, 174, 255, 0.3);" loading="lazy" onerror="console.error('Image failed to load:', this.src); this.style.background='#e5e7eb'; this.alt='Image unavailable';">
+     </div>
+     <div class="modal-actions"><button class="btn btn-secondary" id="closePhotoBtn">Close</button>
+     </div>
+    </div>
+   </div><!-- View Detail Modal -->
+   <div class="modal-overlay" id="viewModal">
+    <div class="modal-content">
+     <div class="modal-header">
+      <h2 class="modal-title">Report Detail</h2><button class="modal-close" id="closeModalBtn">✕</button>
+     </div>
+     <div class="modal-section">
+      <h3 class="section-title">General Information</h3>
+      <div class="info-grid">
+       <div class="info-item"><span class="info-label">Report Date</span> <span class="info-value" id="detailTanggal">-</span>
+       </div>
+       <div class="info-item"><span class="info-label">Jenis Report</span> <span class="info-value" id="detailJenisReport">-</span>
+       </div>
+       <div class="info-item"><span class="info-label">Engineer Name</span> <span class="info-value" id="detailNama">-</span>
+       </div>
+       <div class="info-item"><span class="info-label">Nama System</span> <span class="info-value" id="detailSystem">-</span>
+       </div>
+       <div class="info-item"><span class="info-label">Site Location</span> <span class="info-value" id="detailSite">-</span>
+       </div>
+      </div>
+     </div>
+     <div class="modal-section">
+      <h3 class="section-title">Time &amp; Schedule</h3>
+      <div class="info-grid">
+       <div class="info-item"><span class="info-label">Day Number</span> <span class="info-value" id="detailHari">-</span>
+       </div>
+       <div class="info-item"><span class="info-label">Time In</span> <span class="info-value" id="detailMasuk">-</span>
+       </div>
+       <div class="info-item"><span class="info-label">Time Out</span> <span class="info-value" id="detailPulang">-</span>
+       </div>
+       <div class="info-item"><span class="info-label">Sparepart Used</span> <span class="info-value" id="detailSparepart">-</span>
+       </div>
+      </div>
+     </div>
+     <div class="modal-section">
+      <h3 class="section-title">Work Description</h3>
+      <div class="info-item"><span class="info-label">Pekerjaan Hari Ini</span> <span class="info-value" id="detailPekerjaanHariIni">-</span>
+      </div>
+      <div class="info-item" style="margin-top: 1rem;"><span class="info-label">Yang Dikerjakan Esok Hari</span> <span class="info-value" id="detailPekerjaanEsok">-</span>
+      </div>
+      <div class="info-item" style="margin-top: 1rem;"><span class="info-label">Hasil Pekerjaan</span> <span class="info-value" id="detailHasil">-</span>
+      </div>
+      <div class="info-item" style="margin-top: 1rem;"><span class="info-label">Kendala</span> <span class="info-value" id="detailKendala">-</span>
+      </div>
+     </div>
+     <div class="modal-section">
+      <h3 class="section-title">Submission Info</h3>
+      <div class="info-grid">
+       <div class="info-item"><span class="info-label">Status</span> <span class="info-value" id="detailStatus">-</span>
+       </div>
+       <div class="info-item"><span class="info-label">Created At</span> <span class="info-value" id="detailCreated">-</span>
+       </div>
+      </div>
+     </div>
+     <div class="modal-actions"><button class="btn btn-secondary" id="modalCloseBtn">Close</button> <button class="btn btn-primary" style="background: linear-gradient(135deg, #4bc0c0, #33a0a0);">Approve</button> <button class="btn btn-primary" style="background: linear-gradient(135deg, #ff6384, #dd4466);">Reject</button>
+     </div>
+    </div>
+   </div>
+  </div>
+  <script>
+    let allReports = [];
+    let currentPage = 1;
+    const reportsPerPage = 20;
+    let isLoadingApi = false;
+
+    const authToken = getCookie("authToken");
+    const userID = getCookie("id");
+    const leaderID = getCookie("id_leader");
+    
+    if (!authToken) {
+      throw new Error('Authentication token not found');
+    }
+    if (!userID) {
+      throw new Error('User ID not found');
+    }
+
+    function truncateText(text, maxLength) {
+      if (!text || text === '-') return text;
+      if (text.length <= maxLength) return text;
+      return text.substring(0, maxLength) + '...';
+    }
+
+    async function fetchReportsFromApi() {
+      isLoadingApi = true;
+      showLoadingState();
+
+      try {
+        // Build URL with filters
+        const params = new URLSearchParams();
+        params.append('page', currentPage);
+        params.append('per_page', reportsPerPage);
+        
+        const startDate = document.getElementById('filterStartDate').value;
+        const endDate = document.getElementById('filterEndDate').value;
+        const jenisReport = document.getElementById('filterJenisReport').value;
+        const engineer = document.getElementById('filterEngineer').value;
+        const site = document.getElementById('filterSite').value;
+        const system = document.getElementById('filterSystem').value;
+        const status = document.getElementById('filterStatus').value;
+        
+        if (startDate) params.append('start_date', startDate);
+        if (endDate) params.append('end_date', endDate);
+        if (jenisReport) params.append('jenis_report', jenisReport);
+        if (engineer) params.append('nama', engineer);
+        if (site) params.append('site', site);
+        if (system) params.append('nama_system', system);
+        if (status) params.append('status', status);
+        
+        const url = `/auth/absensi/site-report?${params.toString()}`;
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error(`API error: ${response.status}`);
+        }
+
+        const apiData = await response.json();
+        
+        // Transform API data to match our schema
+        allReports = apiData.map((item, index) => ({
+          id: item.id || `local-${Date.now()}-${index}`,
+          id_karyawan: item.id_karyawan || `report-${index}`,
+          tanggal: item.submitted_at ? new Date(item.submitted_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+          nama_engineer: item.nama || '',
+          jenis_report: item.jenis_report || '',
+          nama_system: item.nama_system || '',
+          site: item.site || '',
+          hari_ke: item.maintenance_day || 0,
+          jam_masuk: item.jam_masuk || '',
+          jam_pulang: item.jam_pulang || '',
+          pekerjaan_hari_ini: item.pekerjaan_hari_ini || '',
+          pekerjaan_esok_hari: item.yang_dikerjakan_esok || '',
+          hasil_pekerjaan: item.hasil_pekerjaan || '',
+          kendala: item.kendala || '',
+          sparepart: item.ada_penggantian_sparepart === true || item.ada_penggantian_sparepart === 'true' || item.ada_penggantian_sparepart === 1,
+          bukti_foto_1: item.bukti_foto_1 || '',
+          bukti_foto_2: item.bukti_foto_2 || '',
+          bukti_foto_3: item.bukti_foto_3 || '',
+          foto_sparepart_sebelum: item.foto_sparepart_sebelum || '',
+          foto_sparepart_sesudah: item.foto_sparepart_sesudah || '',
+          doc_kalibrasi_sebelum: item.calibration_attachment || '',
+          status: 'Submitted',
+          created_at: item.submitted_at || new Date().toISOString()
+        }));
+
+        // Sort by date
+        allReports.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+        renderReports();
+
+        const successToast = document.createElement('div');
+        successToast.style.cssText = 'position: fixed; top: 20px; right: 20px; background: rgba(75, 192, 192, 0.9); color: white; padding: 1rem 1.5rem; border-radius: 8px; z-index: 1000;';
+        successToast.textContent = `Successfully loaded ${allReports.length} reports from API`;
+        document.body.appendChild(successToast);
+        setTimeout(() => successToast.remove(), 3000);
+
+      } catch (error) {
+        console.error('API fetch error:', error);
+        
+        const errorToast = document.createElement('div');
+        errorToast.style.cssText = 'position: fixed; top: 20px; right: 20px; background: rgba(255, 99, 132, 0.9); color: white; padding: 1rem 1.5rem; border-radius: 8px; z-index: 1000;';
+        errorToast.textContent = `Failed to load reports from API: ${error.message}`;
+        document.body.appendChild(errorToast);
+        setTimeout(() => errorToast.remove(), 5000);
+      } finally {
+        isLoadingApi = false;
+        hideLoadingState();
+      }
+    }
+
+    function showLoadingState() {
+      document.getElementById('loadingSpinner').style.display = 'flex';
+      document.getElementById('reportTable').style.display = 'none';
+      document.getElementById('reportCards').style.display = 'none';
+      document.getElementById('emptyState').style.display = 'none';
+      document.getElementById('pagination').style.display = 'none';
+    }
+
+    function hideLoadingState() {
+      document.getElementById('loadingSpinner').style.display = 'none';
+    }
+
+    async function initApp() {
+      // Auto-fetch from API on load
+      await fetchReportsFromApi();
+    }
+
+    function getFilteredReports() {
+      const startDate = document.getElementById('filterStartDate').value;
+      const endDate = document.getElementById('filterEndDate').value;
+      const jenisReport = document.getElementById('filterJenisReport').value;
+      const engineer = document.getElementById('filterEngineer').value.toLowerCase();
+      const site = document.getElementById('filterSite').value.toLowerCase();
+      const system = document.getElementById('filterSystem').value;
+      const status = document.getElementById('filterStatus').value;
+
+      return allReports.filter(report => {
+        if (startDate && report.tanggal < startDate) return false;
+        if (endDate && report.tanggal > endDate) return false;
+        if (jenisReport && report.jenis_report !== jenisReport) return false;
+        if (engineer && !report.nama_engineer.toLowerCase().includes(engineer)) return false;
+        if (site && !report.site.toLowerCase().includes(site)) return false;
+        if (system && report.nama_system !== system) return false;
+        if (status && report.status !== status) return false;
+        return true;
+      });
+    }
+
+    function renderReports() {
+      const filtered = getFilteredReports();
+      const pageReports = filtered;
+
+      const tableBody = document.getElementById('reportTableBody');
+      const cardsContainer = document.getElementById('reportCards');
+      const emptyState = document.getElementById('emptyState');
+      const pagination = document.getElementById('pagination');
+      const reportTable = document.getElementById('reportTable');
+      const reportCards = document.getElementById('reportCards');
+
+      tableBody.innerHTML = '';
+      cardsContainer.innerHTML = '';
+
+      // Reset display states
+      reportTable.style.display = 'table';
+      reportCards.style.display = 'none';
+
+      if (pageReports.length === 0) {
+        emptyState.style.display = 'block';
+        pagination.style.display = 'none';
+        reportTable.style.display = 'none';
+        return;
+      }
+
+      emptyState.style.display = 'none';
+      pagination.style.display = 'flex';
+
+      pageReports.forEach((report, idx) => {
+        const rowNum = (currentPage - 1) * reportsPerPage + idx + 1;
+        /* console.log(report); */
+        
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${rowNum}</td>
+          <td>${formatDate(report.tanggal)}</td>
+          <td>${report.jenis_report || '-'}</td>
+          <td>${report.nama_engineer}</td>
+          <td><span class="badge badge-${(report.nama_system || '').toLowerCase()}">${report.nama_system || '-'}</span></td>
+          <td>${report.site || '-'}</td>
+          <td>${report.hari_ke}</td>
+          <td>${report.jam_masuk}</td>
+          <td>${report.jam_pulang}</td>
+          <td style="max-width: 200px;">${truncateText(report.pekerjaan_hari_ini || '-', 25)}</td>
+          <td style="max-width: 200px;">${truncateText(report.pekerjaan_esok_hari || '-', 25)}</td>
+          <td style="max-width: 200px;">${truncateText(report.hasil_pekerjaan || '-', 25)}</td>
+          <td style="max-width: 200px;">${truncateText(report.kendala || '-', 25)}</td>
+          <td><span class="badge badge-${report.sparepart ? 'yes' : 'no'}">${report.sparepart ? 'YES' : 'NO'}</span></td>
+          <td>${report.bukti_foto_1 ? '<button class="action-btn" onclick="viewPhoto(\'' + report.bukti_foto_1 + '\')">👁 Lihat</button>' : '-'}</td>
+          <td>${report.bukti_foto_2 ? '<button class="action-btn" onclick="viewPhoto(\'' + report.bukti_foto_2 + '\')">👁 Lihat</button>' : '-'}</td>
+          <td>${report.bukti_foto_3 ? '<button class="action-btn" onclick="viewPhoto(\'' + report.bukti_foto_3 + '\')">👁 Lihat</button>' : '-'}</td>
+          <td>${report.foto_sparepart_sebelum ? '<button class="action-btn" onclick="viewPhoto(\'' + report.foto_sparepart_sebelum + '\')">👁 Lihat</button>' : '-'}</td>
+          <td>${report.foto_sparepart_sesudah ? '<button class="action-btn" onclick="viewPhoto(\'' + report.foto_sparepart_sesudah + '\')">👁 Lihat</button>' : '-'}</td>
+          <td>${report.doc_kalibrasi_sebelum ? '<button class="action-btn" onclick="viewDocument(\'' + report.doc_kalibrasi_sebelum + '\')">     Lihat</button>' : '-'}</td>
+          <td><span class="badge badge-${report.status.toLowerCase()}">${report.status.toUpperCase()}</span></td>
+          <td>
+            <div class="action-btns">
+              <button class="action-btn" onclick="viewReport('${report.id}')">👁</button>
+              <button class="action-btn" onclick="editReport('${report.id}')" ${report.status !== 'Draft' && report.status !== 'Rejected' ? 'disabled' : ''}>✏</button>
+              <button class="action-btn action-btn-delete" onclick="confirmDelete('${report.id}')">🗑</button>
+            </div>
+          </td>
+        `;
+        tableBody.appendChild(tr);
+
+        const card = document.createElement('div');
+        card.className = 'report-card';
+        card.innerHTML = `
+          <div class="card-row">
+            <span class="card-label">📅 Tanggal</span>
+            <span class="card-value">${formatDate(report.tanggal)}</span>
+          </div>
+          <div class="card-row">
+            <span class="card-label">📋 Jenis Report</span>
+            <span class="card-value">${report.jenis_report || '-'}</span>
+          </div>
+          <div class="card-row">
+            <span class="card-label">👤 Nama</span>
+            <span class="card-value">${report.nama_engineer}</span>
+          </div>
+          <div class="card-row">
+            <span class="card-label">🔧 Nama System</span>
+            <span class="card-value"><span class="badge badge-${(report.nama_system || '').toLowerCase()}">${report.nama_system || '-'}</span></span>
+          </div>
+          <div class="card-row">
+            <span class="card-label">🏭 Site</span>
+            <span class="card-value">${report.site || '-'}</span>
+          </div>
+          <div class="card-row">
+            <span class="card-label">Hari ke-</span>
+            <span class="card-value">${report.hari_ke}</span>
+          </div>
+          <div class="card-row">
+            <span class="card-label">⏰ Waktu</span>
+            <span class="card-value">${report.jam_masuk} – ${report.jam_pulang}</span>
+          </div>
+          <div class="card-row">
+            <span class="card-label">Pekerjaan Hari Ini</span>
+            <span class="card-value">${report.pekerjaan_hari_ini || '-'}</span>
+          </div>
+          <div class="card-row">
+            <span class="card-label">Sparepart</span>
+            <span class="card-value"><span class="badge badge-${report.sparepart ? 'yes' : 'no'}">${report.sparepart ? 'YES' : 'NO'}</span></span>
+          </div>
+          <div class="card-row">
+            <span class="card-label">Status</span>
+            <span class="card-value"><span class="badge badge-${report.status.toLowerCase()}">${report.status.toUpperCase()}</span></span>
+          </div>
+          <div class="card-actions">
+            <button class="btn btn-secondary" style="flex: 1;" onclick="viewReport('${report.id}')">👁 View</button>
+            <button class="btn btn-secondary" style="flex: 1;" onclick="editReport('${report.id}')" ${report.status !== 'Draft' && report.status !== 'Rejected' ? 'disabled' : ''}>✏ Edit</button>
+            <button class="btn btn-secondary action-btn-delete" style="flex: 1;" onclick="confirmDelete('${report.id}')">🗑 Delete</button>
+          </div>
+        `;
+        cardsContainer.appendChild(card);
+      });
+
+      updatePagination(filtered.length);
+    }
+
+    function updatePagination(totalReports) {
+      const totalPages = Math.ceil(totalReports / reportsPerPage);
+      const startIdx = (currentPage - 1) * reportsPerPage + 1;
+      const endIdx = Math.min(currentPage * reportsPerPage, totalReports);
+
+      document.getElementById('paginationInfo').textContent = 
+        `Showing ${startIdx}-${endIdx} of ${totalReports} reports`;
+
+      document.getElementById('prevPageBtn').disabled = currentPage === 1;
+      document.getElementById('nextPageBtn').disabled = allReports.length < reportsPerPage || totalPages === 0;
+    }
+
+    function formatDate(dateStr) {
+      const date = new Date(dateStr);
+      const day = date.getDate();
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      return `${day} ${months[date.getMonth()]} ${date.getFullYear()}`;
+    }
+
+    function viewReport(reportId) {
+      /* console.log('Viewing report ID:', reportId); */
+      const report = allReports.find(r => r.id === Number(reportId));
+      /* console.log('Report data:', allReports, "report :", report); */
+      if (!report) return;
+
+      document.getElementById('detailTanggal').textContent = formatDate(report.tanggal);
+      document.getElementById('detailJenisReport').textContent = report.jenis_report || '-';
+      document.getElementById('detailNama').textContent = report.nama_engineer;
+      document.getElementById('detailSystem').textContent = report.nama_system || '-';
+      document.getElementById('detailSite').textContent = report.site || '-';
+      document.getElementById('detailHari').textContent = `Day ${report.hari_ke}`;
+      document.getElementById('detailMasuk').textContent = report.jam_masuk;
+      document.getElementById('detailPulang').textContent = report.jam_pulang;
+      document.getElementById('detailSparepart').textContent = report.sparepart ? 'Yes' : 'No';
+      document.getElementById('detailPekerjaanHariIni').textContent = report.pekerjaan_hari_ini || 'No data provided';
+      document.getElementById('detailPekerjaanEsok').textContent = report.pekerjaan_esok_hari || 'No data provided';
+      document.getElementById('detailHasil').textContent = report.hasil_pekerjaan || 'No data provided';
+      document.getElementById('detailKendala').textContent = report.kendala || 'No data provided';
+      /* document.getElementById('detailFoto1').textContent = report.bukti_foto_1 || 'Not uploaded';
+      document.getElementById('detailFoto2').textContent = report.bukti_foto_2 || 'Not uploaded';
+      document.getElementById('detailFoto3').textContent = report.bukti_foto_3 || 'Not uploaded';
+      document.getElementById('detailSparepartSebelum').textContent = report.foto_sparepart_sebelum || 'Not uploaded';
+      document.getElementById('detailSparepartSesudah').textContent = report.foto_sparepart_sesudah || 'Not uploaded';
+      document.getElementById('detailKalibrasi').textContent = report.doc_kalibrasi_sebelum || 'Not uploaded'; */
+      document.getElementById('detailStatus').innerHTML = `<span class="badge badge-${report.status.toLowerCase()}">${report.status.toUpperCase()}</span>`;
+      document.getElementById('detailCreated').textContent = new Date(report.created_at).toLocaleString();
+
+      document.getElementById('viewModal').classList.add('active');
+    }
+
+    function viewPhoto(photoUrl) {
+      if (!photoUrl) return;
+      
+      document.getElementById('photoViewerImg').src = photoUrl;
+      document.getElementById('photoModal').classList.add('active');
+    }
+
+    function viewDocument(docUrl) {
+      if (!docUrl) return;
+      
+      // Check if it's a PDF file
+      /* console.log('Document URL:', docUrl); */
+      if (docUrl.toLowerCase().endsWith('.pdf')) {
+        // Open PDF in new tab
+        window.open(docUrl, '_blank', 'noopener,noreferrer');
+      } else {
+        // Show as image in modal
+        viewPhoto(docUrl);
+      }
+    }
+
+    function editReport(reportId) {
+      const toastDiv = document.createElement('div');
+      toastDiv.style.cssText = 'position: fixed; top: 20px; right: 20px; background: rgba(0, 174, 255, 0.9); color: white; padding: 1rem 1.5rem; border-radius: 8px; z-index: 1000;';
+      toastDiv.textContent = 'Edit functionality would open the form here';
+      document.body.appendChild(toastDiv);
+      setTimeout(() => toastDiv.remove(), 3000);
+    }
+
+    function confirmDelete(reportId) {
+      const report = allReports.find(r => r.id === reportId);
+      if (!report) return;
+
+      const confirmOverlay = document.createElement('div');
+      confirmOverlay.className = 'modal-overlay active';
+      confirmOverlay.innerHTML = `
+        <div class="modal-content" style="max-width: 400px;">
+          <div class="modal-header">
+            <h2 class="modal-title">Confirm Delete</h2>
+          </div>
+          <div style="padding: 1.5rem 0;">
+            <p style="color: #e0e7f1; margin-bottom: 1rem;">Are you sure you want to delete this report?</p>
+            <p style="color: #8b9bb3; font-size: 0.875rem;"><strong>${report.nama_engineer}</strong> - ${formatDate(report.tanggal)}</p>
+          </div>
+          <div class="modal-actions">
+            <button class="btn btn-secondary" id="cancelDeleteBtn">Cancel</button>
+            <button class="btn btn-primary" style="background: linear-gradient(135deg, #ff6384, #dd4466);" id="confirmDeleteBtn">Delete</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(confirmOverlay);
+
+      document.getElementById('cancelDeleteBtn').onclick = () => confirmOverlay.remove();
+      document.getElementById('confirmDeleteBtn').onclick = async () => {
+        // Remove from local array
+        allReports = allReports.filter(r => r.id !== reportId);
+        confirmOverlay.remove();
+        
+        // Re-render
+        renderReports();
+        
+        const successToast = document.createElement('div');
+        successToast.style.cssText = 'position: fixed; top: 20px; right: 20px; background: rgba(75, 192, 192, 0.9); color: white; padding: 1rem 1.5rem; border-radius: 8px; z-index: 1000;';
+        successToast.textContent = 'Report deleted successfully';
+        document.body.appendChild(successToast);
+        setTimeout(() => successToast.remove(), 3000);
+      };
+    }
+
+    document.getElementById('refreshApiBtn').onclick = async () => {
+      if (isLoadingApi) return;
+      await fetchReportsFromApi();
+    };
+
+    // Helper function to convert image URL to base64
+    async function imageUrlToBase64(url) {
+      try {
+        const response = await fetch(url);
+        const blob = await response.blob();
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+      } catch (error) {
+        console.error('Failed to load image:', url, error);
+        return null;
+      }
+    }
+
+    // Helper function to fetch image as ArrayBuffer
+    async function fetchImageAsArrayBuffer(url) {
+      try {
+        const response = await fetch(url);
+        if (!response.ok) return null;
+        return await response.arrayBuffer();
+      } catch (error) {
+        console.error('Failed to fetch image:', url, error);
+        return null;
+      }
+    }
+
+    document.getElementById('exportXlsBtn').onclick = async () => {
+      try {
+        const toastDiv = document.createElement('div');
+        toastDiv.style.cssText = 'position: fixed; top: 20px; right: 20px; background: rgba(0, 174, 255, 0.9); color: white; padding: 1rem 1.5rem; border-radius: 8px; z-index: 1000;';
+        toastDiv.textContent = 'Generating XLS file with images...';
+        document.body.appendChild(toastDiv);
+        
+        // Get filtered data
+        const filtered = getFilteredReports();
+        
+        if (filtered.length === 0) {
+          toastDiv.textContent = 'No data to export!';
+          toastDiv.style.background = 'rgba(255, 159, 64, 0.9)';
+          setTimeout(() => toastDiv.remove(), 3000);
+          return;
+        }
+        
+        // Create workbook with ExcelJS
+        const ExcelJS = window.ExcelJS;
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Site Reports');
+        
+        // Define columns
+        worksheet.columns = [
+          { header: 'No', key: 'no', width: 5 },
+          { header: 'Tanggal', key: 'tanggal', width: 12 },
+          { header: 'Jenis Report', key: 'jenis_report', width: 15 },
+          { header: 'Nama Engineer', key: 'nama_engineer', width: 20 },
+          { header: 'Nama System', key: 'nama_system', width: 12 },
+          { header: 'Site', key: 'site', width: 25 },
+          { header: 'Hari ke-', key: 'hari_ke', width: 10 },
+          { header: 'Jam Masuk', key: 'jam_masuk', width: 10 },
+          { header: 'Jam Pulang', key: 'jam_pulang', width: 10 },
+          { header: 'Pekerjaan Hari Ini', key: 'pekerjaan_hari_ini', width: 30 },
+          { header: 'Pekerjaan Esok Hari', key: 'pekerjaan_esok_hari', width: 30 },
+          { header: 'Hasil Pekerjaan', key: 'hasil_pekerjaan', width: 30 },
+          { header: 'Kendala', key: 'kendala', width: 30 },
+          { header: 'Sparepart', key: 'sparepart', width: 10 },
+          { header: 'Bukti Foto 1', key: 'bukti_foto_1', width: 20 },
+          { header: 'Bukti Foto 2', key: 'bukti_foto_2', width: 20 },
+          { header: 'Bukti Foto 3', key: 'bukti_foto_3', width: 20 },
+          { header: 'Foto Sparepart Sebelum', key: 'foto_sparepart_sebelum', width: 20 },
+          { header: 'Foto Sparepart Sesudah', key: 'foto_sparepart_sesudah', width: 20 },
+          { header: 'Status', key: 'status', width: 12 },
+          { header: 'Created At', key: 'created_at', width: 18 }
+        ];
+        
+        // Style header row
+        worksheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+        worksheet.getRow(1).fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FF0066CC' }
+        };
+        worksheet.getRow(1).alignment = { vertical: 'middle', horizontal: 'center' };
+        
+        // Process each report
+        for (let idx = 0; idx < filtered.length; idx++) {
+          const report = filtered[idx];
+          
+          toastDiv.textContent = `Processing report ${idx + 1}/${filtered.length}...`;
+          
+          // Add row data
+          const row = worksheet.addRow({
+            no: idx + 1,
+            tanggal: formatDate(report.tanggal),
+            jenis_report: report.jenis_report || '-',
+            nama_engineer: report.nama_engineer,
+            nama_system: report.nama_system || '-',
+            site: report.site || '-',
+            hari_ke: report.hari_ke,
+            jam_masuk: report.jam_masuk,
+            jam_pulang: report.jam_pulang,
+            pekerjaan_hari_ini: report.pekerjaan_hari_ini || '-',
+            pekerjaan_esok_hari: report.pekerjaan_esok_hari || '-',
+            hasil_pekerjaan: report.hasil_pekerjaan || '-',
+            kendala: report.kendala || '-',
+            sparepart: report.sparepart ? 'YES' : 'NO',
+            bukti_foto_1: '',
+            bukti_foto_2: '',
+            bukti_foto_3: '',
+            foto_sparepart_sebelum: '',
+            foto_sparepart_sesudah: '',
+            status: report.status.toUpperCase(),
+            created_at: new Date(report.created_at).toLocaleString()
+          });
+          
+          // Set row height for images (80 pixels)
+          row.height = 80;
+          
+          // Add images
+          const photoColumns = [
+            { url: report.bukti_foto_1, col: 15 },
+            { url: report.bukti_foto_2, col: 16 },
+            { url: report.bukti_foto_3, col: 17 },
+            { url: report.foto_sparepart_sebelum, col: 18 },
+            { url: report.foto_sparepart_sesudah, col: 19 }
+          ];
+          
+          for (const photoInfo of photoColumns) {
+            if (!photoInfo.url) continue;
+            
+            try {
+              const imageBuffer = await fetchImageAsArrayBuffer(photoInfo.url);
+              if (!imageBuffer) continue;
+              
+              // Determine image type from URL
+              const imageExt = photoInfo.url.toLowerCase().includes('.png') ? 'png' : 'jpeg';
+              
+              // Add image to workbook
+              const imageId = workbook.addImage({
+                buffer: imageBuffer,
+                extension: imageExt,
+              });
+              
+              // Add image to worksheet
+              worksheet.addImage(imageId, {
+                tl: { col: photoInfo.col - 1, row: idx + 1 },
+                ext: { width: 100, height: 75 }
+              });
+              
+            } catch (error) {
+              console.error('Failed to add image to Excel:', photoInfo.url, error);
+            }
+          }
+        }
+        
+        // Generate filename
+        const filename = `site-reports-${new Date().toISOString().split('T')[0]}.xlsx`;
+        
+        // Write to buffer and download
+        const buffer = await workbook.xlsx.writeBuffer();
+        const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.click();
+        window.URL.revokeObjectURL(url);
+        
+        toastDiv.textContent = `XLS export completed! (${filtered.length} records with photos)`;
+        toastDiv.style.background = 'rgba(75, 192, 192, 0.9)';
+        setTimeout(() => toastDiv.remove(), 3000);
+        
+      } catch (error) {
+        console.error('Export XLS error:', error);
+        const errorToast = document.createElement('div');
+        errorToast.style.cssText = 'position: fixed; top: 20px; right: 20px; background: rgba(255, 99, 132, 0.9); color: white; padding: 1rem 1.5rem; border-radius: 8px; z-index: 1000;';
+        errorToast.textContent = `Export failed: ${error.message}`;
+        document.body.appendChild(errorToast);
+        setTimeout(() => errorToast.remove(), 5000);
+      }
+    };
+
+    document.getElementById('exportPdfBtn').onclick = async () => {
+      try {
+        const toastDiv = document.createElement('div');
+        toastDiv.style.cssText = 'position: fixed; top: 20px; right: 20px; background: rgba(0, 174, 255, 0.9); color: white; padding: 1rem 1.5rem; border-radius: 8px; z-index: 1000;';
+        toastDiv.textContent = 'Generating PDF file with images...';
+        document.body.appendChild(toastDiv);
+        
+        // Get filtered data
+        const filtered = getFilteredReports();
+        
+        if (filtered.length === 0) {
+          toastDiv.textContent = 'No data to export!';
+          toastDiv.style.background = 'rgba(255, 159, 64, 0.9)';
+          setTimeout(() => toastDiv.remove(), 3000);
+          return;
+        }
+        
+        // Initialize jsPDF
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('portrait', 'mm', 'a4');
+        
+        let currentY = 20;
+        
+        // Process each report
+        for (let idx = 0; idx < filtered.length; idx++) {
+          const report = filtered[idx];
+          
+          // Add new page for each report (except first)
+          if (idx > 0) {
+            doc.addPage();
+            currentY = 20;
+          }
+          
+          // Title
+          doc.setFontSize(16);
+          doc.setFont(undefined, 'bold');
+          doc.text(`Report #${idx + 1}`, 14, currentY);
+          currentY += 10;
+          
+          // Basic Info
+          doc.setFontSize(10);
+          doc.setFont(undefined, 'normal');
+          doc.text(`Tanggal: ${formatDate(report.tanggal)}`, 14, currentY);
+          currentY += 6;
+          doc.text(`Jenis Report: ${report.jenis_report || '-'}`, 14, currentY);
+          currentY += 6;
+          doc.text(`Nama: ${report.nama_engineer}`, 14, currentY);
+          currentY += 6;
+          doc.text(`System: ${report.nama_system || '-'}`, 14, currentY);
+          currentY += 6;
+          doc.text(`Site: ${report.site || '-'}`, 14, currentY);
+          currentY += 6;
+          doc.text(`Hari ke-${report.hari_ke} | ${report.jam_masuk} - ${report.jam_pulang}`, 14, currentY);
+          currentY += 6;
+          doc.text(`Sparepart: ${report.sparepart ? 'YES' : 'NO'}`, 14, currentY);
+          currentY += 10;
+          
+          // Work description
+          doc.setFont(undefined, 'bold');
+          doc.text('Pekerjaan Hari Ini:', 14, currentY);
+          currentY += 5;
+          doc.setFont(undefined, 'normal');
+          const pekerjaanLines = doc.splitTextToSize(report.pekerjaan_hari_ini || '-', 180);
+          doc.text(pekerjaanLines, 14, currentY);
+          currentY += (pekerjaanLines.length * 5) + 5;
+          
+          doc.setFont(undefined, 'bold');
+          doc.text('Hasil Pekerjaan:', 14, currentY);
+          currentY += 5;
+          doc.setFont(undefined, 'normal');
+          const hasilLines = doc.splitTextToSize(report.hasil_pekerjaan || '-', 180);
+          doc.text(hasilLines, 14, currentY);
+          currentY += (hasilLines.length * 5) + 10;
+          
+          // Photos section
+          doc.setFont(undefined, 'bold');
+          doc.setFontSize(12);
+          doc.text('Dokumentasi Foto:', 14, currentY);
+          currentY += 8;
+          
+          const photoUrls = [
+            { label: 'Bukti Foto 1', url: report.bukti_foto_1 },
+            { label: 'Bukti Foto 2', url: report.bukti_foto_2 },
+            { label: 'Bukti Foto 3', url: report.bukti_foto_3 },
+            { label: 'Sparepart Sebelum', url: report.foto_sparepart_sebelum },
+            { label: 'Sparepart Sesudah', url: report.foto_sparepart_sesudah },
+          ];
+          
+          let photoX = 14;
+          let photoCount = 0;
+          
+          toastDiv.textContent = `Processing report ${idx + 1}/${filtered.length} - Loading images...`;
+          
+          for (const photoObj of photoUrls) {
+            if (!photoObj.url) continue;
+            
+            try {
+              const base64 = await imageUrlToBase64(photoObj.url);
+              if (!base64) continue;
+              
+              // Add new page if needed
+              if (currentY > 240) {
+                doc.addPage();
+                currentY = 20;
+                photoX = 14;
+                photoCount = 0;
+              }
+              
+              // Position photos in grid (2 per row)
+              if (photoCount > 0 && photoCount % 2 === 0) {
+                currentY += 65;
+                photoX = 14;
+              }
+              
+              // Draw label
+              doc.setFontSize(8);
+              doc.setFont(undefined, 'bold');
+              doc.text(photoObj.label, photoX, currentY);
+              
+              // Draw image
+              doc.addImage(base64, 'JPEG', photoX, currentY + 2, 85, 60);
+              
+              photoX = photoX === 14 ? 110 : 14;
+              photoCount++;
+              
+            } catch (error) {
+              console.error('Failed to add image:', photoObj.label, error);
+            }
+          }
+          
+          currentY += 65;
+          
+          // Add divider between reports
+          if (idx < filtered.length - 1) {
+            currentY += 10;
+          }
+        }
+        
+        // Add page numbers
+        const pageCount = doc.internal.getNumberOfPages();
+        for (let i = 1; i <= pageCount; i++) {
+          doc.setPage(i);
+          doc.setFontSize(8);
+          doc.setFont(undefined, 'normal');
+          doc.text(
+            `Page ${i} of ${pageCount}`,
+            doc.internal.pageSize.getWidth() / 2,
+            doc.internal.pageSize.getHeight() - 10,
+            { align: 'center' }
+          );
+        }
+        
+        // Generate filename
+        const filename = `site-reports-with-photos-${new Date().toISOString().split('T')[0]}.pdf`;
+        
+        // Download file
+        doc.save(filename);
+        
+        toastDiv.textContent = `PDF export completed! (${filtered.length} reports with photos)`;
+        toastDiv.style.background = 'rgba(75, 192, 192, 0.9)';
+        setTimeout(() => toastDiv.remove(), 3000);
+        
+      } catch (error) {
+        console.error('Export PDF error:', error);
+        const errorToast = document.createElement('div');
+        errorToast.style.cssText = 'position: fixed; top: 20px; right: 20px; background: rgba(255, 99, 132, 0.9); color: white; padding: 1rem 1.5rem; border-radius: 8px; z-index: 1000;';
+        errorToast.textContent = `Export failed: ${error.message}`;
+        document.body.appendChild(errorToast);
+        setTimeout(() => errorToast.remove(), 5000);
+      }
+    };
+
+    document.getElementById('closeModalBtn').onclick = () => {
+      document.getElementById('viewModal').classList.remove('active');
+    };
+
+    document.getElementById('modalCloseBtn').onclick = () => {
+      document.getElementById('viewModal').classList.remove('active');
+    };
+
+    document.getElementById('closePhotoModalBtn').onclick = () => {
+      document.getElementById('photoModal').classList.remove('active');
+    };
+
+    document.getElementById('closePhotoBtn').onclick = () => {
+      document.getElementById('photoModal').classList.remove('active');
+    };
+
+    document.getElementById('prevPageBtn').onclick = async () => {
+      if (currentPage > 1) {
+        currentPage--;
+        await fetchReportsFromApi();
+      }
+    };
+
+    document.getElementById('nextPageBtn').onclick = async () => {
+      if (allReports.length >= reportsPerPage) {
+        currentPage++;
+        await fetchReportsFromApi();
+      }
+    };
+
+    ['filterStartDate', 'filterEndDate', 'filterJenisReport', 'filterEngineer', 'filterSite', 'filterSystem', 'filterStatus'].forEach(id => {
+      document.getElementById(id).addEventListener('input', async () => {
+        currentPage = 1;
+        await fetchReportsFromApi();
+      });
+    });
+
+    document.getElementById('viewModal').onclick = (e) => {
+      if (e.target.id === 'viewModal') {
+        document.getElementById('viewModal').classList.remove('active');
+      }
+    };
+
+    function getCookie(name) {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop().split(";").shift();
+      return null;
+    }    
+
+    document.getElementById('photoModal').onclick = (e) => {
+      if (e.target.id === 'photoModal') {
+        document.getElementById('photoModal').classList.remove('active');
+      }
+    };
+        
+    initApp();
+  </script>
+ </body>
+</html>

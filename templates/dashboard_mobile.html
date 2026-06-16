@@ -1,0 +1,1996 @@
+<!doctype html>
+<html lang="id" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Attendance Dashboard</title>
+  <script src="/_sdk/element_sdk.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      box-sizing: border-box;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+      color: #f1f5f9;
+      min-height: 100%;
+      overflow-x: hidden;
+    }
+
+    html, body {
+      height: 100%;
+    }
+
+    .dashboard-wrapper {
+      width: 100%;
+      min-height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header */
+    .header {
+      background: #1e293b;
+      padding: 20px 24px;
+      border-bottom: 1px solid #22d3ee;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #89c0f6;
+      letter-spacing: -0.5px;
+    }
+
+    .header-short {
+      font-size: 0.85em;
+      font-weight: 600;
+    }
+
+
+    .profile-photo {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%);
+      border: 2px solid #22d3ee;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      font-weight: 600;
+      color: #ffffff;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      overflow: hidden;
+      background-size: cover;
+      background-position: center;
+    }
+
+    .profile-photo:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 16px rgba(34, 211, 238, 0.6);
+    }
+
+    /* Profile Strip */
+    .profile-strip {
+      background: #1e293b;
+      padding: 16px 24px;
+      border-bottom: 1px solid #334155;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .profile-info {
+      flex: 1;
+    }
+
+    .profile-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: #f1f5f9;
+      margin-bottom: 4px;
+    }
+
+    .profile-role {
+      font-size: 11px;
+      color: #94a3b8;
+    }
+
+    .status-indicator {
+      width: 10px;
+      height: 10px;
+      background: #22c55e;
+      border-radius: 50%;
+      box-shadow: 0 0 8px rgba(34, 197, 94, 0.6);
+    }
+
+    /* Main Content */
+    .main-content {
+      flex: 1;
+      padding: 24px;
+      overflow-y: auto;
+    }
+
+    /* Premium Card Base */
+    .premium-card {
+      background: linear-gradient(145deg, #1e3a8a 0%, #1e293b 100%);
+      border: 1px solid rgba(34, 211, 238, 0.3);
+      border-radius: 20px;
+      padding: 26px;
+      margin-bottom: 24px;
+      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(34, 211, 238, 0.1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .premium-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: linear-gradient(180deg, #22d3ee 0%, #0ea5e9 100%);
+      box-shadow: 0 0 12px rgba(34, 211, 238, 0.6);
+    }
+
+    .premium-card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      background: 
+        repeating-linear-gradient(
+          90deg,
+          transparent,
+          transparent 30px,
+          rgba(34, 211, 238, 0.03) 30px,
+          rgba(34, 211, 238, 0.03) 31px
+        ),
+        repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 30px,
+          rgba(34, 211, 238, 0.03) 30px,
+          rgba(34, 211, 238, 0.03) 31px
+        );
+      pointer-events: none;
+    }
+
+    .card-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 22px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-size: 14px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .card-title svg {
+      width: 22px;
+      height: 22px;
+      stroke: #22d3ee;
+      filter: drop-shadow(0 0 4px rgba(34, 211, 238, 0.4));
+    }
+
+    /* KPI Grid */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .kpi-item {
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(30, 41, 59, 0.6) 100%);
+      border: 1px solid rgba(71, 85, 105, 0.4);
+      border-radius: 14px;
+      padding: 20px 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      transition: all 0.2s ease;
+    }
+
+    .kpi-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      border-color: rgba(34, 211, 238, 0.4);
+    }
+
+    .kpi-icon {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, rgba(34, 211, 238, 0.2) 0%, rgba(14, 165, 233, 0.1) 100%);
+      border: 1px solid rgba(34, 211, 238, 0.3);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(34, 211, 238, 0.2);
+    }
+
+    .kpi-icon svg {
+      width: 26px;
+      height: 26px;
+      stroke: #22d3ee;
+      filter: drop-shadow(0 0 4px rgba(34, 211, 238, 0.4));
+    }
+
+    .kpi-data {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .kpi-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: #ffffff;
+      line-height: 1;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+      letter-spacing: -1px;
+    }
+
+    .kpi-label {
+      font-size: 11px;
+      color: #94a3b8;
+      line-height: 1.2;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 600;
+    }
+
+    /* Graph Section */
+    .graph-container {
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.7) 100%);
+      border: 1px solid rgba(71, 85, 105, 0.3);
+      border-radius: 14px;
+      padding: 22px 18px;
+      margin-bottom: 18px;
+      box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.3);
+      position: relative;
+      z-index: 1;
+    }
+
+    .graph-container::before {
+      content: 'TAHUN INI';
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      color: #22d3ee;
+      background: rgba(30, 58, 138, 0.6);
+      border: 1px solid rgba(34, 211, 238, 0.3);
+      padding: 4px 10px;
+      border-radius: 6px;
+      z-index: 2;
+    }
+
+    .chart-canvas {
+      width: 100%;
+      height: 180px;
+      position: relative;
+    }
+
+    .chart-bars {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-around;
+      height: 140px;
+      gap: 6px;
+      margin-bottom: 12px;
+      position: relative;
+    }
+
+    .chart-bars::before {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: rgba(71, 85, 105, 0.5);
+    }
+
+    .chart-bars::after {
+      content: '';
+      position: absolute;
+      bottom: 50%;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: rgba(71, 85, 105, 0.3);
+    }
+
+    .chart-bar {
+      flex: 1;
+      background: linear-gradient(180deg, #22d3ee 0%, #0ea5e9 100%);
+      border-radius: 6px 6px 0 0;
+      position: relative;
+      min-height: 20px;
+      box-shadow: 0 -2px 8px rgba(34, 211, 238, 0.3);
+      border: 1px solid rgba(34, 211, 238, 0.4);
+      border-bottom: none;
+    }
+
+    .chart-bar.late {
+      background: linear-gradient(180deg, #fb923c 0%, #f97316 100%);
+      box-shadow: 0 -2px 8px rgba(251, 146, 60, 0.3);
+      border-color: rgba(251, 146, 60, 0.4);
+    }
+
+    .chart-bar.absent {
+      background: linear-gradient(180deg, #f87171 0%, #ef4444 100%);
+      box-shadow: 0 -2px 8px rgba(248, 113, 113, 0.3);
+      border-color: rgba(248, 113, 113, 0.4);
+    }
+
+    .chart-labels {
+      display: flex;
+      justify-content: space-around;
+      gap: 6px;
+    }
+
+    .chart-label {
+      flex: 1;
+      text-align: center;
+      font-size: 10px;
+      color: #64748b;
+      font-weight: 600;
+    }
+
+    /* Graph Legend */
+    .graph-legend {
+      display: flex;
+      justify-content: center;
+      gap: 18px;
+      flex-wrap: wrap;
+      position: relative;
+      z-index: 1;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 11px;
+      color: #cbd5e1;
+      font-weight: 600;
+      background: rgba(30, 41, 59, 0.5);
+      padding: 6px 12px;
+      border-radius: 8px;
+      border: 1px solid rgba(71, 85, 105, 0.3);
+    }
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+      box-shadow: 0 0 6px currentColor;
+    }
+
+    .legend-dot.ontime {
+      background: #22d3ee;
+      color: #22d3ee;
+    }
+
+    .legend-dot.late {
+      background: #fb923c;
+      color: #fb923c;
+    }
+
+    .legend-dot.absent {
+      background: #f87171;
+      color: #f87171;
+    }
+
+    /* Today Status Card */
+    .today-card {
+      background: linear-gradient(145deg, #1e3a8a 0%, #1e40af 100%);
+      border: 1px solid rgba(59, 130, 246, 0.5);
+      border-radius: 20px;
+      padding: 28px 24px;
+      margin-bottom: 28px;
+      box-shadow: 0 10px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(59, 130, 246, 0.2);
+      position: relative;
+      overflow: hidden;
+      min-height: 180px;
+    }
+
+    .today-card::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -20%;
+      width: 200px;
+      height: 200px;
+      background: radial-gradient(circle, rgba(34, 211, 238, 0.15) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .today-card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      background: 
+        repeating-linear-gradient(
+          45deg,
+          transparent,
+          transparent 40px,
+          rgba(34, 211, 238, 0.02) 40px,
+          rgba(34, 211, 238, 0.02) 41px
+        );
+      pointer-events: none;
+    }
+
+    .status-badge {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      background: linear-gradient(135deg, #22d3ee 0%, #0ea5e9 100%);
+      color: #0f172a;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.8px;
+      padding: 6px 14px;
+      border-radius: 8px;
+      text-transform: uppercase;
+      box-shadow: 0 4px 12px rgba(34, 211, 238, 0.4);
+      z-index: 2;
+    }
+
+    .today-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 20px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .today-icon {
+      width: 64px;
+      height: 64px;
+      background: linear-gradient(135deg, rgba(34, 211, 238, 0.25) 0%, rgba(14, 165, 233, 0.15) 100%);
+      border: 2px solid rgba(34, 211, 238, 0.4);
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 24px rgba(34, 211, 238, 0.3), inset 0 2px 8px rgba(255, 255, 255, 0.1);
+    }
+
+    .today-icon svg {
+      width: 36px;
+      height: 36px;
+      stroke: #22d3ee;
+      filter: drop-shadow(0 0 6px rgba(34, 211, 238, 0.6));
+    }
+
+    .today-info {
+      flex: 1;
+    }
+
+    .today-info h3 {
+      font-size: 26px;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 4px;
+      text-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+      letter-spacing: -0.5px;
+    }
+
+    .today-info p {
+      font-size: 12px;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      font-weight: 600;
+    }
+
+    .today-details {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(59, 130, 246, 0.3);
+      position: relative;
+      z-index: 1;
+    }
+
+    .today-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(15, 23, 42, 0.4);
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid rgba(71, 85, 105, 0.3);
+    }
+
+    .today-item svg {
+      width: 20px;
+      height: 20px;
+      stroke: #60a5fa;
+      flex-shrink: 0;
+    }
+
+    .today-item span {
+      font-size: 15px;
+      color: #e2e8f0;
+      font-weight: 500;
+    }
+
+    /* Menu Grid */
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+      margin-top: 8px;
+    }
+
+    .menu-card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 16px;
+      padding: 26px 18px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .menu-card:hover {
+      border-color: #22d3ee;
+      background: #2d3748;
+      transform: translateY(-2px);
+    }
+
+    .menu-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 38px;
+      height: 3px;
+      background: #22d3ee;
+      border-radius: 0 0 3px 3px;
+    }
+
+    .menu-card.logout::before {
+      background: #f87171;
+    }
+
+    .menu-icon {
+      width: 46px;
+      height: 46px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 2px;
+    }
+
+    .menu-icon svg {
+      width: 40px;
+      height: 40px;
+      stroke: #22d3ee;
+      stroke-width: 1.5;
+    }
+
+    .menu-card.logout .menu-icon svg {
+      stroke: #f87171;
+    }
+
+    .menu-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #f1f5f9;
+      text-align: center;
+      line-height: 1.3;
+    }
+
+    /* Hide Button */
+    .hide-button {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      border: 2px solid #f87171;
+      border-radius: 12px;
+      padding: 12px 20px;
+      font-size: 14px;
+      font-weight: 700;
+      color: #ffffff;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      box-shadow: 0 0 16px rgba(239, 68, 68, 0.3);
+      margin-bottom: 20px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .hide-button.visible {
+      display: flex;
+    }
+
+    .hide-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 24px rgba(239, 68, 68, 0.5);
+    }
+
+    .hide-button:active {
+      transform: translateY(0);
+    }
+
+    .hide-button svg {
+      width: 18px;
+      height: 18px;
+      stroke: #ffffff;
+    }
+
+    /* Attendance Page Styles */
+    .attendance-page {
+      display: none;
+      width: 100%;
+      min-height: 100%;
+      background: linear-gradient(180deg, #0a0e1a 0%, #0f172a 100%);
+    }
+
+    .attendance-page.active {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .attendance-header {
+      background: #1e293b;
+      padding: 18px 20px;
+      border-bottom: 1px solid rgba(34, 211, 238, 0.3);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .back-button {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(34, 211, 238, 0.1);
+      border: 1px solid rgba(34, 211, 238, 0.3);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .back-button:hover {
+      background: rgba(34, 211, 238, 0.2);
+      border-color: rgba(34, 211, 238, 0.5);
+    }
+
+    .back-button svg {
+      width: 20px;
+      height: 20px;
+      stroke: #22d3ee;
+    }
+
+    .attendance-title {
+      flex: 1;
+      font-size: 19px;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: -0.3px;
+    }
+
+    .attendance-profile-photo {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%);
+      border: 2px solid #22d3ee;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 600;
+      color: #ffffff;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      overflow: hidden;
+      background-size: cover;
+      background-position: center;
+    }
+
+    .attendance-profile-photo:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 16px rgba(34, 211, 238, 0.6);
+    }
+
+    /* Photo Modal */
+    .photo-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(15, 23, 42, 0.95);
+      z-index: 10000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      animation: fadeIn 0.2s ease;
+    }
+
+    .photo-modal.active {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
+    .photo-modal-content {
+      position: relative;
+      max-width: 90%;
+      max-height: 90%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      animation: scaleIn 0.3s ease;
+    }
+
+    @keyframes scaleIn {
+      from {
+        transform: scale(0.8);
+        opacity: 0;
+      }
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    @keyframes slideDown {
+      from {
+        transform: translateX(-50%) translateY(-20px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+      }
+      to {
+        transform: translateX(-50%) translateY(-20px);
+        opacity: 0;
+      }
+    }
+
+    .photo-modal-image {
+      max-width: 100%;
+      max-height: 70vh;
+      border-radius: 16px;
+      border: 3px solid #22d3ee;
+      box-shadow: 0 12px 48px rgba(34, 211, 238, 0.4);
+      object-fit: contain;
+    }
+
+    .photo-modal-info {
+      background: linear-gradient(135deg, #1e3a8a 0%, #1e293b 100%);
+      border: 2px solid rgba(34, 211, 238, 0.4);
+      border-radius: 14px;
+      padding: 16px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      min-width: 250px;
+    }
+
+    .photo-modal-name {
+      font-size: 20px;
+      font-weight: 700;
+      color: #ffffff;
+      text-align: center;
+    }
+
+    .photo-modal-role {
+      font-size: 14px;
+      color: #94a3b8;
+      text-align: center;
+    }
+
+    .photo-modal-close {
+      position: absolute;
+      top: -50px;
+      right: 0;
+      width: 40px;
+      height: 40px;
+      background: rgba(239, 68, 68, 0.9);
+      border: 2px solid #f87171;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .photo-modal-close:hover {
+      background: #ef4444;
+      transform: rotate(90deg) scale(1.1);
+    }
+
+    .photo-modal-close svg {
+      width: 24px;
+      height: 24px;
+      stroke: #ffffff;
+      stroke-width: 2.5;
+    }
+
+    /* Upload Photo Button */
+    .upload-photo-btn {
+      position: absolute;
+      bottom: -2px;
+      right: -2px;
+      width: 16px;
+      height: 16px;
+      background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%);
+      border: 2px solid #1e293b;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      z-index: 10;
+    }
+
+    .upload-photo-btn:hover {
+      transform: scale(1.15);
+      box-shadow: 0 0 12px rgba(34, 211, 238, 0.6);
+    }
+
+    .upload-photo-btn svg {
+      width: 10px;
+      height: 10px;
+      stroke: #ffffff;
+      stroke-width: 2.5;
+    }
+
+    .profile-photo-wrapper {
+      position: relative;
+      display: inline-block;
+    }
+
+    .attendance-content {
+      flex: 1;
+      padding: 28px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+      max-width: 600px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .section-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 14px;
+    }
+
+    .type-selector {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .type-card {
+      background: #1e293b;
+      border: 2px solid #334155;
+      border-radius: 14px;
+      padding: 20px 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      position: relative;
+    }
+
+    .type-card:hover {
+      border-color: rgba(34, 211, 238, 0.4);
+      background: #243447;
+    }
+
+    .type-card.selected {
+      border-color: #22d3ee;
+      background: linear-gradient(135deg, rgba(30, 58, 138, 0.6) 0%, rgba(30, 41, 59, 0.8) 100%);
+      box-shadow: 0 0 20px rgba(34, 211, 238, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    }
+
+    .type-icon {
+      width: 48px;
+      height: 48px;
+      background: rgba(34, 211, 238, 0.1);
+      border: 1px solid rgba(34, 211, 238, 0.2);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.25s ease;
+    }
+
+    .type-card.selected .type-icon {
+      background: rgba(34, 211, 238, 0.2);
+      border-color: rgba(34, 211, 238, 0.4);
+      box-shadow: 0 0 12px rgba(34, 211, 238, 0.3);
+    }
+
+    .type-icon svg {
+      width: 28px;
+      height: 28px;
+      stroke: #64748b;
+      transition: all 0.25s ease;
+    }
+
+    .type-card.selected .type-icon svg {
+      stroke: #22d3ee;
+      filter: drop-shadow(0 0 4px rgba(34, 211, 238, 0.4));
+    }
+
+    .type-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #94a3b8;
+      text-align: center;
+      transition: all 0.25s ease;
+    }
+
+    .type-card.selected .type-label {
+      color: #ffffff;
+    }
+
+    .conditional-area {
+      display: none;
+      background: linear-gradient(135deg, rgba(30, 58, 138, 0.4) 0%, rgba(30, 41, 59, 0.6) 100%);
+      border: 1px solid rgba(34, 211, 238, 0.2);
+      border-radius: 14px;
+      padding: 20px;
+      gap: 14px;
+      flex-direction: column;
+    }
+
+    .conditional-area.active {
+      display: flex;
+    }
+
+    .info-badge {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(15, 23, 42, 0.6);
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid rgba(71, 85, 105, 0.4);
+    }
+
+    .badge-icon {
+      width: 32px;
+      height: 32px;
+      background: rgba(34, 211, 238, 0.15);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .badge-icon svg {
+      width: 18px;
+      height: 18px;
+      stroke: #22d3ee;
+    }
+
+    .badge-text {
+      flex: 1;
+    }
+
+    .badge-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 3px;
+    }
+
+    .badge-desc {
+      font-size: 11px;
+      color: #94a3b8;
+    }
+
+    .photo-capture-area {
+      display: none;
+      background: #1e293b;
+      border: 2px dashed rgba(34, 211, 238, 0.3);
+      border-radius: 14px;
+      padding: 32px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+
+    .photo-capture-area.active {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .photo-capture-area:hover {
+      border-color: rgba(34, 211, 238, 0.5);
+      background: #243447;
+    }
+
+    .capture-icon {
+      width: 64px;
+      height: 64px;
+      background: rgba(34, 211, 238, 0.1);
+      border: 1px solid rgba(34, 211, 238, 0.3);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 6px;
+    }
+
+    .capture-icon svg {
+      width: 32px;
+      height: 32px;
+      stroke: #22d3ee;
+    }
+
+    .capture-text {
+      font-size: 14px;
+      font-weight: 600;
+      color: #f1f5f9;
+      margin-bottom: 4px;
+    }
+
+    .capture-hint {
+      font-size: 12px;
+      color: #94a3b8;
+    }
+
+    .attachment-area {
+      display: none;
+      background: #1e293b;
+      border: 2px dashed rgba(251, 146, 60, 0.3);
+      border-radius: 14px;
+      padding: 28px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+
+    .attachment-area.active {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .attachment-area:hover {
+      border-color: rgba(251, 146, 60, 0.5);
+      background: #243447;
+    }
+
+    .attachment-icon {
+      width: 56px;
+      height: 56px;
+      background: rgba(251, 146, 60, 0.1);
+      border: 1px solid rgba(251, 146, 60, 0.3);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 4px;
+    }
+
+    .attachment-icon svg {
+      width: 28px;
+      height: 28px;
+      stroke: #fb923c;
+    }
+
+    .attachment-text {
+      font-size: 14px;
+      font-weight: 600;
+      color: #f1f5f9;
+      margin-bottom: 3px;
+    }
+
+    .attachment-hint {
+      font-size: 11px;
+      color: #94a3b8;
+    }
+
+    .primary-action-btn {
+      background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%);
+      border: 2px solid #22d3ee;
+      border-radius: 14px;
+      padding: 18px 24px;
+      font-size: 16px;
+      font-weight: 700;
+      color: #ffffff;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      box-shadow: 0 0 20px rgba(34, 211, 238, 0.4), 0 4px 12px rgba(0, 0, 0, 0.3);
+      margin-top: 8px;
+    }
+
+    .primary-action-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 28px rgba(34, 211, 238, 0.6), 0 6px 16px rgba(0, 0, 0, 0.4);
+    }
+
+    .primary-action-btn:active {
+      transform: translateY(0);
+    }
+
+    .primary-action-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .header-container {
+      display: flex;
+      flex-direction: column; /* 🔥 susun ke bawah */
+      align-items: flex-start; /* 🔥 RATA KIRI */
+    }
+
+    .shield-icon1 {
+      width: 148px;
+      height: auto;
+      display: block;
+    }
+
+    .header-title {
+      margin: 10px 0 0 0px;
+      text-align: left; /* 🔥 teks kiri */
+      line-height: 1.2;
+    }
+
+    .header-short {
+      font-size: 1em;
+      font-weight: 600;
+    }
+
+    .attendance-profile-photo {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .attendance-profile-photo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <style>[v-cloak] { display: none; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+ </head>
+ <body>
+  <div id="app" v-cloak>
+   <div class="dashboard-wrapper" v-show="!isAttendancePageActive">
+    <!-- Header -->
+    <header class="header" :style="{ backgroundColor: configState.card_background, borderBottomColor: configState.accent_color }">
+     <div class="header-container">
+       <div class="shield-icon-container">
+         <img src="/static/LOGO-CBI.png" class="shield-icon1" />
+       </div>
+       <h1 class="header-title" id="header-title" :style="{ fontSize: (configState.font_size * 1.5) + 'px', color: configState.text_color }">
+         <span class="header-short">{{ configState.dashboard_title }}<br></span>
+       </h1>
+     </div>
+     <div
+       class="attendance-profile-photo"
+       id="profile-photo"
+       role="img"
+       aria-label="Foto profil karyawan"
+       :style="{
+         borderColor: configState.accent_color,
+         backgroundImage: profilePhotoUrl ? `url(${profilePhotoUrl})` : 'none',
+         backgroundSize: 'cover',
+         backgroundPosition: 'center'
+       }"
+       @click="showPhotoModal"
+     >
+      <span v-if="!profilePhotoUrl">{{ initials }}</span>
+     </div>
+    </header>
+    <!-- Profile Strip -->
+    <div class="profile-strip" :style="{ backgroundColor: configState.card_background }">
+     <div class="profile-info">
+      <div class="profile-name" id="profile-name" :style="{ fontSize: (configState.font_size * 1.0625) + 'px', color: configState.text_color }">
+       {{ profileName }}
+      </div>
+      <div class="profile-role" id="profile-role" :style="{ fontSize: (configState.font_size * 0.875) + 'px' }">
+       {{ profileRole }}
+      </div>
+     </div>
+     <div class="status-indicator"></div>
+    </div>
+    <!-- Main Content -->
+    <main class="main-content">
+     <!-- Hide Button -->
+     <button class="hide-button" :class="{ visible: isCardsVisible }" id="hide-cards-btn" @click="hideDashboardCards">
+      <svg fill="none" viewbox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" /></svg>
+      Sembunyikan Dashboard
+     </button>
+     <!-- Monthly Recap KPI Card -->
+     <div class="premium-card" id="recap-card" v-show="isCardsVisible" :style="{ borderColor: configState.accent_color }">
+      <div class="card-title" id="monthly-title" :style="{ fontSize: (configState.font_size * 1.125) + 'px' }">
+       <svg fill="none" viewbox="0 0 24 24" stroke-width="2" :style="{ stroke: configState.accent_color }"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+       {{ configState.monthly_recap_title }}
+      </div>
+      <div class="kpi-grid">
+       <div class="kpi-item">
+        <div class="kpi-icon">
+         <svg fill="none" viewbox="0 0 24 24" stroke-width="2" :style="{ stroke: configState.accent_color }"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+        </div>
+        <div class="kpi-data">
+         <div class="kpi-value" :style="{ fontSize: (configState.font_size * 1.5) + 'px' }">
+          {{ attendanceData ? (attendanceData.hadir || 0) : '-' }}
+         </div>
+         <div class="kpi-label" :style="{ fontSize: (configState.font_size * 0.75) + 'px' }">
+          Hadir
+         </div>
+        </div>
+       </div>
+       <div class="kpi-item">
+        <div class="kpi-icon">
+         <svg fill="none" viewbox="0 0 24 24" stroke-width="2" :style="{ stroke: configState.accent_color }"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" /></svg>
+        </div>
+        <div class="kpi-data">
+         <div class="kpi-value" :style="{ fontSize: (configState.font_size * 1.5) + 'px' }">
+          {{ attendanceData ? (attendanceData.wfh || 0) : '-' }}
+         </div>
+         <div class="kpi-label" :style="{ fontSize: (configState.font_size * 0.75) + 'px' }">
+          WFH
+         </div>
+        </div>
+       </div>
+       <div class="kpi-item">
+        <div class="kpi-icon">
+         <svg fill="none" viewbox="0 0 24 24" stroke-width="2" :style="{ stroke: configState.accent_color }"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg>
+        </div>
+        <div class="kpi-data">
+         <div class="kpi-value" :style="{ fontSize: (configState.font_size * 1.5) + 'px' }">
+          {{ cutiTahunanDisplay }}
+         </div>
+         <div class="kpi-label" :style="{ fontSize: (configState.font_size * 0.75) + 'px' }">
+          Cuti Tahunan
+         </div>
+        </div>
+       </div>
+       <div class="kpi-item">
+        <div class="kpi-icon">
+         <svg fill="none" viewbox="0 0 24 24" stroke-width="2" :style="{ stroke: configState.accent_color }"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /> <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg>
+        </div>
+        <div class="kpi-data">
+         <div class="kpi-value" :style="{ fontSize: (configState.font_size * 1.5) + 'px' }">
+          {{ attendanceData ? (attendanceData.dinas_lapangan || 0) : '-' }}
+         </div>
+         <div class="kpi-label" :style="{ fontSize: (configState.font_size * 0.75) + 'px' }">
+          Dinas Lapangan
+         </div>
+        </div>
+       </div>
+       <div class="kpi-item">
+        <div class="kpi-icon">
+         <svg fill="none" viewbox="0 0 24 24" stroke-width="2" :style="{ stroke: configState.accent_color }"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
+        </div>
+        <div class="kpi-data">
+         <div class="kpi-value" :style="{ fontSize: (configState.font_size * 1.5) + 'px' }">
+          {{ attendanceData ? (attendanceData.sakit || 0) : '-' }}
+         </div>
+         <div class="kpi-label" :style="{ fontSize: (configState.font_size * 0.75) + 'px' }">
+          Sakit
+         </div>
+        </div>
+       </div>
+       <div class="kpi-item">
+        <div class="kpi-icon">
+         <svg fill="none" viewbox="0 0 24 24" stroke-width="2" :style="{ stroke: configState.accent_color }"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 00.75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 00-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0112 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 01-.673-.38m0 0A2.18 2.18 0 013 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 013.413-.387m7.5 0V5.25A2.25 2.25 0 0013.5 3h-3a2.25 2.25 0 00-2.25 2.25v.894m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
+        </div>
+        <div class="kpi-data">
+         <div class="kpi-value" :style="{ fontSize: (configState.font_size * 1.5) + 'px' }">
+          {{ attendanceData ? (attendanceData.cuti_lapangan || 0) : '-' }}
+         </div>
+         <div class="kpi-label" :style="{ fontSize: (configState.font_size * 0.75) + 'px' }">
+          Cuti Lapangan
+         </div>
+        </div>
+       </div>
+      </div>
+     </div>
+     <!-- Today Status Card -->
+     <div class="today-card" id="today-card" v-show="isCardsVisible" :style="{ borderColor: configState.accent_color }">
+      <div class="status-badge" id="status-badge" :class="todayStatusClass">
+       {{ todayBadgeDisplay }}
+      </div>
+      <div class="today-header">
+       <div class="today-icon">
+        <svg fill="none" viewbox="0 0 24 24" stroke-width="2" :style="{ stroke: configState.accent_color }">
+          <template v-if="todayAttendance && todayAttendance.status">
+            <path v-if="todayAttendance.status.toLowerCase() === 'hadir'" stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <path v-else-if="todayAttendance.status.toLowerCase() === 'wfh'" stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+            <path v-else-if="todayAttendance.status.toLowerCase() === 'dinas lapangan'" stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+            <path v-else-if="todayAttendance.status.toLowerCase().includes('cuti')" stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+            <path v-else-if="todayAttendance.status.toLowerCase() === 'sakit'" stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+            <path v-else-if="todayAttendance.status.toLowerCase() === 'lembur'" stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
+            <path v-else stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </template>
+          <template v-else>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </template>
+        </svg>
+       </div>
+       <div class="today-info">
+        <h3 id="today-status" :style="{ fontSize: (configState.font_size * 1.25) + 'px' }">{{ todayStatusDisplay }}</h3>
+        <p>Status Hari Ini</p>
+       </div>
+      </div>
+      <div class="today-details">
+       <div class="today-item">
+        <svg fill="none" viewbox="0 0 24 24" stroke-width="2" :style="{ stroke: configState.accent_color }"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+        <span id="today-checkin" :style="{ fontSize: (configState.font_size * 0.875) + 'px' }">{{ todayCheckinDisplay }}</span>
+       </div>
+       <div class="today-item">
+        <svg fill="none" viewbox="0 0 24 24" stroke-width="2" :style="{ stroke: configState.accent_color }"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /> <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg>
+        <span id="today-location" :style="{ fontSize: (configState.font_size * 0.875) + 'px' }">{{ todayLocationDisplay }}</span>
+       </div>
+      </div>
+     </div>
+     <!-- Menu Grid -->
+     <div class="menu-grid">
+      <div class="menu-card" :style="{ backgroundColor: configState.card_background }" @click="showDashboardCards">
+       <div class="menu-icon">
+        <svg fill="none" viewbox="0 0 24 24" :style="{ stroke: configState.accent_color }"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z" /></svg>
+       </div>
+       <div class="menu-title" :style="{ fontSize: (configState.font_size * 0.875) + 'px', color: configState.text_color }">
+        Dashboard
+       </div>
+      </div>
+      <div class="menu-card" v-show="false" :style="{ backgroundColor: configState.card_background }" @click="navigateTo('/input_absensi')">
+       <div class="menu-icon">
+        <svg fill="none" viewbox="0 0 24 24" :style="{ stroke: configState.accent_color }"><path stroke-linecap="round" stroke-linejoin="round" d="M7.05 3.691c1.341-.295 2.767-.45 4.225-.45s2.884.155 4.225.45m-8.45 0a17.537 17.537 0 0 1 4.225 6.309m4.225-6.309a17.537 17.537 0 0 0-4.225 6.309m0 0c.84 1.455 1.575 3.017 2.175 4.659m-2.175-4.659c-.84 1.455-1.575 3.017-2.175 4.659m0 0A17.919 17.919 0 0 0 12 21.75c1.287 0 2.544-.132 3.75-.382m-7.5 0A17.919 17.919 0 0 1 12 18.5c-1.287 0-2.544.132-3.75.382M15.75 21.368A17.537 17.537 0 0 0 18 14.059" /></svg>
+       </div>
+       <div class="menu-title" :style="{ fontSize: (configState.font_size * 0.875) + 'px', color: configState.text_color }">
+        Absen
+       </div>
+      </div>
+      <div class="menu-card" v-show="false" :style="{ backgroundColor: configState.card_background }" @click="navigateTo('/absensi_karyawan')">
+       <div class="menu-icon">
+        <svg fill="none" viewbox="0 0 24 24" :style="{ stroke: configState.accent_color }"><path stroke-linecap="round" stroke-linejoin="round" d="M7.05 3.691c1.341-.295 2.767-.45 4.225-.45s2.884.155 4.225.45m-8.45 0a17.537 17.537 0 0 1 4.225 6.309m4.225-6.309a17.537 17.537 0 0 0-4.225 6.309m0 0c.84 1.455 1.575 3.017 2.175 4.659m-2.175-4.659c-.84 1.455-1.575 3.017-2.175 4.659m0 0A17.919 17.919 0 0 0 12 21.75c1.287 0 2.544-.132 3.75-.382m-7.5 0A17.919 17.919 0 0 1 12 18.5c-1.287 0-2.544.132-3.75.382M15.75 21.368A17.537 17.537 0 0 0 18 14.059" /></svg>
+       </div>
+       <div class="menu-title" :style="{ fontSize: (configState.font_size * 0.875) + 'px', color: configState.text_color }">
+        Absensi Saya
+       </div>
+      </div>
+      <div class="menu-card" v-show="canAccess('input_daily_report')" :style="{ backgroundColor: configState.card_background }" @click="navigateTo('/absensi_daily_report')">
+       <div class="menu-icon">
+        <svg fill="none" viewbox="0 0 24 24" :style="{ stroke: configState.accent_color }"><path stroke-linecap="round" stroke-linejoin="round" d="M7.05 3.691c1.341-.295 2.767-.45 4.225-.45s2.884.155 4.225.45m-8.45 0a17.537 17.537 0 0 1 4.225 6.309m4.225-6.309a17.537 17.537 0 0 0-4.225 6.309m0 0c.84 1.455 1.575 3.017 2.175 4.659m-2.175-4.659c-.84 1.455-1.575 3.017-2.175 4.659m0 0A17.919 17.919 0 0 0 12 21.75c1.287 0 2.544-.132 3.75-.382m-7.5 0A17.919 17.919 0 0 1 12 18.5c-1.287 0-2.544.132-3.75.382M15.75 21.368A17.537 17.537 0 0 0 18 14.059" /></svg>
+       </div>
+       <div class="menu-title" :style="{ fontSize: (configState.font_size * 0.875) + 'px', color: configState.text_color }">
+        Input Daily Report
+       </div>
+      </div>
+      <div class="menu-card" v-show="canAccess('inventory')" :style="{ backgroundColor: configState.card_background }" @click="navigateTo('/inventory_mobile')">
+       <div class="menu-icon">
+        <svg fill="none" viewbox="0 0 24 24" :style="{ stroke: configState.accent_color }"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" /></svg>
+       </div>
+       <div class="menu-title" :style="{ fontSize: (configState.font_size * 0.875) + 'px', color: configState.text_color }">
+        Inventory
+       </div>
+      </div>
+      <div class="menu-card logout" id="logout-btn" :style="{ backgroundColor: configState.card_background }" @click="handleManualLogout">
+       <div class="menu-icon">
+        <svg fill="none" viewbox="0 0 24 24" :style="{ stroke: configState.logout_accent }"><path stroke-linecap="round" stroke-linejoin="round" d="M5.636 5.636a9 9 0 1012.728 0M12 3v9" /></svg>
+       </div>
+       <div class="menu-title" :style="{ fontSize: (configState.font_size * 0.875) + 'px', color: configState.text_color }">
+        Logout
+       </div>
+      </div>
+     </div>
+    </main>
+   </div>
+   <!-- Photo Modal -->
+   <div class="photo-modal" :class="{ active: isPhotoModalActive }">
+    <div class="photo-modal-content">
+     <div class="photo-modal-close" id="close-photo-modal" @click="closePhotoModal">
+      <svg fill="none" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+     </div>
+     <img :src="profilePhotoUrl || initialsCanvasUrl" alt="Profile Photo" class="photo-modal-image">
+     <div class="photo-modal-info">
+      <div class="photo-modal-name">{{ profileName }}</div>
+      <div class="photo-modal-role">{{ profileRole }}</div>
+     </div>
+    </div>
+   </div>
+   <!-- Attendance Page (kept for compatibility, though click redirects to /input_absensi) -->
+   <div class="attendance-page" id="attendance-page" :class="{ active: isAttendancePageActive }">
+    <header class="attendance-header">
+     <div class="back-button" id="back-to-dashboard" @click="isAttendancePageActive = false">
+      <svg fill="none" viewbox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg>
+     </div>
+     <h1 class="attendance-title">Absensi Harian</h1>
+     <div class="attendance-profile-photo" id="attendance-profile-photo" :style="{ backgroundImage: profilePhotoUrl ? `url(${profilePhotoUrl})` : 'none', backgroundSize: 'cover', backgroundPosition: 'center' }">
+      <span v-if="!profilePhotoUrl">{{ initials }}</span>
+     </div>
+    </header>
+    <div class="attendance-content">
+     <div>
+      <div class="section-label">Pilih Tipe Absensi</div>
+      <div class="type-selector">
+       <div class="type-card" :class="{ selected: selectedType === 'kantor' }" @click="selectedType = 'kantor'">
+        <div class="type-icon"><svg fill="none" viewbox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008z" /></svg></div>
+        <div class="type-label">Kantor</div>
+       </div>
+       <div class="type-card" :class="{ selected: selectedType === 'wfh' }" @click="selectedType = 'wfh'">
+        <div class="type-icon"><svg fill="none" viewbox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" /></svg></div>
+        <div class="type-label">WFH</div>
+       </div>
+       <div class="type-card" :class="{ selected: selectedType === 'dinas' }" @click="selectedType = 'dinas'">
+        <div class="type-icon"><svg fill="none" viewbox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /> <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg></div>
+        <div class="type-label">Dinas Lapangan</div>
+       </div>
+       <div class="type-card" :class="{ selected: selectedType === 'lembur' }" @click="selectedType = 'lembur'">
+        <div class="type-icon"><svg fill="none" viewbox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" /></svg></div>
+        <div class="type-label">Lembur</div>
+       </div>
+       <div class="type-card" :class="{ selected: selectedType === 'cuti' }" @click="selectedType = 'cuti'">
+        <div class="type-icon"><svg fill="none" viewbox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg></div>
+        <div class="type-label">Cuti</div>
+       </div>
+       <div class="type-card" :class="{ selected: selectedType === 'cuti-lapangan' }" @click="selectedType = 'cuti-lapangan'">
+        <div class="type-icon"><svg fill="none" viewbox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 00.75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 00-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0112 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 01-.673-.38m0 0A2.18 2.18 0 013 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 013.413-.387m7.5 0V5.25A2.25 2.25 0 0013.5 3h-3a2.25 2.25 0 00-2.25 2.25v.894m7.5 0a48.667 48.667 0 00-7.5 0" /></svg></div>
+        <div class="type-label">Cuti Lapangan</div>
+       </div>
+       <div class="type-card" :class="{ selected: selectedType === 'sakit' }" @click="selectedType = 'sakit'">
+        <div class="type-icon"><svg fill="none" viewbox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg></div>
+        <div class="type-label">Sakit</div>
+       </div>
+      </div>
+     </div>
+     <!-- Conditional Areas -->
+     <div class="conditional-area" :class="{ active: selectedType === 'kantor' }">
+      <div class="info-badge">
+       <div class="badge-icon"><svg fill="none" viewbox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /> <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg></div>
+       <div class="badge-text">
+        <div class="badge-title">GPS Aktif</div>
+        <div class="badge-desc">Lokasi akan terdeteksi otomatis</div>
+       </div>
+      </div>
+      <div class="info-badge">
+       <div class="badge-icon"><svg fill="none" viewbox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></div>
+       <div class="badge-text">
+        <div class="badge-title">Validasi Radius Kantor</div>
+        <div class="badge-desc">Harus berada di dalam area kantor</div>
+       </div>
+      </div>
+     </div>
+     <div class="conditional-area" :class="{ active: selectedType === 'dinas' }">
+      <div class="info-badge">
+       <div class="badge-icon"><svg fill="none" viewbox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /> <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg></div>
+       <div class="badge-text">
+        <div class="badge-title">GPS Aktif - Lokasi Bebas</div>
+        <div class="badge-desc">Tidak ada batasan radius lokasi</div>
+       </div>
+      </div>
+     </div>
+     <!-- Photo Capture Area -->
+     <div class="photo-capture-area" :class="{ active: ['kantor', 'dinas', 'wfh'].includes(selectedType) }">
+      <div class="capture-icon"><svg fill="none" viewbox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" /> <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z" /></svg></div>
+      <div class="capture-text">Ambil Foto Selfie</div>
+      <div class="capture-hint">Tap untuk membuka kamera</div>
+     </div>
+     <!-- Attachment Area -->
+     <div class="attachment-area" :class="{ active: selectedType === 'sakit' }">
+      <div class="attachment-icon"><svg fill="none" viewbox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M18.375 12.739l-7.693 7.693a4.5 4.5 0 01-6.364-6.364l10.94-10.94A3 3 0 1119.5 7.372L8.552 18.32m.009-.01l-.01.01m5.699-9.941l-7.81 7.81a1.5 1.5 0 002.112 2.13" /></svg></div>
+      <div class="attachment-text">Upload Surat Keterangan</div>
+      <div class="attachment-hint">Surat dokter atau bukti pendukung lainnya</div>
+     </div>
+     <button class="primary-action-btn" :disabled="!selectedType">Absen Masuk</button>
+    </div>
+   </div>
+   <!-- Logout Overlay -->
+   <div v-if="isLogoutOverlayActive" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10000; gap: 16px;">
+    <div style="background: linear-gradient(135deg, #1e3a8a 0%, #1e293b 100%); color: white; padding: 24px 40px; border-radius: 16px; font-weight: 700; font-size: 18px; box-shadow: 0 8px 32px rgba(34, 211, 238, 0.3); border: 2px solid #22d3ee; text-align: center;">
+      <div style="margin-bottom: 16px; display: flex; justify-content: center;">
+        <svg width="64" height="64" fill="none" viewBox="0 0 24 24" stroke="#22d3ee" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M5.636 5.636a9 9 0 1012.728 0M12 3v9" />
+        </svg>
+      </div>
+      <div>{{ logoutOverlayMessage }}</div>
+    </div>
+   </div>
+  </div>
+  <script>
+    const defaultConfig = {
+      background_color: "#0f172a",
+      card_background: "#1e293b",
+      accent_color: "#22d3ee",
+      text_color: "#f1f5f9",
+      logout_accent: "#f87171",
+      dashboard_title: "Dashboard",
+      user_full_name: "Ahmad Rizki Prasetyo",
+      user_job_title: "Field Engineer",
+      monthly_recap_title: "Rekapitulasi Absensi Tahun Ini",
+      graph_title: "Grafik Kedisiplinan",
+      today_status: "Hadir",
+      today_checkin: "08:15 WIB",
+      today_location: "CBI - Bandung",
+      font_family: "Inter",
+      font_size: 16
+    };
+
+    function getCookie(name) {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop().split(";").shift();
+      return null;
+    }
+
+    const { createApp, ref, reactive, computed, onMounted } = Vue;
+
+    createApp({
+      setup() {
+        const configState = reactive({ ...defaultConfig });
+        const userProfile = ref(null);
+        const attendanceData = ref(null);
+        const todayAttendance = ref(null);
+        const isCardsVisible = ref(false);
+        const isPhotoModalActive = ref(false);
+        const isAttendancePageActive = ref(false);
+        const selectedType = ref(null);
+        const initialsCanvasUrl = ref('');
+        const isLogoutOverlayActive = ref(false);
+        const logoutOverlayMessage = ref('');
+
+        const authToken = getCookie("authToken");
+        const userID = getCookie("id");
+
+        const fetchUserProfile = async () => {
+          if (!authToken || !userID) {
+            window.location.href = '/';
+            return;
+          }
+          try {
+            const response = await fetch('/auth/user/profile?userID=' + userID, {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+              }
+            });
+
+            if (!response.ok) {
+              window.location.href = '/';
+              return;
+            }
+            const data = await response.json();
+            
+            // Parse photo if it's a JSON string
+            if (data.photo) {
+              try {
+                const parsed = JSON.parse(data.photo);
+                data.photo = Array.isArray(parsed) ? parsed : [data.photo];
+              } catch (e) {
+                data.photo = [data.photo];
+              }
+            } else {
+              data.photo = [];
+            }
+
+            userProfile.value = data;
+
+            if (userProfile.value && userProfile.value.name) {
+              await fetchAttendanceData(userProfile.value.name);
+            }
+          } catch (error) {
+            console.error('Error fetching user profile:', error);
+            window.location.href = '/';
+          }
+        };
+
+        const fetchAttendanceData = async (userName) => {
+          try {
+            const now = new Date();
+            const year = now.getFullYear();
+            const dateFrom = `${year}-01-01`;
+            const dateTo = `${year}-12-31`;
+
+            const rekapResponse = await fetch(`/auth/absensi/rekap-karyawan?nama=${encodeURIComponent(userName)}&dateFrom=${dateFrom}&dateTo=${dateTo}`, {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+              }
+            });
+            if (rekapResponse.ok) {
+              attendanceData.value = await rekapResponse.json();
+            }
+
+            const todayResponse = await fetch(`/auth/absensi/saya?nama=${encodeURIComponent(userName)}`, {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+              }
+            });
+            if (todayResponse.ok) {
+              todayAttendance.value = await todayResponse.json();
+            }
+          } catch (error) {
+            console.error('Error fetching attendance data:', error);
+          }
+        };
+
+        const canAccess = (pageName) => {
+          if (!userProfile.value) return false;
+          const role = userProfile.value.role;
+          
+          if (['absensi_saya', 'input_daily_report'].includes(pageName)) {
+            return true;
+          }
+          if (role === 'Operator') {
+            return ['complain', 'input_maintenance_da', 'rekapan_maintenance_da'].includes(pageName);
+          }
+          if (role === 'HRDAdmin') {
+            return ['absensi_perhitungan'].includes(pageName);
+          }
+          if (role === 'SupervisorIT' || role === 'SupervisorRND') {
+            return ['absensi', 'complain', 'absensi_perhitungan', 'list_site_report', 'list_lembur', 'list_daily_report'].includes(pageName);
+          }
+          if (role === 'SupervisorInventory') {
+            return ['absensi', 'inventory', 'inventory_management', 'inventory_peminjaman', 'absensi_perhitungan', 'list_site_report', 'list_lembur', 'list_daily_report'].includes(pageName);
+          }
+          if (role === 'SuperAdmin' || role === 'Manager') {
+            return ['complain', 'absensi', 'input_absensi', 'absensi_perhitungan', 'input_maintenance_da', 'rekapan_maintenance_da', 'inventory', 'inventory_management', 'inventory_peminjaman', 'list_site_report', 'list_lembur', 'list_daily_report'].includes(pageName);
+          }
+          if (role === 'ManagerMarketing') {
+            return ['complain', 'absensi', 'absensi_perhitungan', 'list_site_report', 'list_lembur', 'list_daily_report'].includes(pageName);
+          }
+          return false;
+        };
+
+        const initials = computed(() => {
+          const name = (userProfile.value && userProfile.value.name) || configState.user_full_name || defaultConfig.user_full_name;
+          return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+        });
+
+        const profileName = computed(() => {
+          return (userProfile.value && userProfile.value.name) || configState.user_full_name;
+        });
+
+        const profileRole = computed(() => {
+          return (userProfile.value && (userProfile.value.position || userProfile.value.role)) || configState.user_job_title;
+        });
+
+        const profilePhotoUrl = computed(() => {
+          if (userProfile.value && userProfile.value.photo && userProfile.value.photo.length > 0) {
+            return userProfile.value.photo[0];
+          }
+          return null;
+        });
+
+        const generateInitialsCanvas = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = 400;
+          canvas.height = 400;
+          const ctx = canvas.getContext('2d');
+          
+          const gradient = ctx.createLinearGradient(0, 0, 400, 400);
+          gradient.addColorStop(0, '#0ea5e9');
+          gradient.addColorStop(1, '#06b6d4');
+          ctx.fillStyle = gradient;
+          ctx.fillRect(0, 0, 400, 400);
+          
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 180px Inter, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(initials.value, 200, 200);
+          
+          initialsCanvasUrl.value = canvas.toDataURL();
+        };
+
+        const showPhotoModal = () => {
+          if (!profilePhotoUrl.value) {
+            generateInitialsCanvas();
+          }
+          isPhotoModalActive.value = true;
+        };
+
+        const closePhotoModal = () => {
+          isPhotoModalActive.value = false;
+        };
+
+        const showDashboardCards = () => {
+          isCardsVisible.value = true;
+          if (userProfile.value && userProfile.value.name) {
+            fetchAttendanceData(userProfile.value.name);
+          }
+        };
+
+        const hideDashboardCards = () => {
+          isCardsVisible.value = false;
+        };
+
+        const navigateTo = (url) => {
+          window.location.href = url;
+        };
+
+        const handleManualLogout = async () => {
+          try {
+            await fetch('/auth/logout', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              }
+            });
+          } catch (error) {
+            console.error('Logout error:', error);
+          }
+          logoutOverlayMessage.value = 'Logout berhasil';
+          isLogoutOverlayActive.value = true;
+          setTimeout(() => {
+            document.cookie = "authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+            window.location.href = '/';
+          }, 2000);
+        };
+
+        const onConfigChange = (config) => {
+          Object.assign(configState, config);
+          const customFont = configState.font_family || defaultConfig.font_family;
+          const baseFontStack = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+
+          document.body.style.fontFamily = `${customFont}, ${baseFontStack}`;
+          document.body.style.background = `linear-gradient(180deg, ${configState.background_color || defaultConfig.background_color} 0%, ${configState.card_background || defaultConfig.card_background} 100%)`;
+        };
+
+        onMounted(() => {
+          fetchUserProfile();
+
+          if (window.elementSdk) {
+            window.elementSdk.init({
+              defaultConfig,
+              onConfigChange,
+              mapToCapabilities: (config) => ({
+                recolorables: [
+                  {
+                    get: () => config.background_color || defaultConfig.background_color,
+                    set: (value) => {
+                      config.background_color = value;
+                      window.elementSdk.setConfig({ background_color: value });
+                    }
+                  },
+                  {
+                    get: () => config.card_background || defaultConfig.card_background,
+                    set: (value) => {
+                      config.card_background = value;
+                      window.elementSdk.setConfig({ card_background: value });
+                    }
+                  },
+                  {
+                    get: () => config.text_color || defaultConfig.text_color,
+                    set: (value) => {
+                      config.text_color = value;
+                      window.elementSdk.setConfig({ text_color: value });
+                    }
+                  },
+                  {
+                    get: () => config.accent_color || defaultConfig.accent_color,
+                    set: (value) => {
+                      config.accent_color = value;
+                      window.elementSdk.setConfig({ accent_color: value });
+                    }
+                  },
+                  {
+                    get: () => config.logout_accent || defaultConfig.logout_accent,
+                    set: (value) => {
+                      config.logout_accent = value;
+                      window.elementSdk.setConfig({ logout_accent: value });
+                    }
+                  }
+                ],
+                borderables: [],
+                fontEditable: {
+                  get: () => config.font_family || defaultConfig.font_family,
+                  set: (value) => {
+                    config.font_family = value;
+                    window.elementSdk.setConfig({ font_family: value });
+                  }
+                },
+                fontSizeable: {
+                  get: () => config.font_size || defaultConfig.font_size,
+                  set: (value) => {
+                    config.font_size = value;
+                    window.elementSdk.setConfig({ font_size: value });
+                  }
+                }
+              }),
+              mapToEditPanelValues: (config) => new Map([
+                ["dashboard_title", config.dashboard_title || defaultConfig.dashboard_title],
+                ["user_full_name", config.user_full_name || defaultConfig.user_full_name],
+                ["user_job_title", config.user_job_title || defaultConfig.user_job_title],
+                ["monthly_recap_title", config.monthly_recap_title || defaultConfig.monthly_recap_title],
+                ["graph_title", config.graph_title || defaultConfig.graph_title],
+                ["today_status", config.today_status || defaultConfig.today_status],
+                ["today_checkin", config.today_checkin || defaultConfig.today_checkin],
+                ["today_location", config.today_location || defaultConfig.today_location]
+              ])
+            });
+          } else {
+            onConfigChange(defaultConfig);
+          }
+
+          // Setup inactivity events
+          const activityEvents = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
+          const resetInactivityTimer = () => {};
+          activityEvents.forEach(event => {
+            document.addEventListener(event, resetInactivityTimer, true);
+          });
+        });
+
+        const cutiTahunanDisplay = computed(() => {
+          if (!attendanceData.value) return '-';
+          const cuti = attendanceData.value.cuti_tahunan || 0;
+          const cutiHalf = attendanceData.value.cuti_1_2 || 0;
+          return cuti + (cutiHalf / 2);
+        });
+
+        const todayStatusDisplay = computed(() => {
+          if (todayAttendance.value && todayAttendance.value.status) {
+            return todayAttendance.value.status;
+          }
+          return 'Anda belum absen !';
+        });
+
+        const todayBadgeDisplay = computed(() => {
+          if (todayAttendance.value && todayAttendance.value.status) {
+            return todayAttendance.value.status.toUpperCase();
+          }
+          return '-';
+        });
+
+        const todayCheckinDisplay = computed(() => {
+          if (todayAttendance.value && todayAttendance.value.waktu_checkin) {
+            return todayAttendance.value.waktu_checkin;
+          }
+          return '-';
+        });
+
+        const todayLocationDisplay = computed(() => {
+          if (todayAttendance.value && todayAttendance.value.lokasi) {
+            return todayAttendance.value.lokasi;
+          }
+          return '-';
+        });
+
+        const todayStatusClass = computed(() => {
+          if (!todayAttendance.value || !todayAttendance.value.status) return '';
+          const status = todayAttendance.value.status.toLowerCase();
+          if (status === 'hadir') return 'status-online';
+          if (status === 'wfh') return 'status-progress';
+          if (status === 'dinas lapangan') return 'status-badge';
+          if (status.includes('cuti')) return 'status-open';
+          if (status === 'sakit') return 'status-offline';
+          return '';
+        });
+
+        return {
+          configState,
+          userProfile,
+          attendanceData,
+          todayAttendance,
+          isCardsVisible,
+          isPhotoModalActive,
+          isAttendancePageActive,
+          selectedType,
+          initialsCanvasUrl,
+          isLogoutOverlayActive,
+          logoutOverlayMessage,
+          initials,
+          profileName,
+          profileRole,
+          profilePhotoUrl,
+          showPhotoModal,
+          closePhotoModal,
+          showDashboardCards,
+          hideDashboardCards,
+          navigateTo,
+          handleManualLogout,
+          canAccess,
+          cutiTahunanDisplay,
+          todayStatusDisplay,
+          todayBadgeDisplay,
+          todayCheckinDisplay,
+          todayLocationDisplay,
+          todayStatusClass
+        };
+      }
+    }).mount('#app');
+  </script>
+ </body>
+</html>

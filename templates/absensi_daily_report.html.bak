@@ -1,0 +1,1331 @@
+<!doctype html>
+<html lang="id" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Report Pekerjaan Harian</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="/_sdk/data_sdk.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Inter', sans-serif; }
+    input[type="date"]::-webkit-calendar-picker-indicator,
+    input[type="time"]::-webkit-calendar-picker-indicator {
+      filter: invert(1);
+      cursor: pointer;
+    }
+    /* Hide number input spinner */
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type="number"] {
+      -moz-appearance: textfield;
+    }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: #1e293b; border-radius: 3px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #64748b; }
+  </style>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              200: '#bfdbfe',
+              300: '#93c5fd',
+              400: '#60a5fa',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              800: '#1e40af',
+              900: '#1e3a8a',
+            },
+            dark: {
+              50: '#f8fafc',
+              100: '#f1f5f9',
+              200: '#e2e8f0',
+              300: '#cbd5e1',
+              400: '#94a3b8',
+              500: '#64748b',
+              600: '#475569',
+              700: '#334155',
+              800: '#1e293b',
+              900: '#0f172a',
+              950: '#020617',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full bg-dark-950 text-dark-100 overflow-auto custom-scrollbar">
+  <div class="min-h-full w-full">
+   <!-- Header Bar -->
+   <header class="bg-dark-900 border-b border-dark-700 sticky top-0 z-10">
+    <div class="max-w-5xl mx-auto px-6 py-5">
+     <div class="flex items-center gap-4">
+      <div class="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center flex-shrink-0">
+       <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+       </svg>
+      </div>
+      <div>
+       <h1 id="page-title" class="text-xl font-semibold text-white">Report Pekerjaan Harian</h1>
+       <p id="page-subtitle" class="text-sm text-dark-400 mt-0.5">Form pelaporan aktivitas kerja harian karyawan</p>
+      </div>
+     </div>
+    </div>
+   </header><!-- Main Content -->
+   <main class="max-w-5xl mx-auto px-6 py-8">
+    <!-- Form Card -->
+    <form id="report-form" class="bg-dark-900 rounded-xl border border-dark-700 shadow-2xl shadow-black/20">
+     <!-- Section 1: Informasi Dasar -->
+     <div class="p-6 border-b border-dark-700">
+      <div class="flex items-center gap-3 mb-6">
+       <div class="w-8 h-8 bg-primary-600/20 rounded-lg flex items-center justify-center">
+        <svg class="w-4 h-4 text-primary-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+       </div>
+       <h2 class="text-lg font-semibold text-white">Informasi Dasar</h2>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+       <!-- Nama -->
+       <div>
+        <label for="nama" class="block text-sm font-medium text-dark-300 mb-2"> <span class="flex items-center gap-2">
+          <svg class="w-4 h-4 text-dark-500" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg> Nama </span> </label> <input type="text" id="nama" name="nama" readonly class="w-full bg-dark-700 border border-dark-600 rounded-lg px-4 py-3 text-dark-300 cursor-not-allowed opacity-75" placeholder="Nama pengguna">
+       </div><!-- Lokasi Kerja -->
+       <div>
+        <label for="lokasi-kerja" class="block text-sm font-medium text-dark-300 mb-2"> <span class="flex items-center gap-2">
+          <svg class="w-4 h-4 text-dark-500" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg> Lokasi Kerja </span> </label> <select id="lokasi-kerja" name="lokasi_kerja" class="w-full bg-dark-800 border border-dark-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all cursor-pointer"> <option value="">Pilih Lokasi Kerja</option> <option value="TKI">TKI</option> <option value="KIP">KIP</option> <option value="WFH">WFH</option> </select>
+       </div><!-- Tanggal -->
+       <div>
+        <label for="tanggal" class="block text-sm font-medium text-dark-300 mb-2"> <span class="flex items-center gap-2">
+          <svg class="w-4 h-4 text-dark-500" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg> Tanggal </span> </label> <input type="date" id="tanggal" name="tanggal" class="w-full bg-dark-800 border border-dark-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all">
+        <p class="text-xs text-dark-500 mt-1.5">Tanggal otomatis mengikuti tanggal hari ini.</p>
+       </div><!-- Jam Mulai & Selesai -->
+       <div class="grid grid-cols-2 gap-4">
+        <div>
+         <label for="jam-mulai" class="block text-sm font-medium text-dark-300 mb-2"> <span class="flex items-center gap-2">
+           <svg class="w-4 h-4 text-dark-500" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+           </svg> Jam Mulai </span> </label> <input type="time" id="jam-mulai" name="jam_mulai" value="08:00" class="w-full bg-dark-800 border border-dark-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all">
+        </div>
+        <div>
+         <label for="jam-selesai" class="block text-sm font-medium text-dark-300 mb-2"> <span class="flex items-center gap-2">
+           <svg class="w-4 h-4 text-dark-500" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+           </svg> Jam Selesai </span> </label> <input type="time" id="jam-selesai" name="jam_selesai" value="17:00" class="w-full bg-dark-800 border border-dark-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all">
+        </div>
+       </div>
+      </div>
+     </div><!-- Section 2: Pekerjaan Hari Ini -->
+     <div class="p-6 border-b border-dark-700">
+      <div class="flex items-center gap-3 mb-6">
+       <div class="w-8 h-8 bg-emerald-600/20 rounded-lg flex items-center justify-center">
+        <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+        </svg>
+       </div>
+       <h2 class="text-lg font-semibold text-white">Pekerjaan Hari Ini</h2>
+      </div>
+      <div id="work-list" class="space-y-4">
+       <!-- Work items will be added here dynamically -->
+      </div><button type="button" id="add-work-btn" class="w-full mt-6 flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-500 text-white text-sm font-medium px-4 py-3 rounded-lg transition-colors">
+       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+       </svg> Tambah Pekerjaan </button>
+     </div><!-- Section 3: Rencana Pekerjaan Besok -->
+     <div class="p-6 border-b border-dark-700">
+      <div class="flex items-center gap-3 mb-6">
+       <div class="w-8 h-8 bg-violet-600/20 rounded-lg flex items-center justify-center">
+        <svg class="w-4 h-4 text-violet-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+        </svg>
+       </div>
+       <h2 class="text-lg font-semibold text-white">Rencana Pekerjaan Besok</h2>
+      </div><textarea id="rencana-besok" name="rencana_besok" rows="4" class="w-full bg-dark-800 border border-dark-600 rounded-lg px-4 py-3 text-white placeholder-dark-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all resize-none" placeholder="Contoh: Melanjutkan kalibrasi alat dan pengecekan komunikasi data server…"></textarea>
+     </div><!-- Form Actions -->
+     <div class="p-6 bg-dark-800/50 rounded-b-xl">
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+       <button type="button" id="back-btn" class="w-full sm:w-auto flex items-center justify-center gap-2 bg-transparent border border-dark-600 hover:border-dark-500 text-dark-300 hover:text-white px-6 py-3 rounded-lg font-medium transition-all">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg> Kembali </button>
+       <div class="flex items-center gap-3 w-full sm:w-auto">
+        <button type="button" id="reset-btn" class="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-dark-700 hover:bg-dark-600 text-dark-200 px-6 py-3 rounded-lg font-medium transition-colors">
+         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+         </svg> Reset Form </button> <button type="submit" id="submit-btn" class="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-500 to-primary-500 hover:from-cyan-400 hover:to-primary-400 text-white px-8 py-3 rounded-lg font-semibold shadow-lg shadow-primary-500/25 transition-all">
+         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+         </svg><span id="submit-btn-text">Simpan Report</span> </button>
+       </div>
+      </div>
+     </div>
+    </form><!-- Success Toast -->
+    <div id="success-toast" class="fixed bottom-6 right-6 bg-emerald-600 text-white px-6 py-4 rounded-lg shadow-xl transform translate-y-20 opacity-0 transition-all duration-300 flex items-center gap-3 z-50">
+     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+     </svg><span>Report berhasil disimpan!</span>
+    </div><!-- Reset Confirmation -->
+    <div id="reset-confirm" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+     <div class="bg-dark-800 border border-dark-600 rounded-xl p-6 max-w-sm w-full shadow-2xl">
+      <div class="flex items-center gap-3 mb-4">
+       <div class="w-10 h-10 bg-amber-600/20 rounded-full flex items-center justify-center">
+        <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+       </div>
+       <h3 class="text-lg font-semibold text-white">Reset Form?</h3>
+      </div>
+      <p class="text-dark-300 mb-6">Semua data yang telah diisi akan dihapus. Tindakan ini tidak dapat dibatalkan.</p>
+      <div class="flex items-center gap-3">
+       <button id="reset-cancel" class="flex-1 bg-dark-700 hover:bg-dark-600 text-white py-2.5 rounded-lg font-medium transition-colors">Batal</button> <button id="reset-confirm-btn" class="flex-1 bg-red-600 hover:bg-red-500 text-white py-2.5 rounded-lg font-medium transition-colors">Ya, Reset</button>
+      </div>
+     </div>
+    </div>
+   </main><!-- Footer -->
+   <footer class="max-w-5xl mx-auto px-6 py-6 text-center text-dark-500 text-sm">
+    <p>© 2024 • Report Pekerjaan Harian • Internal System</p>
+   </footer>
+  </div>
+  <script>
+    // Default configuration
+    const defaultConfig = {
+      page_title: 'Report Pekerjaan Harian',
+      page_subtitle: 'Form pelaporan aktivitas kerja harian karyawan',
+      submit_button_text: 'Simpan Report',
+      job_types_list: 'Visit, Correspondence, Development, Installation, Documentation, Maintenance, Troubleshooting, Training',
+      background_color: '#020617',
+      surface_color: '#0f172a',
+      text_color: '#f1f5f9',
+      primary_action_color: '#0ea5e9',
+      secondary_action_color: '#3b82f6',
+      font_family: 'Inter',
+      font_size: 16
+    };
+
+    let workItems = [];
+    let workIdCounter = 0;
+    let currentData = [];
+    let isSubmitting = false;
+
+    const authToken = getCookie("authToken");
+    const namaKaryawan = getCookieName("nama_karyawan");
+
+    if (!authToken) {
+      throw new Error('Authentication token not found');
+    }
+    if (!namaKaryawan) {
+      throw new Error('Nama Karyawan not found');
+    }
+    
+    // Initialize Element SDK
+    if (window.elementSdk) {
+      window.elementSdk.init({
+        defaultConfig,
+        onConfigChange: async (config) => {
+          const c = { ...defaultConfig, ...config };
+          
+          // Update text content
+          document.getElementById('page-title').textContent = c.page_title;
+          document.getElementById('page-subtitle').textContent = c.page_subtitle;
+          document.getElementById('submit-btn-text').textContent = c.submit_button_text;
+          
+          // Update colors
+          document.body.style.backgroundColor = c.background_color;
+          document.querySelectorAll('.bg-dark-900').forEach(el => {
+            el.style.backgroundColor = c.surface_color;
+          });
+          document.querySelectorAll('.text-white, .text-dark-100').forEach(el => {
+            el.style.color = c.text_color;
+          });
+          
+          // Update primary action buttons
+          const submitBtn = document.getElementById('submit-btn');
+          submitBtn.style.background = `linear-gradient(to right, ${c.primary_action_color}, ${c.secondary_action_color})`;
+          
+          // Update fonts
+          const fontStack = `${c.font_family}, Inter, sans-serif`;
+          document.body.style.fontFamily = fontStack;
+          
+          const baseSize = c.font_size;
+          document.getElementById('page-title').style.fontSize = `${baseSize * 1.25}px`;
+          document.getElementById('page-subtitle').style.fontSize = `${baseSize * 0.875}px`;
+        },
+        mapToCapabilities: (config) => {
+          const c = { ...defaultConfig, ...config };
+          return {
+            recolorables: [
+              {
+                get: () => c.background_color,
+                set: (value) => window.elementSdk.setConfig({ background_color: value })
+              },
+              {
+                get: () => c.surface_color,
+                set: (value) => window.elementSdk.setConfig({ surface_color: value })
+              },
+              {
+                get: () => c.text_color,
+                set: (value) => window.elementSdk.setConfig({ text_color: value })
+              },
+              {
+                get: () => c.primary_action_color,
+                set: (value) => window.elementSdk.setConfig({ primary_action_color: value })
+              },
+              {
+                get: () => c.secondary_action_color,
+                set: (value) => window.elementSdk.setConfig({ secondary_action_color: value })
+              }
+            ],
+            borderables: [],
+            fontEditable: {
+              get: () => c.font_family,
+              set: (value) => window.elementSdk.setConfig({ font_family: value })
+            },
+            fontSizeable: {
+              get: () => c.font_size,
+              set: (value) => window.elementSdk.setConfig({ font_size: value })
+            }
+          };
+        },
+        mapToEditPanelValues: (config) => {
+          const c = { ...defaultConfig, ...config };
+          return new Map([
+            ['page_title', c.page_title],
+            ['page_subtitle', c.page_subtitle],
+            ['submit_button_text', c.submit_button_text],
+            ['job_types_list', c.job_types_list]
+          ]);
+        }
+      });
+    }
+
+    // Initialize Data SDK
+    const dataHandler = {
+      onDataChanged(data) {
+        currentData = data;
+      }
+    };
+
+    if (window.dataSdk) {
+      window.dataSdk.init(dataHandler);
+    }
+
+    // Set today's date
+    function setTodayDate() {
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('tanggal').value = today;
+    }
+
+    // Create work item element
+    function createWorkItem(id) {
+      const div = document.createElement('div');
+      div.className = 'work-item bg-dark-800 border border-dark-600 rounded-lg p-5 relative';
+      div.dataset.id = id;
+      
+      // Get current job types from config or use defaults
+      const config = window.elementSdk?.config || defaultConfig;
+      const jobTypesString = config.job_types_list || defaultConfig.job_types_list;
+      const jobTypes = jobTypesString.split(',').map(type => type.trim()).filter(type => type);
+      
+      let jobTypeOptionsHTML = '<option value="">Pilih Jenis Pekerjaan</option>';
+      jobTypes.forEach(type => {
+        jobTypeOptionsHTML += `<option value="${type}">${type}</option>`;
+      });
+      
+      div.innerHTML = `
+        <button type="button" class="remove-work absolute top-3 right-3 w-8 h-8 bg-dark-700 hover:bg-red-600/20 border border-dark-600 hover:border-red-500/50 rounded-lg flex items-center justify-center text-dark-400 hover:text-red-400 transition-all" title="Hapus pekerjaan">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+        
+        <div class="pr-10 mb-4">
+          <span class="inline-flex items-center gap-2 text-xs font-medium text-dark-400 bg-dark-700 px-3 py-1 rounded-full">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+            </svg>
+            Pekerjaan #${workItems.length + 1}
+          </span>
+        </div>
+        
+        <div class="space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-dark-300 mb-2">Project</label>
+              <input type="text" class="work-project-name w-full bg-dark-900 border border-dark-600 rounded-lg px-4 py-3 text-white placeholder-dark-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all" placeholder="Contoh: Proyek AQMS Fase 2…">
+            </div>
+            <div class="relative">
+              <label class="block text-sm font-medium text-dark-300 mb-2">Jenis Pekerjaan</label>
+              <div class="relative">
+                <input type="text" class="work-job-type w-full bg-dark-900 border border-dark-600 rounded-lg px-4 py-3 text-white placeholder-dark-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all" placeholder="Pilih atau ketik jenis pekerjaan…" autocomplete="off">
+                <div class="job-type-dropdown absolute top-full left-0 right-0 mt-1 bg-dark-800 border border-dark-600 rounded-lg shadow-lg max-h-48 overflow-y-auto hidden z-10">
+                  ${jobTypeOptionsHTML.split('<option').slice(1).map(opt => {
+                    const value = opt.match(/value="([^"]*)"/)?.[1] || '';
+                    const label = opt.match(/>([^<]*)</)?.[1] || '';
+                    return value ? `<div class="job-type-option px-4 py-2.5 hover:bg-dark-700 cursor-pointer text-white text-sm" data-value="${value}">${label}</div>` : '';
+                  }).join('')}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-dark-300 mb-2">Judul Pekerjaan</label>
+            <input type="text" class="work-job-title w-full bg-dark-900 border border-dark-600 rounded-lg px-4 py-3 text-white placeholder-dark-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all" placeholder="Contoh: Kalibrasi Sensor PM2.5…">
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-dark-300 mb-2">Deskripsi Pekerjaan</label>
+            <textarea class="work-desc w-full bg-dark-900 border border-dark-600 rounded-lg px-4 py-3 text-white placeholder-dark-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all resize-none" rows="3" placeholder="Contoh: Maintenance sensor AQMS, pengecekan panel kontrol, penggantian sparepart…"></textarea>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-dark-300 mb-3">Progress</label>
+            <div class="flex items-center gap-4">
+              <div class="flex-1 relative cursor-pointer group">
+                <div class="work-progress-container h-2 bg-dark-700 rounded-lg overflow-hidden relative">
+                  <div class="work-progress-bar h-full rounded-lg transition-all duration-300 bg-red-500" style="width: 0%"></div>
+                  <div class="work-progress-thumb absolute top-1/2 -translate-y-1/2 w-5 h-5 bg-white rounded-full shadow-lg border-2 border-dark-700 cursor-grab active:cursor-grabbing hover:shadow-xl hover:border-white transition-all" style="left: 0%; transform: translate(-50%, -50%)" title="Drag to adjust progress"></div>
+                </div>
+              </div>
+              <input type="number" class="work-progress-input bg-dark-900 border border-dark-600 rounded-lg px-3 py-2 text-white font-semibold w-16 text-center focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all" min="0" max="100" value="0">
+              <span class="text-dark-400 w-14 text-center">%</span>
+            </div>
+          </div>
+
+          <div class="border-t border-dark-600 pt-4 mt-4">
+            <div>
+              <label class="block text-sm font-medium text-dark-300 mb-2">Kendala</label>
+              <textarea class="work-kendala w-full bg-dark-900 border border-dark-600 rounded-lg px-4 py-3 text-white placeholder-dark-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all resize-none" rows="2" placeholder="Contoh: Sensor tidak responsif…"></textarea>
+              <p class="text-xs text-dark-500 mt-1.5">Opsional</p>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-dark-300 mb-2">Solusi</label>
+            <textarea class="work-solusi w-full bg-dark-900 border border-dark-600 rounded-lg px-4 py-3 text-white placeholder-dark-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all resize-none" rows="2" placeholder="Contoh: Melakukan restart modul sensor…"></textarea>
+            <p class="text-xs text-dark-500 mt-1.5">Opsional</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-dark-300 mb-2">File Kendala</label>
+              <div class="flex gap-2">
+                <input type="file" class="work-kendala-file flex-1 bg-dark-900 border border-dark-600 rounded-lg px-4 py-2 text-dark-400 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                <button type="button" class="work-kendala-camera bg-primary-600 hover:bg-primary-500 text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors flex items-center gap-2" title="Ambil Foto">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  </svg>
+                </button>
+              </div>
+              <p class="text-xs text-dark-500 mt-1.5">Opsional • Max 5MB</p>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-dark-300 mb-2">File Solusi</label>
+              <div class="flex gap-2">
+                <input type="file" class="work-solusi-file flex-1 bg-dark-900 border border-dark-600 rounded-lg px-4 py-2 text-dark-400 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                <button type="button" class="work-solusi-camera bg-primary-600 hover:bg-primary-500 text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors flex items-center gap-2" title="Ambil Foto">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  </svg>
+                </button>
+              </div>
+              <p class="text-xs text-dark-500 mt-1.5">Opsional • Max 5MB</p>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-dark-300 mb-2">Save Document 1</label>
+            <div class="flex gap-2">
+              <input type="file" class="work-save-document-1 flex-1 bg-dark-900 border border-dark-600 rounded-lg px-4 py-2 text-dark-400 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+              <button type="button" class="work-save-document-1-camera bg-primary-600 hover:bg-primary-500 text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors flex items-center gap-2" title="Ambil Foto">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+              </button>
+            </div>
+            <p class="text-xs text-dark-500 mt-1.5">Opsional • Max 5MB</p>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-dark-300 mb-2">Save Document 2</label>
+            <div class="flex gap-2">
+              <input type="file" class="work-save-document-2 flex-1 bg-dark-900 border border-dark-600 rounded-lg px-4 py-2 text-dark-400 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+              <button type="button" class="work-save-document-2-camera bg-primary-600 hover:bg-primary-500 text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors flex items-center gap-2" title="Ambil Foto">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+              </button>
+            </div>
+            <p class="text-xs text-dark-500 mt-1.5">Opsional • Max 5MB</p>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-dark-300 mb-2">Save Document 3</label>
+            <div class="flex gap-2">
+              <input type="file" class="work-save-document-3 flex-1 bg-dark-900 border border-dark-600 rounded-lg px-4 py-2 text-dark-400 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+              <button type="button" class="work-save-document-3-camera bg-primary-600 hover:bg-primary-500 text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors flex items-center gap-2" title="Ambil Foto">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+              </button>
+            </div>
+            <p class="text-xs text-dark-500 mt-1.5">Opsional • Max 5MB</p>
+          </div>
+        </div>
+      `;
+      
+      // Add event listeners
+      const removeBtn = div.querySelector('.remove-work');
+      removeBtn.addEventListener('click', () => removeWorkItem(id));
+      
+      // Handle job type input with dropdown
+      const jobTypeInput = div.querySelector('.work-job-type');
+      const jobTypeDropdown = div.querySelector('.job-type-dropdown');
+      const jobTypeOptions = div.querySelectorAll('.job-type-option');
+      
+      // Show dropdown on focus
+      jobTypeInput.addEventListener('focus', () => {
+        jobTypeDropdown.classList.remove('hidden');
+      });
+      
+      // Filter dropdown based on input
+      jobTypeInput.addEventListener('input', (e) => {
+        const searchValue = e.target.value.toLowerCase();
+        jobTypeOptions.forEach(option => {
+          const text = option.textContent.toLowerCase();
+          if (text.includes(searchValue) || searchValue === '') {
+            option.classList.remove('hidden');
+          } else {
+            option.classList.add('hidden');
+          }
+        });
+      });
+      
+      // Select option from dropdown
+      jobTypeOptions.forEach(option => {
+        option.addEventListener('click', () => {
+          jobTypeInput.value = option.dataset.value;
+          jobTypeDropdown.classList.add('hidden');
+        });
+      });
+      
+      // Hide dropdown when clicking outside
+      document.addEventListener('click', (e) => {
+        if (!div.querySelector('.relative').contains(e.target)) {
+          jobTypeDropdown.classList.add('hidden');
+        }
+      });
+      
+      // Allow typing custom value
+      jobTypeInput.addEventListener('blur', () => {
+        setTimeout(() => {
+          if (!jobTypeDropdown.contains(document.activeElement)) {
+            jobTypeDropdown.classList.add('hidden');
+          }
+        }, 200);
+      });
+      
+      // Camera buttons
+      const kendalaCamera = div.querySelector('.work-kendala-camera');
+      const soluziCamera = div.querySelector('.work-solusi-camera');
+      const saveDoc1Camera = div.querySelector('.work-save-document-1-camera');
+      const saveDoc2Camera = div.querySelector('.work-save-document-2-camera');
+      const saveDoc3Camera = div.querySelector('.work-save-document-3-camera');
+      const kendalaFileInput = div.querySelector('.work-kendala-file');
+      const soluziFileInput = div.querySelector('.work-solusi-file');
+      const saveDoc1FileInput = div.querySelector('.work-save-document-1');
+      const saveDoc2FileInput = div.querySelector('.work-save-document-2');
+      const saveDoc3FileInput = div.querySelector('.work-save-document-3');
+      
+      kendalaCamera.addEventListener('click', (e) => {
+        e.preventDefault();
+        openCamera((blob) => handleCameraCapture(blob, kendalaFileInput));
+      });
+      
+      soluziCamera.addEventListener('click', (e) => {
+        e.preventDefault();
+        openCamera((blob) => handleCameraCapture(blob, soluziFileInput));
+      });
+      
+      saveDoc1Camera.addEventListener('click', (e) => {
+        e.preventDefault();
+        openCamera((blob) => handleCameraCapture(blob, saveDoc1FileInput));
+      });
+      
+      saveDoc2Camera.addEventListener('click', (e) => {
+        e.preventDefault();
+        openCamera((blob) => handleCameraCapture(blob, saveDoc2FileInput));
+      });
+      
+      saveDoc3Camera.addEventListener('click', (e) => {
+        e.preventDefault();
+        openCamera((blob) => handleCameraCapture(blob, saveDoc3FileInput));
+      });
+      
+      const progressSlider = div.querySelector('.work-progress');
+      const progressInput = div.querySelector('.work-progress-input');
+      const progressBar = div.querySelector('.work-progress-bar');
+      const progressThumb = div.querySelector('.work-progress-thumb');
+      const progressContainer = div.querySelector('.work-progress-container');
+      
+      // Function to get color based on percentage
+      const getProgressColor = (value) => {
+        if (value < 25) return 'bg-red-500';
+        if (value < 50) return 'bg-amber-500';
+        if (value < 75) return 'bg-cyan-500';
+        return 'bg-emerald-500';
+      };
+      
+      // Update progress inputs
+      const updateProgress = (value) => {
+        const numValue = Math.max(0, Math.min(100, parseInt(value) || 0));
+        progressInput.value = numValue;
+        
+        // Update progress bar width and color
+        progressBar.style.width = numValue + '%';
+        progressThumb.style.left = numValue + '%';
+        progressBar.className = `h-full rounded-lg transition-all duration-300 ${getProgressColor(numValue)}`;
+      };
+      
+      // Handle mouse drag on progress bar
+      let isDragging = false;
+      
+      progressContainer.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        const rect = progressContainer.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const percent = Math.max(0, Math.min(100, (x / rect.width) * 100));
+        updateProgress(percent);
+      });
+      
+      document.addEventListener('mousemove', (e) => {
+        if (isDragging) {
+          const rect = progressContainer.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const percent = Math.max(0, Math.min(100, (x / rect.width) * 100));
+          updateProgress(percent);
+        }
+      });
+      
+      document.addEventListener('mouseup', () => {
+        isDragging = false;
+      });
+      
+      // Handle touch drag on progress bar
+      progressContainer.addEventListener('touchstart', (e) => {
+        isDragging = true;
+        const rect = progressContainer.getBoundingClientRect();
+        const x = e.touches[0].clientX - rect.left;
+        const percent = Math.max(0, Math.min(100, (x / rect.width) * 100));
+        updateProgress(percent);
+      });
+      
+      document.addEventListener('touchmove', (e) => {
+        if (isDragging) {
+          const rect = progressContainer.getBoundingClientRect();
+          const x = e.touches[0].clientX - rect.left;
+          const percent = Math.max(0, Math.min(100, (x / rect.width) * 100));
+          updateProgress(percent);
+        }
+      });
+      
+      document.addEventListener('touchend', () => {
+        isDragging = false;
+      });
+      
+      progressInput.addEventListener('input', (e) => {
+        updateProgress(e.target.value);
+      });
+      
+      progressInput.addEventListener('blur', (e) => {
+        if (e.target.value === '' || isNaN(e.target.value)) {
+          updateProgress(0);
+        }
+      });
+      
+      return div;
+    }
+
+    // Add work item
+    function addWorkItem() {
+      const id = ++workIdCounter;
+      workItems.push(id);
+      const workList = document.getElementById('work-list');
+      const workItem = createWorkItem(id);
+      workList.appendChild(workItem);
+    }
+
+    // Remove work item
+    function removeWorkItem(id) {
+      const index = workItems.indexOf(id);
+      if (index > -1) {
+        workItems.splice(index, 1);
+        const item = document.querySelector(`.work-item[data-id="${id}"]`);
+        if (item) {
+          item.remove();
+        }
+        // Renumber remaining items
+        document.querySelectorAll('.work-item').forEach((item, idx) => {
+          const badge = item.querySelector('span.inline-flex');
+          if (badge) {
+            badge.innerHTML = `
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+              </svg>
+              Pekerjaan #${idx + 1}
+            `;
+          }
+        });
+      }
+    }
+
+    // Show toast
+    function showToast() {
+      const toast = document.getElementById('success-toast');
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+      
+      setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0');
+        toast.classList.remove('translate-y-0', 'opacity-100');
+      }, 3000);
+    }
+
+    // Reset form
+    function resetForm() {
+      document.getElementById('report-form').reset();
+      document.getElementById('nama').value = namaKaryawan;    
+      document.getElementById('work-list').innerHTML = '';
+      workItems = [];
+      workIdCounter = 0;
+      setTodayDate();
+      document.getElementById('jam-mulai').value = '08:00';
+      document.getElementById('jam-selesai').value = '17:00';
+      addWorkItem();
+    }
+
+    // Convert file to base64
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // Handle camera capture
+    function handleCameraCapture(blob, fileInput) {
+      const file = new File([blob], `photo_${Date.now()}.jpg`, { type: 'image/jpeg' });
+      const dataTransfer = new DataTransfer();
+      dataTransfer.items.add(file);
+      fileInput.files = dataTransfer.files;
+      
+      // Show success indicator
+      fileInput.style.borderColor = '#10b981';
+      setTimeout(() => {
+        fileInput.style.borderColor = '';
+      }, 2000);
+    }
+
+    // Open camera
+    function openCamera(callback) {
+      const canvas = document.createElement('canvas');
+      navigator.mediaDevices.getUserMedia({ 
+        video: { 
+          facingMode: 'environment',
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        } 
+      })
+        .then(stream => {
+          // Create modal for camera
+          const modal = document.createElement('div');
+          modal.className = 'fixed inset-0 bg-black/80 z-[9999] flex items-center justify-center p-4';
+          modal.innerHTML = `
+            <div class="bg-dark-900 rounded-xl overflow-hidden max-w-2xl w-full border border-dark-700 shadow-2xl">
+              <div class="relative bg-black w-full">
+                <video id="camera-video" class="w-full h-auto" autoplay playsinline muted></video>
+              </div>
+              <div class="p-4 flex gap-2 bg-dark-800">
+                <button id="camera-cancel" class="flex-1 bg-dark-700 hover:bg-dark-600 text-white py-3 rounded-lg font-medium transition-colors">Batal</button>
+                <button id="camera-capture" class="flex-1 bg-primary-600 hover:bg-primary-500 text-white py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  </svg>
+                  Ambil Foto
+                </button>
+              </div>
+            </div>
+          `;
+          
+          document.body.appendChild(modal);
+          const videoEl = modal.querySelector('#camera-video');
+          videoEl.srcObject = stream;
+          
+          // Ensure video is playing
+          videoEl.onloadedmetadata = () => {
+            videoEl.play().catch(err => console.error('Video play error:', err));
+          };
+          
+          const captureBtn = modal.querySelector('#camera-capture');
+          const cancelBtn = modal.querySelector('#camera-cancel');
+          
+          const capture = () => {
+            try {
+              canvas.width = videoEl.videoWidth;
+              canvas.height = videoEl.videoHeight;
+              const ctx = canvas.getContext('2d');
+              ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
+              
+              canvas.toBlob((blob) => {
+                callback(blob);
+                stream.getTracks().forEach(track => track.stop());
+                modal.remove();
+              }, 'image/jpeg', 0.95);
+            } catch (err) {
+              console.error('Capture error:', err);
+            }
+          };
+          
+          captureBtn.addEventListener('click', capture);
+          
+          cancelBtn.addEventListener('click', () => {
+            stream.getTracks().forEach(track => track.stop());
+            modal.remove();
+          });
+          
+          // Close on escape key
+          const escapeHandler = (e) => {
+            if (e.key === 'Escape') {
+              stream.getTracks().forEach(track => track.stop());
+              modal.remove();
+              document.removeEventListener('keydown', escapeHandler);
+            }
+          };
+          document.addEventListener('keydown', escapeHandler);
+        })
+        .catch(err => {
+          console.error('Camera access error:', err);
+          const errorToast = document.createElement('div');
+          errorToast.className = 'fixed bottom-6 right-6 bg-red-600 text-white px-6 py-4 rounded-lg shadow-xl flex items-center gap-3 z-50';
+          errorToast.innerHTML = `
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span>Tidak bisa mengakses kamera. Pastikan izin kamera sudah diberikan.</span>
+          `;
+          document.body.appendChild(errorToast);
+          setTimeout(() => errorToast.remove(), 4000);
+        });
+    }
+
+    // Collect work items data
+    async function collectWorkItems() {
+      const items = [];
+      const workItemElements = document.querySelectorAll('.work-item');
+      
+      for (const item of workItemElements) {
+        const projectName = item.querySelector('.work-project-name').value;
+        const jobType = item.querySelector('.work-job-type').value;
+        const jobTitle = item.querySelector('.work-job-title').value;
+        const desc = item.querySelector('.work-desc').value;
+        const progress = item.querySelector('.work-progress-input').value;
+        const kendala = item.querySelector('.work-kendala').value;
+        const solusi = item.querySelector('.work-solusi').value;
+        
+        if (desc.trim()) {
+          const workItem = { 
+            project_name: projectName || '',
+            job_type: jobType || '',
+            job_title: jobTitle || '',
+            description: desc, 
+            progress: parseInt(progress) || 0,
+            kendala: kendala || '',
+            solusi: solusi || '',
+            kendala_doc: null,
+            solusi_doc: null,
+            save_document_1: null,
+            save_document_2: null,
+            save_document_3: null
+          };
+          
+          // Get file data if available
+          const kendalaFileInput = item.querySelector('.work-kendala-file');
+          const soluziFileInput = item.querySelector('.work-solusi-file');
+          const saveDoc1FileInput = item.querySelector('.work-save-document-1');
+          const saveDoc2FileInput = item.querySelector('.work-save-document-2');
+          const saveDoc3FileInput = item.querySelector('.work-save-document-3');
+          
+          if (kendalaFileInput?.files?.length > 0) {
+            workItem.kendala_doc = {
+              name: kendalaFileInput.files[0].name,
+              type: kendalaFileInput.files[0].type,
+              size: kendalaFileInput.files[0].size,
+              data: await fileToBase64(kendalaFileInput.files[0])
+            };
+          }
+          
+          if (soluziFileInput?.files?.length > 0) {
+            workItem.solusi_doc = {
+              name: soluziFileInput.files[0].name,
+              type: soluziFileInput.files[0].type,
+              size: soluziFileInput.files[0].size,
+              data: await fileToBase64(soluziFileInput.files[0])
+            };
+          }
+
+          if (saveDoc1FileInput?.files?.length > 0) {
+            workItem.save_document_1 = {
+              name: saveDoc1FileInput.files[0].name,
+              type: saveDoc1FileInput.files[0].type,
+              size: saveDoc1FileInput.files[0].size,
+              data: await fileToBase64(saveDoc1FileInput.files[0])
+            };
+          }
+
+          if (saveDoc2FileInput?.files?.length > 0) {
+            workItem.save_document_2 = {
+              name: saveDoc2FileInput.files[0].name,
+              type: saveDoc2FileInput.files[0].type,
+              size: saveDoc2FileInput.files[0].size,
+              data: await fileToBase64(saveDoc2FileInput.files[0])
+            };
+          }
+
+          if (saveDoc3FileInput?.files?.length > 0) {
+            workItem.save_document_3 = {
+              name: saveDoc3FileInput.files[0].name,
+              type: saveDoc3FileInput.files[0].type,
+              size: saveDoc3FileInput.files[0].size,
+              data: await fileToBase64(saveDoc3FileInput.files[0])
+            };
+          }
+          
+          items.push(workItem);
+        }
+      }
+      return items;
+    }
+
+
+
+    // Validate form fields
+    function validateForm() {
+      const nama = document.getElementById('nama').value.trim();
+      const lokasi = document.getElementById('lokasi-kerja').value.trim();
+      const tanggal = document.getElementById('tanggal').value;
+      const rencanaBesok = document.getElementById('rencana-besok').value.trim();
+      
+      const workItems = document.querySelectorAll('.work-item');
+      let hasValidWork = false;
+      
+      workItems.forEach(item => {
+        const desc = item.querySelector('.work-desc').value.trim();
+        if (desc) {
+          hasValidWork = true;
+        }
+      });
+      
+      const errors = [];
+      
+      if (!nama) {
+        errors.push('Nama harus diisi');
+      }
+      if (!lokasi) {
+        errors.push('Lokasi Kerja harus dipilih');
+      }
+      if (!tanggal) {
+        errors.push('Tanggal harus diisi');
+      }
+      if (!hasValidWork) {
+        errors.push('Minimal satu pekerjaan harus ditambahkan');
+      }
+      if (!rencanaBesok) {
+        errors.push('Rencana Pekerjaan Besok harus diisi');
+      }
+      
+      return { isValid: errors.length === 0, errors };
+    }
+
+    // Show validation error
+    function showValidationError(errors) {
+      const errorContainer = document.createElement('div');
+      errorContainer.className = 'fixed bottom-6 right-6 bg-red-600 text-white rounded-lg shadow-xl z-50 max-w-sm w-full mx-4 animate-in';
+      
+      let errorHTML = `
+        <div class="p-4">
+          <div class="flex items-start gap-3 mb-3">
+            <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <div>
+              <p class="font-semibold">Validasi Gagal</p>
+              <p class="text-sm text-red-100 mt-1">Silakan lengkapi field berikut:</p>
+            </div>
+          </div>
+          <ul class="text-sm text-red-100 space-y-1 ml-8">
+      `;
+      
+      errors.forEach(error => {
+        errorHTML += `<li>• ${error}</li>`;
+      });
+      
+      errorHTML += `
+          </ul>
+        </div>
+      `;
+      
+      errorContainer.innerHTML = errorHTML;
+      document.body.appendChild(errorContainer);
+      
+      setTimeout(() => {
+        errorContainer.remove();
+      }, 5000);
+    }
+
+    // Handle form submission
+    async function handleSubmit(e) {
+      e.preventDefault();
+      
+      if (isSubmitting) return;
+      
+      // Validate form
+      const validation = validateForm();
+      if (!validation.isValid) {
+        showValidationError(validation.errors);
+        return;
+      }
+      
+      const submitBtn = document.getElementById('submit-btn');
+      const submitBtnText = document.getElementById('submit-btn-text');
+      const mode = submitBtn.dataset.mode || 'create';
+      const idReport = submitBtn.dataset.idReport;
+      
+      // Check data limit
+      if (currentData.length >= 999) {
+        const errorToast = document.createElement('div');
+        errorToast.className = 'fixed bottom-6 right-6 bg-red-600 text-white px-6 py-4 rounded-lg shadow-xl flex items-center gap-3 z-50';
+        errorToast.innerHTML = `
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <span>Batas maksimal 999 report telah tercapai. Hapus beberapa report terlebih dahulu.</span>
+        `;
+        document.body.appendChild(errorToast);
+        setTimeout(() => errorToast.remove(), 4000);
+        return;
+      }
+      
+      isSubmitting = true;
+      submitBtn.disabled = true;
+      submitBtnText.textContent = 'Menyimpan...';
+      
+      try {
+        // Collect work items with file data
+        const workItems = await collectWorkItems();
+        
+        const formData = {
+          nama: document.getElementById('nama').value,
+          lokasi_kerja: document.getElementById('lokasi-kerja').value,
+          tanggal: document.getElementById('tanggal').value,
+          jam_mulai: document.getElementById('jam-mulai').value,
+          jam_selesai: document.getElementById('jam-selesai').value,
+          pekerjaan_list: JSON.stringify(workItems),
+          rencana_besok: document.getElementById('rencana-besok').value,
+          created_at: new Date().toISOString()
+        };
+        
+        // Send data to backend API
+        const response = await fetch('/auth/absensi/daily-report', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+          },
+          body: JSON.stringify(formData)
+        });
+
+        const responseData = await response.json();
+
+        if (response.ok && responseData.success) {
+          // Prepare data for Data SDK (without file data to store in sheet)
+          const kendalaDocNames = workItems
+            .filter(item => item.kendala_doc)
+            .map(item => item.kendala_doc.name)
+            .join(', ');
+          
+          const soluziDocNames = workItems
+            .filter(item => item.solusi_doc)
+            .map(item => item.solusi_doc.name)
+            .join(', ');
+
+          const saveDoc1Names = workItems
+            .filter(item => item.save_document_1)
+            .map(item => item.save_document_1.name)
+            .join(', ');
+
+          const saveDoc2Names = workItems
+            .filter(item => item.save_document_2)
+            .map(item => item.save_document_2.name)
+            .join(', ');
+
+          const saveDoc3Names = workItems
+            .filter(item => item.save_document_3)
+            .map(item => item.save_document_3.name)
+            .join(', ');
+          
+          const sdkFormData = {
+            nama: formData.nama,
+            lokasi_kerja: formData.lokasi_kerja,
+            tanggal: formData.tanggal,
+            jam_mulai: formData.jam_mulai,
+            jam_selesai: formData.jam_selesai,
+            pekerjaan_list: formData.pekerjaan_list,
+            kendala_doc_names: kendalaDocNames,
+            solusi_doc_names: soluziDocNames,
+            save_document_1_names: saveDoc1Names,
+            save_document_2_names: saveDoc2Names,
+            save_document_3_names: saveDoc3Names,
+            created_at: formData.created_at
+          };
+          
+          // If backend is successful, also save to Data SDK if available
+          if (window.dataSdk) {
+            const result = await window.dataSdk.create(sdkFormData);
+            if (result.isOk) {
+              showToast();
+              resetForm();
+            } else {
+              // Backend saved but local storage failed - still show success
+              showToast();
+              resetForm();
+            }
+          } else {
+            showToast();
+            resetForm();
+          }
+        } else {
+          throw new Error(responseData.message || 'Gagal menyimpan report');
+        }
+      } catch (error) {
+        const errorToast = document.createElement('div');
+        errorToast.className = 'fixed bottom-6 right-6 bg-red-600 text-white px-6 py-4 rounded-lg shadow-xl flex items-center gap-3 z-50';
+        errorToast.innerHTML = `
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <span>${error.message || 'Gagal menyimpan report. Silakan coba lagi.'}</span>
+        `;
+        document.body.appendChild(errorToast);
+        setTimeout(() => errorToast.remove(), 4000);
+      }
+      
+      isSubmitting = false;
+      submitBtn.disabled = false;
+      const config = window.elementSdk?.config || defaultConfig;
+      submitBtnText.textContent = config.submit_button_text || defaultConfig.submit_button_text;
+    }
+
+    // Get nama from cookie
+    function getCookie(name) {
+      const nameEQ = name + "=";
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        let cookie = cookies[i].trim();
+        if (cookie.indexOf(nameEQ) === 0) {
+          return decodeURIComponent(cookie.substring(nameEQ.length));
+        }
+      }
+      return '';
+    }
+
+    // Fetch report data from backend
+    async function fetchReportData(idReport) {
+      try {
+        const response = await fetch(`/auth/absensi/daily-report/${idReport}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+          }
+        });
+
+        const responseData = await response.json();
+        // console.log('Fetch report response:', responseData);
+
+        if (responseData) {
+          const data = responseData;
+          // console.log('Fetched report data:', data);
+          
+          // Fill basic information
+          document.getElementById('nama').value = data.nama || '';
+          document.getElementById('lokasi-kerja').value = data.lokasi_kerja || '';
+          document.getElementById('tanggal').value = data.tanggal || '';
+          document.getElementById('jam-mulai').value = data.jam_mulai || '08:00';
+          document.getElementById('jam-selesai').value = data.jam_selesai || '17:00';
+          document.getElementById('rencana-besok').value = data.rencana_besok || '';
+          
+          // Clear existing work items
+          document.getElementById('work-list').innerHTML = '';
+          workItems = [];
+          workIdCounter = 0;
+          
+          // Parse and fill work items
+          let pekerjaanHTML = '';
+          let pekerjaan_list = [];
+          try {
+            pekerjaan_list = JSON.parse(data.pekerjaan_list);
+          } catch (e) {
+            console.error('Invalid JSON pekerjaan_list:', e);
+            return '';
+          }
+          // console.log('Parsed pekerjaan_list:', pekerjaan_list);
+          if (pekerjaan_list) {
+            try {
+              const pekerjaanList = typeof pekerjaan_list === 'string' 
+                ? JSON.parse(pekerjaan_list) 
+                : pekerjaan_list;
+              
+              if (Array.isArray(pekerjaanList)) {
+                pekerjaanList.forEach(pekerjaan => {
+                  addWorkItem();
+                  const workList = document.getElementById('work-list');
+                  const lastWorkItem = workList.lastElementChild;
+                  
+                  if (lastWorkItem) {
+                    lastWorkItem.querySelector('.work-project-name').value = pekerjaan.project_name || '';
+                    lastWorkItem.querySelector('.work-job-type').value = pekerjaan.job_type || '';
+                    lastWorkItem.querySelector('.work-job-title').value = pekerjaan.job_title || '';
+                    lastWorkItem.querySelector('.work-desc').value = pekerjaan.description || '';
+                    lastWorkItem.querySelector('.work-progress-input').value = pekerjaan.progress || 0;
+                    lastWorkItem.querySelector('.work-kendala').value = pekerjaan.kendala || '';
+                    lastWorkItem.querySelector('.work-solusi').value = pekerjaan.solusi || '';
+                    
+                    // Update progress bar appearance
+                    const progressInput = lastWorkItem.querySelector('.work-progress-input');
+                    progressInput.dispatchEvent(new Event('input'));
+                  }
+                });
+              }
+            } catch (err) {
+              console.error('Error parsing pekerjaan_list:', err);
+              addWorkItem();
+            }
+          } else {
+            addWorkItem();
+          }
+          
+          // Change submit button to update mode
+          const submitBtn = document.getElementById('submit-btn');
+          const submitBtnText = document.getElementById('submit-btn-text');
+          submitBtn.innerHTML = `
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+            <span id="submit-btn-text">Perbarui Report</span>
+          `;
+          submitBtn.dataset.mode = 'update';
+          submitBtn.dataset.idReport = idReport;
+        } else {
+          throw new Error(responseData.message || 'Gagal mengambil data report');
+        }
+      } catch (error) {
+        const errorToast = document.createElement('div');
+        errorToast.className = 'fixed bottom-6 right-6 bg-red-600 text-white px-6 py-4 rounded-lg shadow-xl flex items-center gap-3 z-50';
+        errorToast.innerHTML = `
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <span>${error.message || 'Gagal mengambil data report'}</span>
+        `;
+        document.body.appendChild(errorToast);
+        setTimeout(() => errorToast.remove(), 4000);
+      }
+    }
+
+    // Initialize
+    setTodayDate();
+    addWorkItem();
+    
+    document.getElementById('nama').value = namaKaryawan;
+    // Check for id_report in cookie
+    const idReportFromCookie = getCookie('id_report');
+       
+    // If id_report exists, fetch data from backend
+    if (idReportFromCookie) {
+      fetchReportData(idReportFromCookie);
+    } else {
+      addWorkItem();
+    }
+
+    // Event listeners
+    document.getElementById('add-work-btn').addEventListener('click', addWorkItem);
+    document.getElementById('report-form').addEventListener('submit', handleSubmit);
+    
+    document.getElementById('reset-btn').addEventListener('click', () => {
+      document.getElementById('reset-confirm').classList.remove('hidden');
+    });
+    
+    document.getElementById('reset-cancel').addEventListener('click', () => {
+      document.getElementById('reset-confirm').classList.add('hidden');
+    });
+    
+    document.getElementById('reset-confirm-btn').addEventListener('click', () => {
+      resetForm();
+      document.getElementById('reset-confirm').classList.add('hidden');
+    });
+    
+    document.getElementById('back-btn').addEventListener('click', () => {
+      window.open('/');
+    });
+
+    function getCookie(name) {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop().split(";").shift();
+      return null;
+    }
+
+    function getCookieName(name) {
+      const cookies = document.cookie.split('; ');
+      for (let c of cookies) {
+        const [key, value] = c.split('=');
+        if (key === name) {
+          // penting: + → spasi → decode
+          return decodeURIComponent(value.replace(/\+/g, ' '));
+        }
+      }
+      return null;
+    }    
+
+  </script>
+ </body>
+</html>

@@ -1,0 +1,1472 @@
+<!doctype html>
+<html lang="id" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daftar Pengajuan Lembur</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  <style>
+    [v-cloak] {
+      display: none !important;
+    }
+    body {
+      box-sizing: border-box;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    
+    .scrollbar-thin::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    
+    .scrollbar-thin::-webkit-scrollbar-track {
+      background: #1e293b;
+    }
+    
+    .scrollbar-thin::-webkit-scrollbar-thumb {
+      background: #475569;
+      border-radius: 3px;
+    }
+    
+    .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+      background: #64748b;
+    }
+    
+    input[type="date"]::-webkit-calendar-picker-indicator {
+      filter: invert(1);
+      cursor: pointer;
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full bg-slate-950 text-slate-100 overflow-auto scrollbar-thin">
+  <div id="app" v-cloak class="h-full w-full flex flex-col">
+   <!-- Header Bar -->
+   <header class="bg-slate-900 border-b border-slate-800 px-6 py-4 flex items-center justify-between flex-shrink-0">
+    <div>
+     <h1 id="page-title" class="text-xl font-bold text-white">{{ config.page_title || defaultConfig.page_title }}</h1>
+     <p id="page-subtitle" class="text-sm text-slate-400 mt-0.5">{{ config.page_subtitle || defaultConfig.page_subtitle }}</p>
+    </div>
+    <div class="flex items-center gap-4">
+      <a href="/dashboard" class="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm font-medium transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+        </svg>
+        Kembali
+      </a>
+    </div>
+   </header>
+
+   <!-- Main Content -->
+   <main class="flex-1 p-6 overflow-auto">
+    <!-- Filter & Action Bar -->
+    <div class="bg-slate-900 rounded-xl border border-slate-800 p-4 mb-6">
+     <div class="flex flex-wrap items-center gap-4">
+      <!-- Filters -->
+      <div class="flex items-center gap-2">
+       <label class="text-xs text-slate-400 whitespace-nowrap">Dari:</label>
+       <input type="date" v-model="filterStart" @change="applyFilters" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+      </div>
+      <div class="flex items-center gap-2">
+       <label class="text-xs text-slate-400 whitespace-nowrap">📅 Sampai:</label>
+       <input type="date" v-model="filterEnd" @change="applyFilters" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+      </div>
+      <div class="flex items-center gap-2">
+       <label class="text-xs text-slate-400 whitespace-nowrap">📌 Status:</label>
+       <select v-model="filterStatus" @change="applyFilters" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[140px]">
+         <option value="">Semua Status</option>
+         <option value="Diajukan">Diajukan</option>
+         <option value="Disetujui">Disetujui</option>
+         <option value="Ditolak">Ditolak</option>
+         <option value="Revisi">Revisi</option>
+       </select>
+      </div>
+      <div class="flex items-center gap-2 flex-1 min-w-[200px]">
+       <label class="text-xs text-slate-400 whitespace-nowrap">🔍</label>
+       <input type="text" v-model="filterSearch" @input="applyFilters" placeholder="Cari nama karyawan..." class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full max-w-xs">
+      </div>
+      <!-- Action Buttons -->
+      <div class="flex items-center gap-2 ml-auto">
+       <button @click="fetchLemburData" class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors" title="Muat ulang data">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg> Muat Ulang
+       </button>
+       <button @click="exportToXLS" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg> Export XLS
+       </button>
+       <button @click="exportToPDF" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+        </svg> Export PDF
+       </button>
+      </div>
+     </div>
+    </div>
+
+    <!-- Loading Indicator -->
+    <div v-if="isLoading" class="mb-4 p-4 bg-blue-500/20 border border-blue-500/30 rounded-lg flex items-center gap-3">
+     <svg class="w-5 h-5 text-blue-400 animate-spin" fill="none" viewbox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle> <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+     </svg><span class="text-sm text-blue-300">Memuat data dari server...</span>
+    </div>
+
+    <!-- Error Alert -->
+    <div v-if="errorMessage" class="mb-4 p-4 bg-red-500/20 border border-red-500/30 rounded-lg flex items-center justify-between">
+     <div class="flex items-center gap-3">
+      <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg><span class="text-sm text-red-300">{{ errorMessage }}</span>
+     </div>
+     <button @click="errorMessage = ''" class="text-red-400 hover:text-red-300">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+     </button>
+    </div>
+
+    <!-- Data Table -->
+    <div class="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden">
+     <div class="overflow-x-auto">
+      <table class="w-full">
+       <thead>
+        <tr class="bg-slate-800/50 border-b border-slate-700">
+         <th class="px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider w-12">No</th>
+         <th class="px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider min-w-[180px]">Nama Karyawan</th>
+         <th class="px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Tanggal Lembur</th>
+         <th class="px-4 py-3 text-right text-xs font-semibold text-slate-300 uppercase tracking-wider">Weekday 1</th>
+         <th class="px-4 py-3 text-right text-xs font-semibold text-slate-300 uppercase tracking-wider">Weekday 2</th>
+         <th class="px-4 py-3 text-right text-xs font-semibold text-slate-300 uppercase tracking-wider">Weekend 1</th>
+         <th class="px-4 py-3 text-right text-xs font-semibold text-slate-300 uppercase tracking-wider">Weekend 2</th>
+         <th class="px-4 py-3 text-right text-xs font-semibold text-slate-300 uppercase tracking-wider">Weekend 3</th>
+         <th class="px-4 py-3 text-right text-xs font-semibold text-slate-300 uppercase tracking-wider bg-slate-800">Total Jam</th>
+         <th class="px-4 py-3 text-right text-xs font-semibold text-slate-300 uppercase tracking-wider">Biaya</th>
+         <th class="px-4 py-3 text-center text-xs font-semibold text-slate-300 uppercase tracking-wider">Status</th>
+         <th class="px-4 py-3 text-center text-xs font-semibold text-slate-300 uppercase tracking-wider w-32">Aksi</th>
+        </tr>
+       </thead>
+       <tbody class="divide-y divide-slate-800">
+        <tr v-for="(item, index) in allData" :key="item.id" class="hover:bg-slate-800/50 transition-colors">
+         <td class="px-4 py-3 text-sm text-slate-400">{{ ((currentPage - 1) * pageSize) + index + 1 }}</td>
+         <td class="px-4 py-3">
+          <p class="text-sm font-medium text-white">{{ item.nama }}</p>
+         </td>
+         <td class="px-4 py-3 text-sm text-slate-300">{{ formatDate(item.tanggal_lembur) }}</td>
+         <td class="px-4 py-3 text-sm text-slate-300 text-right">{{ item.weekday_1 }}</td>
+         <td class="px-4 py-3 text-sm text-slate-300 text-right">{{ item.weekday_2 }}</td>
+         <td class="px-4 py-3 text-sm text-slate-300 text-right">{{ item.weekend_1 }}</td>
+         <td class="px-4 py-3 text-sm text-slate-300 text-right">{{ item.weekend_2 }}</td>
+         <td class="px-4 py-3 text-sm text-slate-300 text-right">{{ item.weekend_3 }}</td>
+         <td class="px-4 py-3 text-right bg-slate-800/30">
+          <span class="text-sm font-bold text-blue-400">{{ calculateTotal(item) }}</span>
+         </td>
+         <td class="px-4 py-3 text-right">
+          <span class="text-sm font-medium text-emerald-400">{{ formatCurrency(item.jumlah_bayar) }}</span>
+         </td>
+         <td class="px-4 py-3 text-center">
+          <span class="px-2.5 py-1 rounded-full text-xs font-medium" :class="getStatusBadgeClass(item.approval_status)">
+            {{ item.approval_status }}
+          </span>
+         </td>
+         <td class="px-4 py-3">
+          <div class="flex items-center justify-center gap-1">
+            <button type="button" @click="showFormDetail(item)" class="p-1.5 hover:bg-slate-700 rounded-lg transition-colors" title="Detail">
+              <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+              </svg>
+            </button>
+          </div>
+         </td>
+        </tr>
+       </tbody>
+      </table>
+     </div>
+
+     <!-- Empty State -->
+     <div v-if="allData.length === 0 && !isLoading" class="py-16 text-center">
+      <svg class="w-16 h-16 mx-auto text-slate-600 mb-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+      <p class="text-slate-400 font-medium">Belum ada data pengajuan lembur</p>
+      <p class="text-slate-500 text-sm mt-1">Coba segarkan halaman atau periksa filter</p>
+     </div>
+
+     <!-- Pagination -->
+     <div v-if="allData.length > 0" class="bg-slate-800/30 px-4 py-3 border-t border-slate-800 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <span class="text-sm text-slate-400">Tampilkan:</span>
+        <select v-model.number="pageSize" @change="onPageSizeChange" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+         <option value="10">10</option> 
+         <option value="20">20</option> 
+         <option value="50">50</option> 
+        </select> 
+        <span class="text-sm text-slate-400">
+          Menampilkan {{ paginationStart }}-{{ paginationEnd }} dari {{ totalData }} data
+        </span>
+      </div>
+      <div class="flex items-center gap-1">
+       <button :disabled="currentPage === 1" @click="goToPage(currentPage - 1)" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm text-slate-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">← Sebelumnya</button>
+       <div class="flex items-center gap-1 mx-2">
+        <template v-for="page in paginationPages">
+          <span v-if="page === '...'" class="px-2 text-slate-500">...</span>
+          <button v-else @click="goToPage(page)" class="px-3 py-1.5 rounded-lg text-sm transition-colors" :class="page === currentPage ? 'bg-blue-600 text-white' : 'bg-slate-800 hover:bg-slate-700 text-slate-300'">
+            {{ page }}
+          </button>
+        </template>
+       </div>
+       <button :disabled="currentPage === totalPages || totalPages === 0" @click="goToPage(currentPage + 1)" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm text-slate-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">Selanjutnya →</button>
+      </div>
+     </div>
+    </div>
+   </main>
+
+   <!-- View Form Detail Modal -->
+   <div id="modal-form-detail" v-show="showDetailModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-6" @click.self="closeFormDetailModal">
+    <div class="bg-slate-900 rounded-2xl border border-slate-700 w-full max-w-4xl max-h-[90%] overflow-auto scrollbar-thin">
+     <div class="sticky top-0 bg-slate-900 px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+      <h2 class="text-lg font-bold text-white">Form Detail Pengajuan Lembur</h2>
+      <button @click="closeFormDetailModal" class="p-2 hover:bg-slate-800 rounded-lg transition-colors">
+       <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+       </svg>
+      </button>
+     </div>
+     <div v-if="currentRecord" class="p-6">
+      <form class="space-y-6" @submit.prevent>
+       <!-- Section 1: Informasi Dasar -->
+       <div>
+        <h3 class="text-base font-bold text-white mb-4 pb-2 border-b border-slate-700">📋 Informasi Dasar</h3>
+        <div class="grid grid-cols-2 gap-4">
+         <div><label class="block text-sm font-medium text-slate-300 mb-2">ID Pengajuan</label> <input type="text" :value="currentRecord.id" readonly class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none">
+         </div>
+         <div><label class="block text-sm font-medium text-slate-300 mb-2">Nama Karyawan</label> <input type="text" :value="currentRecord.nama" readonly class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none">
+         </div>
+        </div>
+       </div>
+
+       <!-- Section 2: Tanggal & Status -->
+       <div>
+        <h3 class="text-base font-bold text-white mb-4 pb-2 border-b border-slate-700">📅 Tanggal &amp; Status</h3>
+        <div class="grid grid-cols-3 gap-4">
+         <div><label class="block text-sm font-medium text-slate-300 mb-2">Tanggal Pengajuan Lembur</label> <input type="text" :value="formatDate(currentRecord.tanggal_lembur)" readonly class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none">
+         </div>
+         <div><label class="block text-sm font-medium text-slate-300 mb-2">Status Pengajuan</label>
+          <div class="flex items-center px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-lg">
+           <span class="px-2.5 py-1 rounded-full text-xs font-medium" :class="getStatusBadgeClass(currentRecord.approval_status)">
+             {{ currentRecord.approval_status }}
+           </span>
+          </div>
+         </div>
+         <div><label class="block text-sm font-medium text-slate-300 mb-2">Keterangan</label> <input type="text" :value="currentRecord.keterangan || '-'" readonly class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none">
+         </div>
+        </div>
+       </div>
+
+       <!-- Section 3: Durasi Lembur -->
+       <div>
+        <h3 class="text-base font-bold text-white mb-4 pb-2 border-b border-slate-700">⏰ Durasi Lembur (Jam)</h3>
+        <div class="grid grid-cols-5 gap-3">
+         <div><label class="block text-sm font-medium text-slate-300 mb-2">Weekday 1</label> <input type="number" :value="currentRecord.weekday_1" readonly class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none text-center">
+         </div>
+         <div><label class="block text-sm font-medium text-slate-300 mb-2">Weekday 2</label> <input type="number" :value="currentRecord.weekday_2" readonly class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none text-center">
+         </div>
+         <div><label class="block text-sm font-medium text-slate-300 mb-2">Weekend 1</label> <input type="number" :value="currentRecord.weekend_1" readonly class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none text-center">
+         </div>
+         <div><label class="block text-sm font-medium text-slate-300 mb-2">Weekend 2</label> <input type="number" :value="currentRecord.weekend_2" readonly class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none text-center">
+         </div>
+         <div><label class="block text-sm font-medium text-slate-300 mb-2">Weekend 3</label> <input type="number" :value="currentRecord.weekend_3" readonly class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none text-center">
+         </div>
+        </div>
+        <div class="mt-3 p-3 bg-blue-600/20 border border-blue-500/30 rounded-lg">
+         <p class="text-xs text-blue-300 mb-1">Total Jam Lembur</p>
+         <p class="text-2xl font-bold text-blue-400">{{ calculateTotal(currentRecord) }} Jam</p>
+        </div>
+       </div>
+
+       <!-- Section 4: Daftar Pekerjaan -->
+       <div>
+        <h3 class="text-base font-bold text-white mb-4 pb-2 border-b border-slate-700">📝 Daftar Pekerjaan</h3>
+        <textarea :value="currentRecord.daftar_pekerjaan || '-'" readonly class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none resize-none" rows="5"></textarea>
+       </div>
+
+       <!-- Section 5: Informasi Keuangan -->
+       <div>
+        <h3 class="text-base font-bold text-white mb-4 pb-2 border-b border-slate-700">💰 Informasi Keuangan</h3>
+        <div><label class="block text-sm font-medium text-slate-300 mb-2">Jumlah Bayar</label>
+         <div class="flex items-center px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-lg">
+          <p class="text-lg font-bold text-emerald-400">{{ formatCurrency(currentRecord.jumlah_bayar) }}</p>
+         </div>
+        </div>
+       </div>
+
+       <!-- Section 6: Bukti File -->
+       <div>
+        <h3 class="text-base font-bold text-white mb-4 pb-2 border-b border-slate-700">📎 Bukti Persetujuan Atasan (Foto)</h3>
+        <div class="grid grid-cols-3 gap-4">
+         <template v-if="buktiAtasanPhotos.length > 0">
+           <button type="button" v-for="(photoUrl, pIndex) in buktiAtasanPhotos" :key="pIndex" @click="showFilePreview(photoUrl, 'Bukti Persetujuan Atasan - Foto ' + (pIndex + 1))" class="group cursor-pointer">
+             <div class="bg-slate-800 rounded-lg overflow-hidden border border-slate-600 hover:border-blue-500/50 transition-all group-hover:shadow-lg group-hover:shadow-blue-500/20">
+               <div class="aspect-square bg-slate-700 flex items-center justify-center overflow-hidden relative group-hover:opacity-75 transition-opacity">
+                 <img :src="photoUrl" :alt="'Bukti Persetujuan Atasan ' + (pIndex + 1)" class="w-full h-full object-cover" loading="lazy">
+               </div>
+               <div class="p-2 text-center">
+                 <p class="text-xs text-blue-400 font-medium group-hover:text-blue-300">Klik untuk lihat</p>
+               </div>
+             </div>
+           </button>
+         </template>
+         <div v-else class="col-span-3 bg-slate-800 rounded-lg p-8 border border-dashed border-slate-600 text-center">
+           <svg class="w-12 h-12 mx-auto text-slate-600 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+           </svg>
+           <p class="text-slate-400 font-medium">Belum ada foto bukti persetujuan atasan</p>
+         </div>
+        </div>
+       </div>
+
+       <!-- Section 7: Bukti Pekerjaan -->
+       <div>
+        <h3 class="text-base font-bold text-white mb-4 pb-2 border-b border-slate-700">📎 Bukti Pekerjaan (Foto)</h3>
+        <div class="grid grid-cols-3 gap-4">
+         <template v-if="buktiPekerjaanPhotos.length > 0">
+           <button type="button" v-for="(photoUrl, pIndex) in buktiPekerjaanPhotos" :key="pIndex" @click="showFilePreview(photoUrl, 'Bukti Pekerjaan - Foto ' + (pIndex + 1))" class="group cursor-pointer">
+             <div class="bg-slate-800 rounded-lg overflow-hidden border border-slate-600 hover:border-emerald-500/50 transition-all group-hover:shadow-lg group-hover:shadow-emerald-500/20">
+               <div class="aspect-square bg-slate-700 flex items-center justify-center overflow-hidden relative group-hover:opacity-75 transition-opacity">
+                 <img :src="photoUrl" :alt="'Bukti Pekerjaan ' + (pIndex + 1)" class="w-full h-full object-cover" loading="lazy">
+               </div>
+               <div class="p-2 text-center">
+                 <p class="text-xs text-emerald-400 font-medium group-hover:text-emerald-300">Klik untuk lihat</p>
+               </div>
+             </div>
+           </button>
+         </template>
+         <div v-else class="col-span-3 bg-slate-800 rounded-lg p-8 border border-dashed border-slate-600 text-center">
+           <svg class="w-12 h-12 mx-auto text-slate-600 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+           </svg>
+           <p class="text-slate-400 font-medium">Belum ada foto bukti pekerjaan</p>
+         </div>
+        </div>
+       </div>
+
+       <!-- Section 8: Approval -->
+       <div>
+        <h3 class="text-base font-bold text-white mb-4 pb-2 border-b border-slate-700">✅ Persetujuan Lembur</h3>
+        <div class="space-y-3">
+         <div class="flex items-center gap-3 p-4 bg-emerald-600/20 rounded-lg border border-emerald-500/30 hover:border-emerald-500/50 transition-colors cursor-pointer" @click="approvalSelection = 'approve'">
+          <input type="radio" id="form-approval-radio-approve" value="approve" v-model="approvalSelection" class="w-5 h-5 border-slate-600 text-emerald-600 focus:ring-2 focus:ring-emerald-500 cursor-pointer">
+          <label for="form-approval-radio-approve" class="flex-1 text-sm text-emerald-300 cursor-pointer"> ✅ Saya menyetujui pengajuan lembur karyawan ini </label>
+         </div>
+
+         <div class="flex items-center gap-3 p-4 bg-red-600/20 rounded-lg border border-red-500/30 hover:border-red-500/50 transition-colors cursor-pointer" @click="approvalSelection = 'reject'">
+          <input type="radio" id="form-approval-radio-reject" value="reject" v-model="approvalSelection" class="w-5 h-5 border-slate-600 text-red-600 focus:ring-2 focus:ring-red-500 cursor-pointer">
+          <label for="form-approval-radio-reject" class="flex-1 text-sm text-red-300 cursor-pointer"> ❌ Saya menolak pengajuan lembur karyawan ini </label>
+         </div>
+
+         <div class="flex items-center gap-3 p-4 bg-yellow-600/20 rounded-lg border border-yellow-500/30 hover:border-yellow-500/50 transition-colors cursor-pointer" @click="approvalSelection = 'revise'">
+          <input type="radio" id="form-approval-radio-revise" value="revise" v-model="approvalSelection" class="w-5 h-5 border-slate-600 text-yellow-600 focus:ring-2 focus:ring-yellow-500 cursor-pointer">
+          <label for="form-approval-radio-revise" class="flex-1 text-sm text-yellow-300 cursor-pointer">✏️ Saya meminta koreksi pengajuan lembur karyawan ini</label>
+         </div>
+
+         <div v-if="detailKeterangan" class="block">
+           <label class="block text-sm font-medium text-slate-300 mb-2">{{ catatanLabel }}</label>
+           <div class="p-3 border rounded-lg" :style="catatanBoxStyle">
+             <p id="form-catatan-hr-text" class="text-sm" :style="catatanTextStyle">{{ detailKeterangan }}</p>
+           </div>
+         </div>
+
+         <div v-show="approvalSelection === 'reject' || approvalSelection === 'revise'" class="block">
+           <label class="block text-sm font-medium text-slate-300 mb-2">
+             📝 {{ noteLabel }} <span class="text-red-400">*</span>
+           </label>
+           <textarea v-model="approvalNote" rows="3" :placeholder="notePlaceholder" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"></textarea>
+         </div>
+        </div>
+       </div>
+
+       <!-- Action Buttons -->
+       <div class="flex justify-end gap-3 pt-4 border-t border-slate-800">
+        <button type="button" @click="closeFormDetailModal" class="px-5 py-2.5 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-medium transition-colors"> Kembali </button>
+        <button type="button" @click="submitApproval" :disabled="isApprovalSubmitting || !isApprovalFormValid" class="px-5 py-2.5 rounded-lg font-medium transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed" :class="approvalSubmitBtnClass">
+         <svg v-if="!isApprovalSubmitting" class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+         <svg v-else class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+         </svg>
+         <span>{{ isApprovalSubmitting ? 'Memproses...' : approvalSubmitBtnText }}</span>
+        </button>
+       </div>
+      </form>
+     </div>
+    </div>
+   </div>
+
+   <!-- File Preview Modal -->
+   <div id="modal-file-preview" v-show="showPreviewModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-6" @click.self="closeFilePreviewModal">
+    <div class="bg-slate-900 rounded-2xl border border-slate-700 w-full max-w-3xl max-h-[85%] overflow-auto scrollbar-thin">
+     <div class="sticky top-0 bg-slate-900 px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+      <div>
+       <h2 class="text-lg font-bold text-white">Preview File</h2>
+       <p class="text-sm text-slate-400 mt-0.5">{{ previewFileName }}</p>
+      </div>
+      <button @click="closeFilePreviewModal" class="p-2 hover:bg-slate-800 rounded-lg transition-colors">
+       <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+       </svg>
+      </button>
+     </div>
+     <div class="p-6">
+      <!-- Image Preview -->
+      <img v-if="previewFileType === 'image'" :src="previewFileUrl" class="w-full rounded-lg border border-slate-700" alt="File Preview">
+      <!-- PDF Preview -->
+      <iframe v-else-if="previewFileType === 'pdf'" :src="previewFileUrl" class="w-full border border-slate-700 rounded-lg" style="height: 500px;" frameborder="0"></iframe>
+      <!-- File Info -->
+      <div v-else class="space-y-4">
+       <div class="bg-slate-800 rounded-lg p-6 border border-slate-700 text-center">
+        <svg class="w-16 h-16 mx-auto text-slate-400 mb-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        <p class="text-slate-300 font-medium mb-2">Tidak dapat menampilkan file</p>
+        <p class="text-slate-400 text-sm mb-4">File jenis ini tidak bisa ditampilkan di preview</p>
+        <a :href="previewFileUrl" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors">
+         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+         </svg> Unduh File
+        </a>
+       </div>
+      </div>
+      <!-- Action Buttons -->
+      <div class="flex justify-end gap-3 mt-6 pt-4 border-t border-slate-800">
+       <button @click="closeFilePreviewModal" class="px-5 py-2.5 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-medium transition-colors"> Tutup </button>
+      </div>
+     </div>
+    </div>
+   </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div v-show="toast.show" class="fixed bottom-6 right-6 z-50">
+   <div class="bg-slate-800 border border-slate-700 rounded-xl px-5 py-3 shadow-xl flex items-center gap-3">
+    <div class="w-8 h-8 rounded-full flex items-center justify-center" :class="toast.type === 'success' ? 'bg-emerald-500' : 'bg-red-500'">
+     <svg v-if="toast.type === 'success'" class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+     <svg v-else class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+    </div>
+    <p class="text-white font-medium">{{ toast.message }}</p>
+   </div>
+  </div>
+  <script>
+    const { createApp, ref, reactive, computed, onMounted } = Vue;
+
+    // Default configuration
+    const defaultConfig = {
+      page_title: 'Daftar Pengajuan Lembur',
+      page_subtitle: 'Manajemen & monitoring data lembur karyawan',
+      api_endpoint: '/auth/absensi/list-lembur'
+    };
+
+    // Helper functions
+    const formatDate = (dateStr) => {
+      if (!dateStr) return '-';
+      try {
+        const date = new Date(dateStr);
+        return date.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+      } catch {
+        return dateStr;
+      }
+    };
+
+    const formatCurrency = (value) => {
+      if (!value || value === 0) return 'Rp 0';
+      return new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+      }).format(value);
+    };
+
+    const getStatusBadgeClass = (status) => {
+      const badges = {
+        'Draft': 'bg-slate-600 text-slate-200',
+        'Diajukan': 'bg-blue-600 text-blue-100',
+        'Disetujui': 'bg-emerald-600 text-emerald-100',
+        'Ditolak': 'bg-red-600 text-red-100',
+        'Revisi': 'bg-yellow-600 text-yellow-100'
+      };
+      return badges[status] || badges['Draft'];
+    };
+
+    const calculateTotal = (item) => {
+      if (!item) return 0;
+      return (item.weekday_1 || 0) + (item.weekday_2 || 0) + (item.weekend_1 || 0) + (item.weekend_2 || 0) + (item.weekend_3 || 0);
+    };
+
+    createApp({
+      setup() {
+        const config = reactive({ ...defaultConfig });
+        
+        // Auth cookies
+        const getCookie = (name) => {
+          const value = `; ${document.cookie}`;
+          const parts = value.split(`; ${name}=`);
+          if (parts.length === 2) return parts.pop().split(";").shift();
+          return null;
+        };
+
+        const authToken = ref(getCookie("authToken"));
+        const userID = ref(getCookie("id"));
+
+        if (!authToken.value) {
+          window.location.href = '/';
+          throw new Error('Authentication token not found');
+        }
+        if (!userID.value) {
+          window.location.href = '/';
+          throw new Error('User ID not found');
+        }
+
+        // Filters state
+        const today = new Date();
+        const lastMonth = new Date();
+        lastMonth.setMonth(lastMonth.getMonth() - 1);
+        const formatInputDate = (date) => date.toISOString().split('T')[0];
+
+        const filterStart = ref(formatInputDate(lastMonth));
+        const filterEnd = ref(formatInputDate(today));
+        const filterStatus = ref('');
+        const filterSearch = ref('');
+
+        // Pagination state
+        const currentPage = ref(1);
+        const pageSize = ref(50);
+        const totalData = ref(0);
+
+        // UI States
+        const isLoading = ref(false);
+        const errorMessage = ref('');
+        const allData = ref([]);
+
+        // Details Modal state
+        const showDetailModal = ref(false);
+        const currentRecord = ref(null);
+        const detailKeterangan = ref('');
+        const approvalSelection = ref('');
+        const approvalNote = ref('');
+        const isApprovalSubmitting = ref(false);
+
+        // Preview Modal state
+        const showPreviewModal = ref(false);
+        const previewFileName = ref('');
+        const previewFileType = ref('');
+        const previewFileUrl = ref('');
+
+        // Toast notifications
+        const toast = reactive({
+          show: false,
+          message: '',
+          type: 'success'
+        });
+
+        const showToast = (message, type = 'success') => {
+          toast.message = message;
+          toast.type = type;
+          toast.show = true;
+          setTimeout(() => {
+            toast.show = false;
+          }, 3000);
+        };
+
+        // Computed properties for pagination
+        const totalPages = computed(() => Math.ceil(totalData.value / pageSize.value));
+        const paginationStart = computed(() => totalData.value === 0 ? 0 : ((currentPage.value - 1) * pageSize.value) + 1);
+        const paginationEnd = computed(() => Math.min(currentPage.value * pageSize.value, totalData.value));
+        const paginationPages = computed(() => {
+          const total = totalPages.value;
+          const current = currentPage.value;
+          let pages = [];
+          for (let i = 1; i <= total; i++) {
+            if (i === 1 || i === total || (i >= current - 1 && i <= current + 1)) {
+              pages.push(i);
+            } else if (pages[pages.length - 1] !== '...') {
+              pages.push('...');
+            }
+          }
+          return pages;
+        });
+
+        // Computed properties for Detail Modal
+        const buktiAtasanPhotos = computed(() => {
+          if (!currentRecord.value || !currentRecord.value.bukti_persetujuan_atasan) return [];
+          const val = currentRecord.value.bukti_persetujuan_atasan;
+          if (Array.isArray(val)) {
+            return val.slice(0, 3).map(url => url.startsWith('http') ? url : `https://cais.cbinstrument.com/${url}`);
+          }
+          if (typeof val === 'string' && val.trim()) {
+            try {
+              const parsed = JSON.parse(val);
+              if (Array.isArray(parsed)) {
+                return parsed.slice(0, 3).map(url => url.startsWith('http') ? url : `https://cais.cbinstrument.com/${url}`);
+              }
+            } catch (e) {
+              // Ignore parse error, handle as plain string
+            }
+            return [val.startsWith('http') ? val : `https://cais.cbinstrument.com/${val}`];
+          }
+          return [];
+        });
+
+        const buktiPekerjaanPhotos = computed(() => {
+          if (!currentRecord.value || !currentRecord.value.bukti_pekerjaan) return [];
+          const val = currentRecord.value.bukti_pekerjaan;
+          if (Array.isArray(val)) {
+            return val.slice(0, 3).map(url => url.startsWith('http') ? url : `https://cais.cbinstrument.com/${url}`);
+          }
+          if (typeof val === 'string' && val.trim()) {
+            try {
+              const parsed = JSON.parse(val);
+              if (Array.isArray(parsed)) {
+                return parsed.slice(0, 3).map(url => url.startsWith('http') ? url : `https://cais.cbinstrument.com/${url}`);
+              }
+            } catch (e) {
+              // Ignore parse error, handle as plain string
+            }
+            return [val.startsWith('http') ? val : `https://cais.cbinstrument.com/${val}`];
+          }
+          return [];
+        });
+
+        const catatanLabel = computed(() => {
+          if (!currentRecord.value) return '💬 Catatan Sebelumnya';
+          if (currentRecord.value.approval_status === 'Ditolak') {
+            return '💬 Alasan Penolakan';
+          } else if (currentRecord.value.approval_status === 'Revisi') {
+            return '💬 Catatan Koreksi';
+          } else {
+            return '💬 Catatan Sebelumnya';
+          }
+        });
+
+        const catatanBoxStyle = computed(() => {
+          if (!currentRecord.value) return {};
+          if (currentRecord.value.approval_status === 'Ditolak') {
+            return { borderColor: 'rgba(239, 68, 68, 0.3)', background: 'rgba(239, 68, 68, 0.1)' };
+          } else if (currentRecord.value.approval_status === 'Revisi') {
+            return { borderColor: 'rgba(234, 179, 8, 0.3)', background: 'rgba(234, 179, 8, 0.1)' };
+          } else {
+            return { borderColor: 'rgba(234, 179, 8, 0.3)', background: 'rgba(234, 179, 8, 0.1)' };
+          }
+        });
+
+        const catatanTextStyle = computed(() => {
+          if (!currentRecord.value) return {};
+          if (currentRecord.value.approval_status === 'Ditolak') {
+            return { color: '#fca5a5' };
+          } else {
+            return { color: '#fde68a' };
+          }
+        });
+
+        const noteLabel = computed(() => {
+          if (approvalSelection.value === 'reject') return 'Alasan Penolakan';
+          if (approvalSelection.value === 'revise') return 'Catatan Koreksi';
+          return '';
+        });
+
+        const notePlaceholder = computed(() => {
+          if (approvalSelection.value === 'reject') return 'Tulis alasan penolakan di sini...';
+          if (approvalSelection.value === 'revise') return 'Tulis catatan koreksi di sini...';
+          return '';
+        });
+
+        const isApprovalFormValid = computed(() => {
+          if (!approvalSelection.value) return false;
+          if (approvalSelection.value === 'reject' || approvalSelection.value === 'revise') {
+            return approvalNote.value.trim() !== '';
+          }
+          return true;
+        });
+
+        const approvalSubmitBtnText = computed(() => {
+          if (approvalSelection.value === 'approve') return 'Setujui Lembur';
+          if (approvalSelection.value === 'reject') return 'Tolak Lembur';
+          if (approvalSelection.value === 'revise') return 'Minta Koreksi';
+          return 'Proses Pengajuan';
+        });
+
+        const approvalSubmitBtnClass = computed(() => {
+          if (approvalSelection.value === 'approve') {
+            return 'bg-emerald-600 hover:bg-emerald-700 text-white';
+          }
+          if (approvalSelection.value === 'reject') {
+            return 'bg-red-600 hover:bg-red-700 text-white';
+          }
+          if (approvalSelection.value === 'revise') {
+            return 'bg-yellow-600 hover:bg-yellow-700 text-white';
+          }
+          return 'bg-slate-600 hover:bg-slate-500 text-white';
+        });
+
+        // API URL builder
+        const buildApiUrl = () => {
+          const params = new URLSearchParams();
+          params.append('page', currentPage.value);
+          params.append('per_page', pageSize.value);
+          
+          if (filterStatus.value) params.append('status', filterStatus.value);
+          if (filterSearch.value) params.append('nama', filterSearch.value);
+          if (filterStart.value) params.append('start_date', filterStart.value);
+          if (filterEnd.value) params.append('end_date', filterEnd.value);
+          
+          return `${defaultConfig.api_endpoint}?${params.toString()}`;
+        };
+
+        // Fetch data
+        const fetchLemburData = async () => {
+          isLoading.value = true;
+          errorMessage.value = '';
+
+          try {
+            const apiUrl = buildApiUrl();
+            const response = await fetch(apiUrl, {
+              method: 'GET',
+              headers: {
+                'Authorization': `Bearer ${authToken.value}`,
+                'Content-Type': 'application/json'
+              }
+            });
+
+            if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+
+            const result = await response.json();
+            const items = result.data || [];
+            totalData.value = result.total || 0;
+            currentPage.value = result.page || 1;
+
+            if (items && Array.isArray(items)) {
+              items.forEach(item => {
+                if (item.approval === '0') {
+                  item.approval = 'Diajukan';
+                } else if (item.approval === '1') {
+                  item.approval = 'Disetujui';
+                } else if (item.approval === '2') {
+                  item.approval = 'Ditolak';
+                } else if (item.approval === '3') {
+                  item.approval = 'Revisi';
+                } else {
+                  item.approval = 'Draft';
+                }
+              });
+            }
+
+            allData.value = items.map((item, index) => ({
+              id: item.id || `LMB-${index}`,
+              nama: item.nama || 'N/A',
+              tanggal_lembur: item.tanggal_lembur || '',
+              weekday_1: parseFloat(item.lembur_weekday_1) || 0,
+              weekday_2: parseFloat(item.lembur_weekday_2) || 0,
+              weekend_1: parseFloat(item.lembur_weekend_1) || 0,
+              weekend_2: parseFloat(item.lembur_weekend_2) || 0,
+              weekend_3: parseFloat(item.lembur_weekend_3) || 0,
+              daftar_pekerjaan: item.daftar_pekerjaan || '',
+              bukti_persetujuan_atasan: item.bukti_persetujuan_atasan || '',
+              bukti_pekerjaan: item.bukti_pekerjaan || '',
+              approval_status: item.approval || 'Draft',
+              keterangan: item.keterangan || '',
+              jumlah_bayar: parseFloat(item.Jumlah_bayar) || 0
+            }));
+
+            showToast('Data berhasil dimuat', 'success');
+          } catch (error) {
+            console.error('Error fetching data:', error);
+            errorMessage.value = `Gagal memuat data: ${error.message}`;
+            allData.value = [];
+            totalData.value = 0;
+          } finally {
+            isLoading.value = false;
+          }
+        };
+
+        const applyFilters = () => {
+          currentPage.value = 1;
+          fetchLemburData();
+        };
+
+        const onPageSizeChange = () => {
+          currentPage.value = 1;
+          fetchLemburData();
+        };
+
+        const goToPage = (page) => {
+          currentPage.value = page;
+          fetchLemburData();
+        };
+
+        // Detail Modal Action
+        const showFormDetail = async (item) => {
+          currentRecord.value = item;
+          detailKeterangan.value = '';
+          approvalSelection.value = '';
+          approvalNote.value = '';
+
+          const statusToRadio = {
+            'Disetujui' : 'approve',
+            'Ditolak'   : 'reject',
+            'Revisi'    : 'revise',
+          };
+          const matchedRadio = statusToRadio[item.approval_status];
+          if (matchedRadio) {
+            approvalSelection.value = matchedRadio;
+          }
+
+          showDetailModal.value = true;
+
+          // Fetch keterangan dari lembur-detail
+          try {
+            const tanggal = item.tanggal_lembur.split('T')[0];
+            const res = await fetch(`/auth/absensi/lembur-detail?nama=${encodeURIComponent(item.nama)}&tanggal=${tanggal}`, {
+              method: 'GET',
+              headers: {
+                'Authorization': `Bearer ${authToken.value}`,
+                'Content-Type': 'application/json'
+              }
+            });
+
+            if (res.ok) {
+              const detail = await res.json();
+              if (detail.keterangan && detail.keterangan.trim() !== '') {
+                detailKeterangan.value = detail.keterangan;
+              }
+            }
+          } catch (err) {
+            console.error('Gagal fetch lembur-detail:', err);
+          }
+        };
+
+        const closeFormDetailModal = () => {
+          showDetailModal.value = false;
+          currentRecord.value = null;
+        };
+
+        const submitApproval = async () => {
+          if (!approvalSelection.value) {
+            showToast('Silakan pilih salah satu pilihan', 'error');
+            return;
+          }
+          if (!currentRecord.value) {
+            showToast('Data pengajuan tidak ditemukan', 'error');
+            return;
+          }
+          if ((approvalSelection.value === 'reject' || approvalSelection.value === 'revise') && !approvalNote.value.trim()) {
+            showToast('Catatan wajib diisi untuk penolakan / koreksi', 'error');
+            return;
+          }
+
+          const configMap = {
+            approve: { endpoint: '/auth/absensi/lembur-approve', successMsg: 'Pengajuan lembur berhasil disetujui!', newStatus: 'Disetujui' },
+            reject: { endpoint: '/auth/absensi/lembur-reject', successMsg: 'Pengajuan lembur berhasil ditolak!', newStatus: 'Ditolak' },
+            revise: { endpoint: '/auth/absensi/lembur-revise', successMsg: 'Permintaan koreksi berhasil dikirimkan!', newStatus: 'Revisi' }
+          };
+
+          const selectedConfig = configMap[approvalSelection.value];
+          isApprovalSubmitting.value = true;
+
+          try {
+            const response = await fetch(selectedConfig.endpoint, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken.value}`
+              },
+              body: JSON.stringify({
+                id: currentRecord.value.id,
+                tanggal: currentRecord.value.tanggal_lembur,
+                nama: currentRecord.value.nama,
+                catatan: approvalNote.value.trim() || null
+              })
+            });
+
+            if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+            const result = await response.json();
+
+            if (result.success || response.ok) {
+              showToast(selectedConfig.successMsg, 'success');
+              
+              const index = allData.value.findIndex(item => item.id === currentRecord.value.id);
+              if (index !== -1) {
+                allData.value[index].approval_status = selectedConfig.newStatus;
+              }
+
+              closeFormDetailModal();
+              applyFilters();
+              setTimeout(() => fetchLemburData(), 500);
+            } else {
+              showToast(result.message || 'Gagal memproses pengajuan', 'error');
+            }
+          } catch (error) {
+            console.error('Error submitting approval:', error);
+            showToast(`Gagal memproses: ${error.message}`, 'error');
+          } finally {
+            isApprovalSubmitting.value = false;
+          }
+        };
+
+        // File Preview Action
+        const showFilePreview = (fileUrl, fileName) => {
+          previewFileName.value = fileName || 'File Preview';
+          previewFileUrl.value = fileUrl;
+
+          const fileExtension = fileUrl.split('.').pop().toLowerCase();
+          if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'].includes(fileExtension)) {
+            previewFileType.value = 'image';
+          } else if (fileExtension === 'pdf') {
+            previewFileType.value = 'pdf';
+          } else {
+            previewFileType.value = 'other';
+          }
+          showPreviewModal.value = true;
+        };
+
+        const closeFilePreviewModal = () => {
+          showPreviewModal.value = false;
+          previewFileName.value = '';
+          previewFileUrl.value = '';
+          previewFileType.value = '';
+        };
+
+        // Export XLS
+        const exportToXLS = async () => {
+          if (totalData.value === 0) {
+            showToast('Tidak ada data untuk diexport', 'error');
+            return;
+          }
+
+          showToast('Mempersiapkan data export...', 'success');
+
+          try {
+            const params = new URLSearchParams();
+            params.append('page', 1);
+            params.append('per_page', totalData.value);
+
+            if (filterStatus.value) params.append('status', filterStatus.value);
+            if (filterSearch.value) params.append('nama', filterSearch.value);
+            if (filterStart.value) params.append('start_date', filterStart.value);
+            if (filterEnd.value) params.append('end_date', filterEnd.value);
+
+            const response = await fetch(`${defaultConfig.api_endpoint}?${params.toString()}`, {
+              method: 'GET',
+              headers: {
+                'Authorization': `Bearer ${authToken.value}`,
+                'Content-Type': 'application/json'
+              }
+            });
+
+            if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+
+            const result = await response.json();
+            const items = (result.data || []).map((item, index) => {
+              let approval = 'Draft';
+              if (item.approval === '0') approval = 'Diajukan';
+              else if (item.approval === '1') approval = 'Disetujui';
+              else if (item.approval === '2') approval = 'Ditolak';
+              else if (item.approval === '3') approval = 'Revisi';
+
+              return {
+                id: item.id || `LMB-${index}`,
+                nama: item.nama || 'N/A',
+                tanggal_lembur: item.tanggal_lembur || '',
+                weekday_1: parseFloat(item.lembur_weekday_1) || 0,
+                weekday_2: parseFloat(item.lembur_weekday_2) || 0,
+                weekend_1: parseFloat(item.lembur_weekend_1) || 0,
+                weekend_2: parseFloat(item.lembur_weekend_2) || 0,
+                weekend_3: parseFloat(item.lembur_weekend_3) || 0,
+                approval_status: approval,
+                keterangan: item.keterangan || '',
+                jumlah_bayar: parseFloat(item.Jumlah_bayar) || 0
+              };
+            });
+
+            generateXLS(items);
+          } catch (error) {
+            console.error('Error export:', error);
+            showToast(`Gagal export: ${error.message}`, 'error');
+          }
+        };
+
+        const generateXLS = (data) => {
+          try {
+            const headers = ['No', 'Nama Karyawan', 'Tanggal Lembur', 'Weekday 1', 'Weekday 2', 'Weekend 1', 'Weekend 2', 'Weekend 3', 'Total Jam', 'Biaya', 'Status', 'Keterangan'];
+
+            const rows = data.map((item, index) => {
+              const total = calculateTotal(item);
+              return [
+                index + 1,
+                item.nama,
+                formatDate(item.tanggal_lembur),
+                item.weekday_1,
+                item.weekday_2,
+                item.weekend_1,
+                item.weekend_2,
+                item.weekend_3,
+                total,
+                item.jumlah_bayar,
+                item.approval_status,
+                item.keterangan || ''
+              ];
+            });
+
+            let csvContent = 'data:text/csv;charset=utf-8,\uFEFF';
+            csvContent += 'LAPORAN DATA PENGAJUAN LEMBUR\n';
+            csvContent += `Tanggal Export: ${new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}\n\n`;
+            csvContent += headers.map(h => `"${h}"`).join(',') + '\n';
+            rows.forEach(row => {
+              csvContent += row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',') + '\n';
+            });
+            csvContent += `\n"Total Data";"${data.length}"\n`;
+            csvContent += `"Total Jam";"${data.reduce((sum, item) => sum + calculateTotal(item), 0)}"\n`;
+            csvContent += `"Total Biaya";"${data.reduce((sum, item) => sum + item.jumlah_bayar, 0)}"\n`;
+
+            const timestamp = new Date().toISOString().slice(0, 10);
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement('a');
+            link.setAttribute('href', encodedUri);
+            link.setAttribute('download', `lembur_${timestamp}.csv`);
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            showToast('Export XLS/CSV berhasil diunduh!', 'success');
+          } catch (error) {
+            showToast(`Gagal export: ${error.message}`, 'error');
+          }
+        };
+
+        // Export PDF
+        const exportToPDF = async () => {
+          if (totalData.value === 0) {
+            showToast('Tidak ada data untuk diexport', 'error');
+            return;
+          }
+
+          showToast('Mempersiapkan data export...', 'success');
+
+          try {
+            const params = new URLSearchParams();
+            params.append('page', 1);
+            params.append('per_page', totalData.value);
+
+            if (filterStatus.value) params.append('status', filterStatus.value);
+            if (filterSearch.value) params.append('nama', filterSearch.value);
+            if (filterStart.value) params.append('start_date', filterStart.value);
+            if (filterEnd.value) params.append('end_date', filterEnd.value);
+
+            const response = await fetch(`${defaultConfig.api_endpoint}?${params.toString()}`, {
+              method: 'GET',
+              headers: {
+                'Authorization': `Bearer ${authToken.value}`,
+                'Content-Type': 'application/json'
+              }
+            });
+
+            if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+
+            const result = await response.json();
+            const items = (result.data || []).map((item, index) => {
+              let approval = 'Draft';
+              if (item.approval === '0') approval = 'Diajukan';
+              else if (item.approval === '1') approval = 'Disetujui';
+              else if (item.approval === '2') approval = 'Ditolak';
+              else if (item.approval === '3') approval = 'Revisi';
+
+              return {
+                id: item.id || `LMB-${index}`,
+                nama: item.nama || 'N/A',
+                tanggal_lembur: item.tanggal_lembur || '',
+                weekday_1: parseFloat(item.lembur_weekday_1) || 0,
+                weekday_2: parseFloat(item.lembur_weekday_2) || 0,
+                weekend_1: parseFloat(item.lembur_weekend_1) || 0,
+                weekend_2: parseFloat(item.lembur_weekend_2) || 0,
+                weekend_3: parseFloat(item.lembur_weekend_3) || 0,
+                approval_status: approval,
+                keterangan: item.keterangan || '',
+                jumlah_bayar: parseFloat(item.Jumlah_bayar) || 0
+              };
+            });
+
+            generatePDF(items);
+          } catch (error) {
+            console.error('Error export:', error);
+            showToast(`Gagal export: ${error.message}`, 'error');
+          }
+        };
+
+        const generatePDF = (data) => {
+          try {
+            const htmlContent = `
+              <!DOCTYPE html>
+              <html>
+              <head>
+                <meta charset="UTF-8">
+                <title>Laporan Lembur</title>
+                <style>
+                  * { margin: 0; padding: 0; box-sizing: border-box; }
+                  body { font-family: Arial, sans-serif; padding: 20px; background: white; }
+                  .header { text-align: center; margin-bottom: 30px; border-bottom: 3px solid #333; padding-bottom: 15px; }
+                  .header h1 { font-size: 20px; color: #333; margin-bottom: 5px; }
+                  .header p { font-size: 12px; color: #666; }
+                  .meta { display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 12px; color: #666; }
+                  table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+                  th { background-color: #1e293b; color: white; padding: 10px; text-align: left; font-size: 11px; font-weight: bold; border: 1px solid #333; }
+                  td { padding: 8px; text-align: left; font-size: 11px; border: 1px solid #ddd; }
+                  tr:nth-child(even) { background-color: #f5f5f5; }
+                  .text-right { text-align: right; }
+                  .text-center { text-align: center; }
+                  .summary { background-color: #e8f4f8; padding: 10px; margin-bottom: 20px; border-left: 4px solid #0084ff; }
+                  .summary-row { display: flex; justify-content: space-between; margin: 5px 0; }
+                  .footer { margin-top: 30px; padding-top: 15px; border-top: 1px solid #ddd; font-size: 11px; color: #666; }
+                  @page { margin: 15mm; }
+                  @media print { body { padding: 0; } }
+                </style>
+              </head>
+              <body>
+                <div class="header">
+                  <h1>LAPORAN DATA PENGAJUAN LEMBUR</h1>
+                  <p>Dokumen dibuat pada: ${new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+                </div>
+                <div class="meta">
+                  <div><strong>Filter Periode:</strong> ${filterStart.value ? formatDate(filterStart.value) : 'Semua'} s/d ${filterEnd.value ? formatDate(filterEnd.value) : 'Semua'}</div>
+                  <div><strong>Status:</strong> ${filterStatus.value || 'Semua Status'}</div>
+                </div>
+                <table>
+                  <thead>
+                    <tr>
+                      <th style="width:5%">No</th>
+                      <th style="width:15%">Nama Karyawan</th>
+                      <th style="width:12%">Tanggal Lembur</th>
+                      <th style="width:8%" class="text-right">Weekday 1</th>
+                      <th style="width:8%" class="text-right">Weekday 2</th>
+                      <th style="width:8%" class="text-right">Weekend 1</th>
+                      <th style="width:8%" class="text-right">Weekend 2</th>
+                      <th style="width:8%" class="text-right">Weekend 3</th>
+                      <th style="width:8%" class="text-right">Total Jam</th>
+                      <th style="width:12%" class="text-right">Biaya</th>
+                      <th style="width:10%" class="text-center">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${data.map((item, index) => {
+                      const total = calculateTotal(item);
+                      return `
+                        <tr>
+                          <td class="text-center">${index + 1}</td>
+                          <td>${item.nama}</td>
+                          <td>${formatDate(item.tanggal_lembur)}</td>
+                          <td class="text-right">${item.weekday_1}</td>
+                          <td class="text-right">${item.weekday_2}</td>
+                          <td class="text-right">${item.weekend_1}</td>
+                          <td class="text-right">${item.weekend_2}</td>
+                          <td class="text-right">${item.weekend_3}</td>
+                          <td class="text-right"><strong>${total}</strong></td>
+                          <td class="text-right">${formatCurrency(item.jumlah_bayar)}</td>
+                          <td class="text-center"><strong>${item.approval_status}</strong></td>
+                        </tr>
+                      `;
+                    }).join('')}
+                  </tbody>
+                </table>
+                <div class="summary">
+                  <div class="summary-row"><strong>Total Data:</strong><strong>${data.length} pengajuan</strong></div>
+                  <div class="summary-row"><strong>Total Jam Lembur:</strong><strong>${data.reduce((sum, item) => sum + calculateTotal(item), 0).toFixed(1)} jam</strong></div>
+                  <div class="summary-row"><strong>Total Biaya:</strong><strong>${formatCurrency(data.reduce((sum, item) => sum + item.jumlah_bayar, 0))}</strong></div>
+                </div>
+                <div class="footer">
+                  <p>Laporan ini dicetak otomatis dari sistem manajemen lembur.</p>
+                  <p style="margin-top:10px">© ${new Date().getFullYear()} - Human Resources Management System</p>
+                </div>
+              </body>
+              </html>
+            `;
+
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(htmlContent);
+            printWindow.document.close();
+            printWindow.onload = () => setTimeout(() => printWindow.print(), 250);
+
+            showToast('Siap untuk cetak/export PDF', 'success');
+          } catch (error) {
+            showToast(`Gagal export: ${error.message}`, 'error');
+          }
+        };
+
+        // Lifecycle hook
+        onMounted(() => {
+          if (window.elementSdk) {
+            window.elementSdk.init({
+              defaultConfig,
+              onConfigChange: async (newConfig) => {
+                Object.assign(config, newConfig);
+              },
+              mapToCapabilities: (config) => ({
+                recolorables: [],
+                borderables: [],
+                fontEditable: undefined,
+                fontSizeable: undefined
+              }),
+              mapToEditPanelValues: (config) => new Map([
+                ['page_title', config.page_title || defaultConfig.page_title],
+                ['page_subtitle', config.page_subtitle || defaultConfig.page_subtitle]
+              ])
+            });
+          }
+          fetchLemburData();
+        });
+
+        return {
+          config,
+          defaultConfig,
+          filterStart,
+          filterEnd,
+          filterStatus,
+          filterSearch,
+          currentPage,
+          pageSize,
+          totalData,
+          isLoading,
+          errorMessage,
+          allData,
+          showDetailModal,
+          currentRecord,
+          detailKeterangan,
+          approvalSelection,
+          approvalNote,
+          isApprovalSubmitting,
+          showPreviewModal,
+          previewFileName,
+          previewFileType,
+          previewFileUrl,
+          toast,
+          totalPages,
+          paginationStart,
+          paginationEnd,
+          paginationPages,
+          buktiAtasanPhotos,
+          buktiPekerjaanPhotos,
+          catatanLabel,
+          catatanBoxStyle,
+          catatanTextStyle,
+          noteLabel,
+          notePlaceholder,
+          isApprovalFormValid,
+          approvalSubmitBtnText,
+          approvalSubmitBtnClass,
+          formatDate,
+          formatCurrency,
+          getStatusBadgeClass,
+          calculateTotal,
+          fetchLemburData,
+          applyFilters,
+          onPageSizeChange,
+          goToPage,
+          showFormDetail,
+          closeFormDetailModal,
+          submitApproval,
+          showFilePreview,
+          closeFilePreviewModal,
+              return {
+                id: item.id || `LMB-${index}`,
+                nama: item.nama || 'N/A',
+                tanggal_lembur: item.tanggal_lembur || '',
+                weekday_1: parseFloat(item.lembur_weekday_1) || 0,
+                weekday_2: parseFloat(item.lembur_weekday_2) || 0,
+                weekend_1: parseFloat(item.lembur_weekend_1) || 0,
+                weekend_2: parseFloat(item.lembur_weekend_2) || 0,
+                weekend_3: parseFloat(item.lembur_weekend_3) || 0,
+                approval_status: approval,
+                keterangan: item.keterangan || '',
+                jumlah_bayar: parseFloat(item.Jumlah_bayar) || 0
+              };
+            });
+
+            generatePDF(items);
+          } catch (error) {
+            console.error('Error export:', error);
+            showToast(`Gagal export: ${error.message}`, 'error');
+          }
+        };
+
+        const generatePDF = (data) => {
+          try {
+            const htmlContent = `
+              <!DOCTYPE html>
+              <html>
+              <head>
+                <meta charset="UTF-8">
+                <title>Laporan Lembur</title>
+                <style>
+                  * { margin: 0; padding: 0; box-sizing: border-box; }
+                  body { font-family: Arial, sans-serif; padding: 20px; background: white; }
+                  .header { text-align: center; margin-bottom: 30px; border-bottom: 3px solid #333; padding-bottom: 15px; }
+                  .header h1 { font-size: 20px; color: #333; margin-bottom: 5px; }
+                  .header p { font-size: 12px; color: #666; }
+                  .meta { display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 12px; color: #666; }
+                  table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+                  th { background-color: #1e293b; color: white; padding: 10px; text-align: left; font-size: 11px; font-weight: bold; border: 1px solid #333; }
+                  td { padding: 8px; text-align: left; font-size: 11px; border: 1px solid #ddd; }
+                  tr:nth-child(even) { background-color: #f5f5f5; }
+                  .text-right { text-align: right; }
+                  .text-center { text-align: center; }
+                  .summary { background-color: #e8f4f8; padding: 10px; margin-bottom: 20px; border-left: 4px solid #0084ff; }
+                  .summary-row { display: flex; justify-content: space-between; margin: 5px 0; }
+                  .footer { margin-top: 30px; padding-top: 15px; border-top: 1px solid #ddd; font-size: 11px; color: #666; }
+                  @page { margin: 15mm; }
+                  @media print { body { padding: 0; } }
+                </style>
+              </head>
+              <body>
+                <div class="header">
+                  <h1>LAPORAN DATA PENGAJUAN LEMBUR</h1>
+                  <p>Dokumen dibuat pada: ${new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+                </div>
+                <div class="meta">
+                  <div><strong>Filter Periode:</strong> ${filterStart.value ? formatDate(filterStart.value) : 'Semua'} s/d ${filterEnd.value ? formatDate(filterEnd.value) : 'Semua'}</div>
+                  <div><strong>Status:</strong> ${filterStatus.value || 'Semua Status'}</div>
+                </div>
+                <table>
+                  <thead>
+                    <tr>
+                      <th style="width:5%">No</th>
+                      <th style="width:15%">Nama Karyawan</th>
+                      <th style="width:12%">Tanggal Lembur</th>
+                      <th style="width:8%" class="text-right">Weekday 1</th>
+                      <th style="width:8%" class="text-right">Weekday 2</th>
+                      <th style="width:8%" class="text-right">Weekend 1</th>
+                      <th style="width:8%" class="text-right">Weekend 2</th>
+                      <th style="width:8%" class="text-right">Weekend 3</th>
+                      <th style="width:8%" class="text-right">Total Jam</th>
+                      <th style="width:12%" class="text-right">Biaya</th>
+                      <th style="width:10%" class="text-center">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${data.map((item, index) => {
+                      const total = calculateTotal(item);
+                      return `
+                        <tr>
+                          <td class="text-center">${index + 1}</td>
+                          <td>${item.nama}</td>
+                          <td>${formatDate(item.tanggal_lembur)}</td>
+                          <td class="text-right">${item.weekday_1}</td>
+                          <td class="text-right">${item.weekday_2}</td>
+                          <td class="text-right">${item.weekend_1}</td>
+                          <td class="text-right">${item.weekend_2}</td>
+                          <td class="text-right">${item.weekend_3}</td>
+                          <td class="text-right"><strong>${total}</strong></td>
+                          <td class="text-right">${formatCurrency(item.jumlah_bayar)}</td>
+                          <td class="text-center"><strong>${item.approval_status}</strong></td>
+                        </tr>
+                      `;
+                    }).join('')}
+                  </tbody>
+                </table>
+                <div class="summary">
+                  <div class="summary-row"><strong>Total Data:</strong><strong>${data.length} pengajuan</strong></div>
+                  <div class="summary-row"><strong>Total Jam Lembur:</strong><strong>${data.reduce((sum, item) => sum + calculateTotal(item), 0).toFixed(1)} jam</strong></div>
+                  <div class="summary-row"><strong>Total Biaya:</strong><strong>${formatCurrency(data.reduce((sum, item) => sum + item.jumlah_bayar, 0))}</strong></div>
+                </div>
+                <div class="footer">
+                  <p>Laporan ini dicetak otomatis dari sistem manajemen lembur.</p>
+                  <p style="margin-top:10px">© ${new Date().getFullYear()} - Human Resources Management System</p>
+                </div>
+              </body>
+              </html>
+            `;
+
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(htmlContent);
+            printWindow.document.close();
+            printWindow.onload = () => setTimeout(() => printWindow.print(), 250);
+
+            showToast('Siap untuk cetak/export PDF', 'success');
+          } catch (error) {
+            showToast(`Gagal export: ${error.message}`, 'error');
+          }
+        };
+
+        // Lifecycle hook
+        onMounted(() => {
+          if (window.elementSdk) {
+            window.elementSdk.init({
+              defaultConfig,
+              onConfigChange: async (newConfig) => {
+                Object.assign(config, newConfig);
+              },
+              mapToCapabilities: (config) => ({
+                recolorables: [],
+                borderables: [],
+                fontEditable: undefined,
+                fontSizeable: undefined
+              }),
+              mapToEditPanelValues: (config) => new Map([
+                ['page_title', config.page_title || defaultConfig.page_title],
+                ['page_subtitle', config.page_subtitle || defaultConfig.page_subtitle]
+              ])
+            });
+          }
+          fetchLemburData();
+        });
+
+        return {
+          config,
+          defaultConfig,
+          filterStart,
+          filterEnd,
+          filterStatus,
+          filterSearch,
+          currentPage,
+          pageSize,
+          totalData,
+          isLoading,
+          errorMessage,
+          allData,
+          showDetailModal,
+          currentRecord,
+          detailKeterangan,
+          approvalSelection,
+          approvalNote,
+          isApprovalSubmitting,
+          showPreviewModal,
+          previewFileName,
+          previewFileType,
+          previewFileUrl,
+          toast,
+          totalPages,
+          paginationStart,
+          paginationEnd,
+          paginationPages,
+          buktiAtasanPhotos,
+          buktiPekerjaanPhotos,
+          catatanLabel,
+          catatanBoxStyle,
+          catatanTextStyle,
+          noteLabel,
+          notePlaceholder,
+          isApprovalFormValid,
+          approvalSubmitBtnText,
+          approvalSubmitBtnClass,
+          formatDate,
+          formatCurrency,
+          getStatusBadgeClass,
+          calculateTotal,
+          fetchLemburData,
+          applyFilters,
+          onPageSizeChange,
+          goToPage,
+          showFormDetail,
+          closeFormDetailModal,
+          submitApproval,
+          showFilePreview,
+          closeFilePreviewModal,
+          exportToXLS,
+          exportToPDF
+        };
+      }
+    }).mount('#app');
+  </script>
+  </body>
+</html>

@@ -1,0 +1,795 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inventory Dashboard</title>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <style>
+    [v-cloak] { display: none !important; }
+    body {
+        box-sizing: border-box;
+    }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            overflow: auto;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a1628 0%, #1a1a2e 100%);
+            color: #e0e6ed;
+        }
+
+        .dashboard-wrapper {
+            min-height: 100%;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #0f1923 0%, #1a2332 100%);
+            padding: 1.25rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #60a5fa;
+            letter-spacing: 0.5px;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: white;
+            border: 2px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .logout-btn {
+            background: rgba(59, 130, 246, 0.15);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            color: #60a5fa;
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(59, 130, 246, 0.25);
+            border-color: rgba(59, 130, 246, 0.5);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        /* Search and Filter Bar */
+        .search-filter-bar {
+            background: linear-gradient(135deg, #1a2332 0%, #0f1923 100%);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .search-box {
+            position: relative;
+            margin-bottom: 1rem;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            stroke: #60a5fa;
+            pointer-events: none;
+        }
+
+        #searchInput {
+            width: 100%;
+            padding: 0.875rem 1rem 0.875rem 3rem;
+            background: rgba(59, 130, 246, 0.05);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 8px;
+            color: #e0e6ed;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+
+        #searchInput::placeholder {
+            color: #9ca3af;
+        }
+
+        #searchInput:focus {
+            outline: none;
+            border-color: rgba(59, 130, 246, 0.5);
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .filter-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .filter-select {
+            flex: 1;
+            min-width: 150px;
+            padding: 0.75rem;
+            background: rgba(59, 130, 246, 0.05);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 8px;
+            color: #e0e6ed;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: rgba(59, 130, 246, 0.5);
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .filter-select option {
+            background: #1a2332;
+            color: #e0e6ed;
+        }
+
+        .reset-btn {
+            padding: 0.75rem 1.25rem;
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 8px;
+            color: #f87171;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .reset-btn:hover {
+            background: rgba(239, 68, 68, 0.25);
+            border-color: rgba(239, 68, 68, 0.5);
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 2rem;
+            color: #9ca3af;
+            font-size: 0.875rem;
+        }
+
+        /* Summary Cards */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #1a2332 0%, #0f1923 100%);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .stat-card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(59, 130, 246, 0.15);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .stat-icon svg {
+            width: 24px;
+            height: 24px;
+            stroke: #60a5fa;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: #9ca3af;
+            font-weight: 500;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #60a5fa;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-card.critical .stat-value {
+            color: #f87171;
+        }
+
+        /* Panels */
+        .panels-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .panel {
+            background: linear-gradient(135deg, #1a2332 0%, #0f1923 100%);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .panel-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        .panel-icon {
+            width: 32px;
+            height: 32px;
+            background: rgba(59, 130, 246, 0.15);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .panel-icon svg {
+            width: 18px;
+            height: 18px;
+            stroke: #60a5fa;
+        }
+
+        .panel-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #e0e6ed;
+        }
+
+        /* Tables */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        th {
+            padding: 0.875rem;
+            text-align: left;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #9ca3af;
+            border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        td {
+            padding: 1rem 0.875rem;
+            font-size: 0.875rem;
+            color: #d1d5db;
+            border-bottom: 1px solid rgba(59, 130, 246, 0.1);
+        }
+
+        tbody tr:hover {
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-low {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .status-critical {
+            background: rgba(220, 38, 38, 0.3);
+            color: #f87171;
+            border: 1px solid rgba(220, 38, 38, 0.5);
+        }
+
+        .status-active {
+            background: rgba(34, 197, 94, 0.2);
+            color: #86efac;
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+
+        .status-overdue {
+            background: rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.5);
+        }
+
+        /* Action Toolbar */
+        .action-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #1a2332 0%, #0f1923 100%);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .action-btn {
+            flex: 1;
+            min-width: 180px;
+            background: rgba(59, 130, 246, 0.15);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            color: #60a5fa;
+            padding: 0.875rem 1.25rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover {
+            background: rgba(59, 130, 246, 0.25);
+            border-color: rgba(59, 130, 246, 0.5);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(59, 130, 246, 0.2);
+        }
+
+        .action-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .panels-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 1rem 1.25rem;
+            }
+
+            .header h1 {
+                font-size: 1.25rem;
+            }
+
+            .main-content {
+                padding: 1.25rem;
+            }
+
+            .summary-grid {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 1rem;
+            }
+
+            .stat-value {
+                font-size: 1.75rem;
+            }
+
+            .action-toolbar {
+                flex-direction: column;
+            }
+
+            .action-btn {
+                min-width: 100%;
+            }
+
+            table {
+                font-size: 0.75rem;
+            }
+
+            th, td {
+                padding: 0.625rem;
+            }
+        }
+    </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
+ </head>
+ <body>
+  <div class="dashboard-wrapper"><!-- Header -->
+  <div id="app" v-cloak class="dashboard-wrapper" :style="{ fontSize: config.font_size + 'px', fontFamily: config.font_family + ', Inter, sans-serif' }">
+   <!-- Header -->
+   <header class="header" :style="{ background: 'linear-gradient(135deg, ' + config.surface_color + ' 0%, #1a2332 100%)' }">
+    <h1 id="dashboardTitle" :style="{ fontSize: config.font_size * 1.5 + 'px', color: config.primary_action_color }">{{ config.dashboard_title }}</h1>
+    <div class="user-profile">
+     <div class="user-avatar" id="userAvatar" :style="{ border: '2px solid ' + config.primary_action_color }">
+      {{ getAvatarText }}
+     </div>
+     <button class="logout-btn" @click="handleLogout" :style="{ color: config.primary_action_color }">
+      <svg fill="none" stroke="currentColor" viewbox="0 0 24 24" width="16" height="16"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+      </svg> Keluar </button>
+    </div>
+   </header><!-- Main Content -->
+   <main class="main-content"><!-- Summary Cards -->
+    <div class="summary-grid">
+     <div class="stat-card" :style="{ background: 'linear-gradient(135deg, ' + config.surface_color + ' 0%, #0f1923 100%)' }">
+      <div class="stat-card-header">
+       <div class="stat-icon" :style="{ border: '1px solid ' + config.primary_action_color }">
+        <svg fill="none" stroke="currentColor" viewbox="0 0 24 24" :style="{ stroke: config.primary_action_color }"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+        </svg>
+       </div>
+      </div>
+      <div class="stat-label" id="totalItemsLabel">{{ config.total_items_label }}</div>
+      <div class="stat-value" :style="{ fontSize: config.font_size * 2 + 'px', color: config.primary_action_color }">{{ totalItems }}</div>
+     </div>
+     <div class="stat-card" :style="{ background: 'linear-gradient(135deg, ' + config.surface_color + ' 0%, #0f1923 100%)' }">
+      <div class="stat-card-header">
+       <div class="stat-icon" :style="{ border: '1px solid ' + config.primary_action_color }">
+        <svg fill="none" stroke="currentColor" viewbox="0 0 24 24" :style="{ stroke: config.primary_action_color }"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+        </svg>
+       </div>
+      </div>
+      <div class="stat-label" id="totalStockLabel">{{ config.total_stock_label }}</div>
+      <div class="stat-value" :style="{ fontSize: config.font_size * 2 + 'px', color: config.primary_action_color }">{{ totalStock }}</div>
+     </div>
+     <div class="stat-card" :style="{ background: 'linear-gradient(135deg, ' + config.surface_color + ' 0%, #0f1923 100%)' }">
+      <div class="stat-card-header">
+       <div class="stat-icon" :style="{ border: '1px solid ' + config.primary_action_color }">
+        <svg fill="none" stroke="currentColor" viewbox="0 0 24 24" :style="{ stroke: config.primary_action_color }"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+        </svg>
+       </div>
+      </div>
+      <div class="stat-label" id="borrowedLabel">{{ config.borrowed_label }}</div>
+      <div class="stat-value" :style="{ fontSize: config.font_size * 2 + 'px', color: config.primary_action_color }">{{ borrowedCount }}</div>
+     </div>
+     <div class="stat-card critical" :style="{ background: 'linear-gradient(135deg, ' + config.surface_color + ' 0%, #0f1923 100%)' }">
+      <div class="stat-card-header">
+       <div class="stat-icon" :style="{ border: '1px solid ' + config.primary_action_color }">
+        <svg fill="none" stroke="currentColor" viewbox="0 0 24 24" :style="{ stroke: config.primary_action_color }"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+       </div>
+      </div>
+      <div class="stat-label" id="overdueLabel">{{ config.overdue_label }}</div>
+      <div class="stat-value" :style="{ fontSize: config.font_size * 2 + 'px' }">{{ overdueCount }}</div>
+     </div>
+    </div><!-- Search and Filter Bar -->
+    <div class="search-filter-bar" :style="{ background: 'linear-gradient(135deg, ' + config.surface_color + ' 0%, #0f1923 100%)' }">
+     <div class="search-box">
+      <svg class="search-icon" fill="none" stroke="currentColor" viewbox="0 0 24 24" :style="{ stroke: config.primary_action_color }"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+      </svg><input type="text" id="searchInput" v-model="searchQuery" placeholder="Cari berdasarkan kode item, nama, atau kategori..." :style="{ fontFamily: config.font_family + ', Inter, sans-serif', fontSize: config.font_size * 0.875 + 'px' }">
+     </div>
+     <div class="filter-controls">
+      <select id="categoryFilter" v-model="categoryFilter" class="filter-select" :style="{ fontFamily: config.font_family + ', Inter, sans-serif', fontSize: config.font_size * 0.875 + 'px' }">
+       <option value="">Semua Kategori</option>
+       <option value="Perangkat Keras">Perangkat Keras</option>
+       <option value="Alat Keselamatan">Alat Keselamatan</option>
+       <option value="Pelumas">Pelumas</option>
+       <option value="Listrik">Listrik</option>
+       <option value="Pengelasan">Pengelasan</option>
+      </select>
+      <select id="locationFilter" v-model="locationFilter" class="filter-select" :style="{ fontFamily: config.font_family + ', Inter, sans-serif', fontSize: config.font_size * 0.875 + 'px' }">
+       <option value="">Semua Lokasi</option>
+       <option value="Gudang A">Gudang A</option>
+       <option value="Gudang B">Gudang B</option>
+       <option value="Ruang Simpan 1">Ruang Simpan 1</option>
+       <option value="Ruang Simpan 2">Ruang Simpan 2</option>
+       <option value="Bengkel">Bengkel</option>
+      </select>
+      <select id="statusFilter" v-model="statusFilter" class="filter-select" :style="{ fontFamily: config.font_family + ', Inter, sans-serif', fontSize: config.font_size * 0.875 + 'px' }">
+       <option value="">Semua Status</option>
+       <option value="Rendah">Rendah</option>
+       <option value="Kritis">Kritis</option>
+      </select>
+      <button id="resetFilter" @click="resetFilters" class="reset-btn" :style="{ fontFamily: config.font_family + ', Inter, sans-serif', fontSize: config.font_size * 0.875 + 'px' }">
+       <svg fill="none" stroke="currentColor" viewbox="0 0 24 24" width="16" height="16"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+       </svg> Reset
+      </button>
+     </div>
+    </div><!-- Panels -->
+    <div class="panels-container"><!-- Stock Overview -->
+     <div class="panel" :style="{ background: 'linear-gradient(135deg, ' + config.surface_color + ' 0%, #0f1923 100%)' }">
+      <div class="panel-header">
+       <div class="panel-icon">
+        <svg fill="none" stroke="currentColor" viewbox="0 0 24 24" :style="{ stroke: config.primary_action_color }"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+        </svg>
+       </div>
+       <h2 class="panel-title" :style="{ fontSize: config.font_size * 1.125 + 'px' }">Item Stok Rendah</h2>
+      </div>
+      <div class="table-container">
+       <table>
+        <thead>
+         <tr>
+          <th :style="{ fontSize: config.font_size * 0.75 + 'px' }">Kode Item</th>
+          <th :style="{ fontSize: config.font_size * 0.75 + 'px' }">Nama Item</th>
+          <th :style="{ fontSize: config.font_size * 0.75 + 'px' }">Kategori</th>
+          <th :style="{ fontSize: config.font_size * 0.75 + 'px' }">Lokasi</th>
+          <th :style="{ fontSize: config.font_size * 0.75 + 'px' }">Stok</th>
+          <th :style="{ fontSize: config.font_size * 0.75 + 'px' }">Status</th>
+         </tr>
+        </thead>
+        <tbody>
+         <tr v-for="item in filteredInventory" :key="item.code">
+          <td :style="{ fontSize: config.font_size * 0.875 + 'px' }">{{ item.code }}</td>
+          <td :style="{ fontSize: config.font_size * 0.875 + 'px' }">{{ item.name }}</td>
+          <td :style="{ fontSize: config.font_size * 0.875 + 'px' }">{{ item.category }}</td>
+          <td :style="{ fontSize: config.font_size * 0.875 + 'px' }">{{ item.location }}</td>
+          <td :style="{ fontSize: config.font_size * 0.875 + 'px' }">{{ item.stock }}</td>
+          <td><span class="status-badge" :class="'status-' + (item.status === 'Rendah' ? 'low' : 'critical')">{{ item.status }}</span></td>
+         </tr>
+         <tr v-if="filteredInventory.length === 0">
+          <td colspan="6" class="no-results" :style="{ fontSize: config.font_size * 0.875 + 'px' }">Tidak ada item yang ditemukan dengan filter yang dipilih.</td>
+         </tr>
+        </tbody>
+       </table>
+      </div>
+     </div><!-- Borrowed Assets -->
+     <div class="panel" :style="{ background: 'linear-gradient(135deg, ' + config.surface_color + ' 0%, #0f1923 100%)' }">
+      <div class="panel-header">
+       <div class="panel-icon">
+        <svg fill="none" stroke="currentColor" viewbox="0 0 24 24" :style="{ stroke: config.primary_action_color }"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+        </svg>
+       </div>
+       <h2 class="panel-title" :style="{ fontSize: config.font_size * 1.125 + 'px' }">Aset yang Dipinjam</h2>
+      </div>
+      <div class="table-container">
+       <table>
+        <thead>
+         <tr>
+          <th :style="{ fontSize: config.font_size * 0.75 + 'px' }">Nama Item</th>
+          <th :style="{ fontSize: config.font_size * 0.75 + 'px' }">Tipe Aset</th>
+          <th :style="{ fontSize: config.font_size * 0.75 + 'px' }">Peminjam</th>
+          <th :style="{ fontSize: config.font_size * 0.75 + 'px' }">Tgl Pinjam</th>
+          <th :style="{ fontSize: config.font_size * 0.75 + 'px' }">Tgl Jatuh Tempo</th>
+          <th :style="{ fontSize: config.font_size * 0.75 + 'px' }">Status</th>
+         </tr>
+        </thead>
+        <tbody>
+         <tr v-for="asset in borrowedAssets" :key="asset.name + asset.borrower">
+          <td :style="{ fontSize: config.font_size * 0.875 + 'px' }">{{ asset.name }}</td>
+          <td :style="{ fontSize: config.font_size * 0.875 + 'px' }">{{ asset.type }}</td>
+          <td :style="{ fontSize: config.font_size * 0.875 + 'px' }">{{ asset.borrower }}</td>
+          <td :style="{ fontSize: config.font_size * 0.875 + 'px' }">{{ asset.borrowDate }}</td>
+          <td :style="{ fontSize: config.font_size * 0.875 + 'px' }">{{ asset.dueDate }}</td>
+          <td><span class="status-badge" :class="'status-' + (asset.status === 'Aktif' ? 'active' : 'overdue')">{{ asset.status }}</span></td>
+         </tr>
+        </tbody>
+       </table>
+      </div>
+     </div>
+    </div><!-- Action Toolbar -->
+    <div class="action-toolbar" :style="{ background: 'linear-gradient(135deg, ' + config.surface_color + ' 0%, #0f1923 100%)' }">
+     <button class="action-btn" @click="navigate('/inventory_management')" :style="{ color: config.primary_action_color }">
+      <svg fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+      </svg> Tambah Item Baru </button>
+     <button class="action-btn" @click="navigate('/inventory_management')" :style="{ color: config.primary_action_color }">
+      <svg fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+      </svg> Catat Stok Masuk / Keluar </button>
+     <button class="action-btn" @click="navigate('/inventory_peminjaman')" :style="{ color: config.primary_action_color }">
+      <svg fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+      </svg> Peminjaman Baru </button>
+     <button class="action-btn" @click="navigate('/inventory_peminjaman')" :style="{ color: config.primary_action_color }">
+      <svg fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path>
+      </svg> Kembalikan Item </button>
+    </div>
+   </main>
+  </div>
+
+  <script>
+    const { createApp, ref, computed, onMounted } = Vue;
+
+    const defaultConfig = {
+      dashboard_title: "Dasbor Inventaris",
+      user_name: "Admin",
+      total_items_label: "Total Item Inventaris",
+      total_stock_label: "Total Stok Tersedia",
+      borrowed_label: "Aset Dipinjam",
+      overdue_label: "Peminjaman Terlambat",
+      background_color: "#0a1628",
+      surface_color: "#1a2332",
+      text_color: "#e0e6ed",
+      primary_action_color: "#60a5fa",
+      secondary_action_color: "#3b82f6",
+      font_family: "Inter",
+      font_size: 16
+    };
+
+    const inventoryData = [
+      { code: 'ITM-1045', name: 'Baut Baja M12', category: 'Perangkat Keras', location: 'Gudang A', stock: 45, status: 'Rendah' },
+      { code: 'ITM-2187', name: 'Kacamata Keselamatan', category: 'Alat Keselamatan', location: 'Ruang Simpan 2', stock: 12, status: 'Kritis' },
+      { code: 'ITM-3421', name: 'Oli Hidrolik 5L', category: 'Pelumas', location: 'Gudang B', stock: 28, status: 'Rendah' },
+      { code: 'ITM-4598', name: 'Kabel Kawat 10mm', category: 'Listrik', location: 'Ruang Simpan 1', stock: 8, status: 'Kritis' },
+      { code: 'ITM-5763', name: 'Batang Las', category: 'Pengelasan', location: 'Bengkel', stock: 35, status: 'Rendah' }
+    ];
+
+    const borrowedAssets = [
+      { name: 'Multimeter Digital', type: 'Peralatan', borrower: 'John Smith', borrowDate: '05/01/2024', dueDate: '12/01/2024', status: 'Aktif' },
+      { name: 'Kunci Torsi', type: 'Alat', borrower: 'Sarah Johnson', borrowDate: '28/12/2023', dueDate: '03/01/2024', status: 'Terlambat' },
+      { name: 'Laptop - ThinkPad', type: 'Elektronik', borrower: 'Mike Davis', borrowDate: '08/01/2024', dueDate: '15/01/2024', status: 'Aktif' },
+      { name: 'Sabuk Pengaman', type: 'Alat Keselamatan', borrower: 'Emma Wilson', borrowDate: '20/12/2023', dueDate: '01/01/2024', status: 'Terlambat' },
+      { name: 'Bor Pneumatik', type: 'Alat', borrower: 'Robert Brown', borrowDate: '06/01/2024', dueDate: '13/01/2024', status: 'Aktif' }
+    ];
+
+    createApp({
+      setup() {
+        const config = ref({ ...defaultConfig });
+        const searchQuery = ref('');
+        const categoryFilter = ref('');
+        const locationFilter = ref('');
+        const statusFilter = ref('');
+
+        const totalItems = ref('1.247');
+        const totalStock = ref('8.432');
+        const borrowedCount = ref('124');
+        const overdueCount = ref('17');
+
+        const getAvatarText = computed(() => {
+          const name = config.value.user_name || defaultConfig.user_name;
+          return name.substring(0, 2).toUpperCase();
+        });
+
+        const filteredInventory = computed(() => {
+          return inventoryData.filter(item => {
+            const matchesSearch = !searchQuery.value ||
+              item.code.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+              item.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+              item.category.toLowerCase().includes(searchQuery.value.toLowerCase());
+              
+            const matchesCategory = !categoryFilter.value || item.category === categoryFilter.value;
+            const matchesLocation = !locationFilter.value || item.location === locationFilter.value;
+            const matchesStatus = !statusFilter.value || item.status === statusFilter.value;
+
+            return matchesSearch && matchesCategory && matchesLocation && matchesStatus;
+          });
+        });
+
+        const resetFilters = () => {
+          searchQuery.value = '';
+          categoryFilter.value = '';
+          locationFilter.value = '';
+          statusFilter.value = '';
+        };
+
+        const handleLogout = () => {
+          window.location.href = '/logout';
+        };
+
+        const navigate = (path) => {
+          window.location.href = path;
+        };
+
+        onMounted(() => {
+          if (window.elementSdk) {
+            window.elementSdk.init({
+              defaultConfig,
+              onConfigChange: (newConfig) => {
+                config.value = { ...defaultConfig, ...newConfig };
+                document.body.style.background = `linear-gradient(135deg, ${config.value.background_color} 0%, #1a1a2e 100%)`;
+                document.body.style.color = config.value.text_color;
+                document.body.style.fontFamily = `${config.value.font_family}, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif`;
+              },
+              mapToCapabilities: (cfg) => {
+                const c = { ...defaultConfig, ...cfg };
+                return {
+                  recolorables: [
+                    { get: () => c.background_color, set: (v) => window.elementSdk.setConfig({ background_color: v }) },
+                    { get: () => c.surface_color, set: (v) => window.elementSdk.setConfig({ surface_color: v }) },
+                    { get: () => c.text_color, set: (v) => window.elementSdk.setConfig({ text_color: v }) },
+                    { get: () => c.primary_action_color, set: (v) => window.elementSdk.setConfig({ primary_action_color: v }) }
+                  ],
+                  borderables: [],
+                  fontEditable: { get: () => c.font_family, set: (v) => window.elementSdk.setConfig({ font_family: v }) },
+                  fontSizeable: { get: () => c.font_size, set: (v) => window.elementSdk.setConfig({ font_size: v }) }
+                };
+              },
+              mapToEditPanelValues: (cfg) => {
+                const c = { ...defaultConfig, ...cfg };
+                return new Map([
+                  ["dashboard_title", c.dashboard_title],
+                  ["user_name", c.user_name],
+                  ["total_items_label", c.total_items_label],
+                  ["total_stock_label", c.total_stock_label],
+                  ["borrowed_label", c.borrowed_label],
+                  ["overdue_label", c.overdue_label]
+                ]);
+              }
+            });
+          }
+        });
+
+        return {
+          config,
+          searchQuery,
+          categoryFilter,
+          locationFilter,
+          statusFilter,
+          totalItems,
+          totalStock,
+          borrowedCount,
+          overdueCount,
+          getAvatarText,
+          filteredInventory,
+          borrowedAssets,
+          resetFilters,
+          handleLogout,
+          navigate
+        };
+      }
+    }).mount('#app');
+  </script>
+ </body>
+</html>

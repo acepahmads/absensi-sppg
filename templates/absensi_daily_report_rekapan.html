@@ -1,0 +1,677 @@
+<!doctype html>
+<html lang="id" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>History Report Pekerjaan Harian</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet">
+  <script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: { jakarta: ['Plus Jakarta Sans', 'sans-serif'] }
+    }
+  }
+}
+</script>
+  <style>
+    [v-cloak] { display: none !important; }
+    html, body { height: 100%; margin: 0; }
+* { box-sizing: border-box; }
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #0a1628; }
+::-webkit-scrollbar-thumb { background: #1e3a5f; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #2a5080; }
+.expand-content { max-height: 0; overflow: hidden; transition: max-height 0.4s ease, opacity 0.3s ease; opacity: 0; }
+.expand-content.open { max-height: 4000px; opacity: 1; }
+.progress-fill { transition: width 0.6s ease; }
+.row-hover:hover { background: rgba(30, 58, 95, 0.3) !important; }
+.fade-in { animation: fadeIn 0.3s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+.toast-slide { animation: toastIn 0.3s ease, toastOut 0.3s ease 2.7s forwards; }
+@keyframes toastIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes toastOut { from { opacity: 1; } to { opacity: 0; } }
+</style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full bg-[#060e1a] font-jakarta text-gray-200 overflow-auto">
+   <div id="app" v-cloak class="w-full min-h-full flex flex-col" :style="{ backgroundColor: config.background_color, fontFamily: config.font_family + ', sans-serif', fontSize: config.font_size + 'px' }">
+    <!-- HEADER -->
+    <header id="main-header" class="w-full bg-[#0a1628] border-b border-[#1a2d4a] px-8 py-4 flex items-center justify-between flex-shrink-0" :style="{ backgroundColor: config.surface_color }">
+     <div>
+      <h1 id="page-title" class="text-xl font-bold text-white tracking-tight" :style="{ color: config.text_color }">{{ config.page_title }}</h1>
+      <p id="page-subtitle" class="text-sm text-[#6b8cba] mt-0.5">{{ config.page_subtitle }}</p>
+     </div>
+     <div class="flex items-center gap-4">
+      <span v-if="config.username" id="header-username" class="text-sm font-semibold text-white">{{ config.username }}</span>
+      <button @click="goBack" class="px-4 py-2 rounded-lg bg-[#1a2d4a] hover:bg-cyan-600 transition text-cyan-400 hover:text-white font-medium text-sm" :style="{ color: config.primary_action_color, backgroundColor: config.secondary_action_color }" title="Kembali">Kembali</button>
+     </div>
+    </header><!-- FILTER BAR -->
+    <div class="w-full bg-[#0d1a2d] border-b border-[#1a2d4a] px-8 py-5 flex-shrink-0">
+     <div class="flex flex-wrap items-end gap-4">
+      <div class="flex flex-col gap-1.5"><label class="text-xs font-medium text-[#5a7da8] uppercase tracking-wider">📅 Tanggal Mulai</label> <input type="date" v-model="filters.startDate" class="bg-[#0a1628] border border-[#1a2d4a] rounded-lg px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-cyan-500 transition">
+      </div>
+      <div class="flex flex-col gap-1.5"><label class="text-xs font-medium text-[#5a7da8] uppercase tracking-wider">📅 Tanggal Akhir</label> <input type="date" v-model="filters.endDate" class="bg-[#0a1628] border border-[#1a2d4a] rounded-lg px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-cyan-500 transition">
+      </div>
+      <div class="flex flex-col gap-1.5"><label class="text-xs font-medium text-[#5a7da8] uppercase tracking-wider">👤 Nama Karyawan</label> <input type="text" v-model="filters.nama" placeholder="Cari nama..." class="bg-[#0a1628] border border-[#1a2d4a] rounded-lg px-3 py-2 text-sm text-gray-200 placeholder-[#3a5a7a] focus:outline-none focus:border-cyan-500 transition w-48">
+      </div>
+      <div class="flex flex-col gap-1.5"><label class="text-xs font-medium text-[#5a7da8] uppercase tracking-wider">📍 Lokasi Kerja</label> <select v-model="filters.lokasi" class="bg-[#0a1628] border border-[#1a2d4a] rounded-lg px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-cyan-500 transition"> <option value="">Semua Lokasi</option> <option value="KIP">KIP</option> <option value="TKI">TKI</option> <option value="WFH">WFH</option> </select>
+      </div>
+      <div class="flex flex-col gap-1.5"><label class="text-xs font-medium text-[#5a7da8] uppercase tracking-wider">🎯 Project</label> <input type="text" v-model="filters.project" placeholder="Cari project..." class="bg-[#0a1628] border border-[#1a2d4a] rounded-lg px-3 py-2 text-sm text-gray-200 placeholder-[#3a5a7a] focus:outline-none focus:border-cyan-500 transition w-48">
+      </div>
+      <div class="flex flex-col gap-1.5"><label class="text-xs font-medium text-[#5a7da8] uppercase tracking-wider">💼 Jenis Pekerjaan</label> <input type="text" v-model="filters.jobType" placeholder="Development, Testing, dll..." class="bg-[#0a1628] border border-[#1a2d4a] rounded-lg px-3 py-2 text-sm text-gray-200 placeholder-[#3a5a7a] focus:outline-none focus:border-cyan-500 transition w-48" list="job-type-list"> <datalist id="job-type-list"> <option>Development</option> <option>Documentation</option> <option>Testing</option> <option>Design</option> </datalist>
+      </div>
+      <div class="flex flex-col gap-1.5"><label class="text-xs font-medium text-[#5a7da8] uppercase tracking-wider">📝 Judul Pekerjaan</label> <input type="text" v-model="filters.jobTitle" placeholder="Cari judul..." class="bg-[#0a1628] border border-[#1a2d4a] rounded-lg px-3 py-2 text-sm text-gray-200 placeholder-[#3a5a7a] focus:outline-none focus:border-cyan-500 transition w-48">
+      </div>
+      <div class="flex items-end gap-2 ml-auto">
+       <button @click="applyFilter" class="bg-cyan-600 hover:bg-cyan-500 text-white text-sm font-semibold px-5 py-2 rounded-lg transition flex items-center gap-2" :style="{ backgroundColor: config.primary_action_color }">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg> Cari Data
+       </button>
+       <button @click="resetFilter" class="bg-[#1a2d4a] hover:bg-[#243d5c] text-gray-300 text-sm font-medium px-4 py-2 rounded-lg transition flex items-center gap-2" :style="{ backgroundColor: config.secondary_action_color }">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+        </svg> Reset
+       </button>
+       <button @click="exportXLS" class="bg-emerald-700 hover:bg-emerald-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition flex items-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg> Export XLS
+       </button>
+       <button @click="exportPDF" class="bg-red-700 hover:bg-red-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition flex items-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg> Export PDF
+       </button>
+      </div>
+     </div>
+    </div><!-- SUMMARY BAR -->
+    <div class="w-full px-8 py-3 flex items-center justify-between flex-shrink-0 bg-[#080f1e]">
+     <p id="total-indicator" class="text-sm text-[#5a7da8]">Menampilkan <span class="text-cyan-400 font-semibold" :style="{ color: config.primary_action_color }">{{ paginatedData.length }}</span> dari <span class="text-cyan-400 font-semibold" :style="{ color: config.primary_action_color }">{{ filteredData.length }}</span> data</p>
+     <div class="flex items-center gap-2 text-sm"><span class="text-[#5a7da8]">Per halaman:</span> <select v-model.number="perPage" @change="changePerPage" class="bg-[#0a1628] border border-[#1a2d4a] rounded px-2 py-1 text-gray-300 text-sm focus:outline-none"> <option :value="20">20</option> <option :value="50">50</option> </select>
+     </div>
+    </div><!-- TABLE -->
+    <div class="flex-1 w-full px-8 py-4 overflow-auto">
+     <div class="w-full bg-[#0a1628] rounded-xl border border-[#1a2d4a] overflow-hidden" :style="{ backgroundColor: config.surface_color }">
+      <table class="w-full text-sm">
+       <thead>
+        <tr class="bg-[#0d1f38] text-[#6b8cba] text-xs uppercase tracking-wider">
+         <th class="px-4 py-3.5 text-left font-semibold w-14">No</th>
+         <th class="px-4 py-3.5 text-left font-semibold">Nama</th>
+         <th class="px-4 py-3.5 text-left font-semibold">Lokasi</th>
+         <th class="px-4 py-3.5 text-left font-semibold">Tanggal</th>
+         <th class="px-4 py-3.5 text-left font-semibold">Jam Mulai</th>
+         <th class="px-4 py-3.5 text-left font-semibold">Jam Selesai</th>
+         <th class="px-4 py-3.5 text-center font-semibold">Jumlah Pekerjaan</th>
+         <th class="px-4 py-3.5 text-center font-semibold w-48">Action</th>
+        </tr>
+       </thead>
+       <tbody>
+        <template v-for="(r, idx) in paginatedData" :key="r.id">
+         <tr class="row-hover border-b border-[#1a2d4a]/50 transition cursor-default">
+          <td class="px-4 py-3.5 text-[#6b8cba] font-medium">{{ (currentPage - 1) * perPage + idx + 1 }}</td>
+          <td class="px-4 py-3.5 text-white font-semibold">{{ r.nama }}</td>
+          <td class="px-4 py-3.5 text-gray-300">{{ r.lokasi_kerja }}</td>
+          <td class="px-4 py-3.5 text-gray-300">{{ r.tanggal }}</td>
+          <td class="px-4 py-3.5 text-gray-300">{{ r.jam_mulai }}</td>
+          <td class="px-4 py-3.5 text-gray-300">{{ r.jam_selesai }}</td>
+          <td class="px-4 py-3.5 text-center">
+            <span class="bg-cyan-900/40 text-cyan-400 px-3 py-1 rounded-full text-xs font-bold" :style="{ color: config.primary_action_color }">
+              {{ getPekerjaanCount(r) }}
+            </span>
+          </td>
+          <td class="px-4 py-3.5 text-center">
+           <div class="flex items-center justify-center gap-1.5">
+            <button @click="toggleExpand(r.id)" class="p-1.5 rounded-lg transition" :class="isExpanded(r.id) ? 'bg-cyan-600 text-white' : 'bg-[#1a2d4a] text-cyan-400 hover:bg-cyan-700 hover:text-white'" :style="isExpanded(r.id) ? { backgroundColor: config.primary_action_color } : { color: config.primary_action_color, backgroundColor: config.secondary_action_color }" title="Detail">
+             <svg v-if="isExpanded(r.id)" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"/>
+             </svg>
+             <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+             </svg>
+            </button>
+            <button @click="editReport(r.id)" class="p-1.5 rounded-lg bg-[#1a2d4a] text-yellow-400 hover:bg-yellow-700 hover:text-white transition" :style="{ backgroundColor: config.secondary_action_color }" title="Edit">
+             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+             </svg>
+            </button>
+            <button @click="openDeleteModal(r.id)" class="p-1.5 rounded-lg bg-[#1a2d4a] text-red-400 hover:bg-red-700 hover:text-white transition" :style="{ backgroundColor: config.secondary_action_color }" title="Delete">
+             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+             </svg>
+            </button>
+           </div>
+          </td>
+         </tr>
+         <tr v-show="isExpanded(r.id)">
+          <td colspan="8" class="p-0">
+           <div class="expand-content open m-2 bg-[#0d1a2d] rounded-xl border border-[#1a2d4a] p-6 fade-in" :style="{ backgroundColor: config.surface_color }">
+            <div class="flex flex-col md:flex-row md:items-center gap-6 mb-5 pb-4 border-b border-[#1a2d4a]">
+              <div class="w-12 h-12 rounded-xl bg-[#1a3a5c] flex items-center justify-center text-cyan-400 font-bold text-lg" :style="{ color: config.primary_action_color }">
+                {{ r.nama ? r.nama.charAt(0).toUpperCase() : '' }}
+              </div>
+              <div class="grid grid-cols-2 sm:grid-cols-5 gap-6 flex-1">
+                <div><span class="text-[#5a7da8] text-xs">👤 Nama</span><p class="text-white font-semibold text-sm">{{ r.nama }}</p></div>
+                <div><span class="text-[#5a7da8] text-xs">📍 Lokasi</span><p class="text-white font-semibold text-sm">{{ r.lokasi_kerja }}</p></div>
+                <div><span class="text-[#5a7da8] text-xs">📅 Tanggal</span><p class="text-white font-semibold text-sm">{{ r.tanggal }}</p></div>
+                <div><span class="text-[#5a7da8] text-xs">⏰ Mulai</span><p class="text-white font-semibold text-sm">{{ r.jam_mulai }}</p></div>
+                <div><span class="text-[#5a7da8] text-xs">⏰ Selesai</span><p class="text-white font-semibold text-sm">{{ r.jam_selesai }}</p></div>
+              </div>
+            </div>
+            
+            <h3 class="text-sm font-bold text-[#6b8cba] uppercase tracking-wider mb-3">
+              🔧 Daftar Pekerjaan ({{ getPekerjaanCount(r) }})
+            </h3>
+            
+            <div v-for="(p, i) in getPekerjaanList(r)" :key="i" class="bg-[#0a1628] rounded-xl p-5 border border-[#1a2d4a] mb-4" :style="{ backgroundColor: config.surface_color }">
+              <div class="flex items-center gap-2 mb-4">
+                <span class="w-7 h-7 rounded-lg bg-cyan-600 text-white flex items-center justify-center text-xs font-bold" :style="{ backgroundColor: config.primary_action_color }">{{ i + 1 }}</span>
+                <h4 class="text-base font-bold text-white">🔧 Pekerjaan {{ i + 1 }}</h4>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+                <div><span class="text-[#5a7da8] text-xs uppercase tracking-wider">Project</span><p class="text-white font-medium text-sm mt-0.5">{{ p.project_name || '-' }}</p></div>
+                <div><span class="text-[#5a7da8] text-xs uppercase tracking-wider">Tipe</span><p class="text-white font-medium text-sm mt-0.5">{{ p.job_type || '-' }}</p></div>
+                <div><span class="text-[#5a7da8] text-xs uppercase tracking-wider">Judul</span><p class="text-white font-medium text-sm mt-0.5">{{ p.job_title || '-' }}</p></div>
+              </div>
+              <div class="mb-4">
+                <span class="text-[#5a7da8] text-xs uppercase tracking-wider">Deskripsi</span>
+                <p class="text-gray-300 text-sm mt-1 leading-relaxed whitespace-pre-line">{{ p.description }}</p>
+              </div>
+              <div class="mb-4">
+                <span class="text-[#5a7da8] text-xs uppercase tracking-wider">Progress</span>
+                <div class="flex items-center gap-3 mt-1.5">
+                  <div class="flex-1 bg-[#0d1f38] rounded-full h-3 overflow-hidden">
+                    <div class="progress-fill h-full rounded-full" :class="getProgressColor(p.progress).bar" :style="{ width: p.progress + '%' }"></div>
+                  </div>
+                  <span class="font-bold text-sm min-w-[40px] text-right" :class="getProgressColor(p.progress).text">{{ p.progress }}%</span>
+                </div>
+              </div>
+              
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="bg-red-900/10 border border-red-900/30 rounded-lg p-3">
+                  <span class="text-red-400 text-xs uppercase tracking-wider font-semibold">⚠ Kendala</span>
+                  <p class="text-gray-300 text-sm mt-1 leading-relaxed whitespace-pre-line">{{ p.kendala || '-' }}</p>
+                  <div v-if="p.kendala_doc" class="mt-2 text-xs">
+                    <a :href="p.kendala_doc.data" :download="p.kendala_doc.name" class="text-red-400 hover:text-red-300 underline font-medium flex items-center gap-1">
+                      <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                      </svg> {{ p.kendala_doc.name }}
+                    </a>
+                  </div>
+                </div>
+                <div class="bg-emerald-900/10 border border-emerald-900/30 rounded-lg p-3">
+                  <span class="text-emerald-400 text-xs uppercase tracking-wider font-semibold">✅ Solusi</span>
+                  <p class="text-gray-300 text-sm mt-1 leading-relaxed whitespace-pre-line">{{ p.solusi || '-' }}</p>
+                  <div v-if="p.solusi_doc" class="mt-2 text-xs">
+                    <a :href="p.solusi_doc.data" :download="p.solusi_doc.name" class="text-emerald-400 hover:text-emerald-300 underline font-medium flex items-center gap-1">
+                      <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                      </svg> {{ p.solusi_doc.name }}
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Save Documents if exist -->
+              <div v-if="p.save_document_1 || p.save_document_2 || p.save_document_3" class="mt-4 border-t border-[#1a2d4a] pt-4">
+                <span class="text-[#5a7da8] text-xs uppercase tracking-wider block mb-2 font-semibold">📁 Lampiran Dokumen</span>
+                <div class="flex flex-wrap gap-4">
+                  <div v-if="p.save_document_1">
+                    <a :href="p.save_document_1.data" :download="p.save_document_1.name" class="text-cyan-400 hover:text-cyan-300 underline text-xs font-medium flex items-center gap-1" :style="{ color: config.primary_action_color }">
+                      📄 {{ p.save_document_1.name }}
+                    </a>
+                  </div>
+                  <div v-if="p.save_document_2">
+                    <a :href="p.save_document_2.data" :download="p.save_document_2.name" class="text-cyan-400 hover:text-cyan-300 underline text-xs font-medium flex items-center gap-1" :style="{ color: config.primary_action_color }">
+                      📄 {{ p.save_document_2.name }}
+                    </a>
+                  </div>
+                  <div v-if="p.save_document_3">
+                    <a :href="p.save_document_3.data" :download="p.save_document_3.name" class="text-cyan-400 hover:text-cyan-300 underline text-xs font-medium flex items-center gap-1" :style="{ color: config.primary_action_color }">
+                      📄 {{ p.save_document_3.name }}
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+            
+            <div class="mt-5 pt-4 border-t border-[#1a2d4a]">
+              <div class="bg-[#0a1628] rounded-xl p-4 border border-cyan-900/30" :style="{ backgroundColor: config.surface_color }">
+                <span class="text-cyan-400 text-xs uppercase tracking-wider font-semibold" :style="{ color: config.primary_action_color }">📅 Rencana Besok</span>
+                <p class="text-gray-300 text-sm mt-2 leading-relaxed whitespace-pre-line">{{ r.rencana_besok || '-' }}</p>
+              </div>
+            </div>
+           </div>
+          </td>
+         </tr>
+        </template>
+        
+        <tr v-if="paginatedData.length === 0">
+          <td colspan="8" class="text-center py-16 text-[#4a6a8a]">
+            <div class="flex flex-col items-center gap-2">
+              <svg class="w-10 h-10 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2 2H6a2 2 0 00-2 2v7m16 0a2 2 0 01-2 2H6a2 2 0 01-2-2m16 0l-3.5 3.5a2 2 0 01-2.828 0L6 13"/>
+              </svg>
+              <p class="text-base">Tidak ada data ditemukan</p>
+            </div>
+          </td>
+        </tr>
+       </tbody>
+      </table>
+     </div>
+    </div><!-- PAGINATION -->
+    <div class="w-full px-8 py-4 flex items-center justify-center gap-2 flex-shrink-0 border-t border-[#1a2d4a] bg-[#080f1e]" id="pagination-bar">
+      <button @click="goPage(currentPage - 1)" :disabled="currentPage <= 1" class="px-3 py-1.5 rounded-lg text-sm transition" :class="currentPage <= 1 ? 'bg-[#0a1628] text-[#3a5a7a] cursor-not-allowed' : 'bg-[#1a2d4a] text-gray-300 hover:bg-cyan-700 hover:text-white'" :style="{ backgroundColor: config.secondary_action_color }">← Prev</button>
+      
+      <template v-for="page in visiblePages">
+        <span v-if="page === '...'" class="px-2 text-[#4a6a8a]">...</span>
+        <button v-else @click="goPage(page)" class="w-9 h-9 rounded-lg text-sm font-medium transition" :class="page === currentPage ? 'bg-cyan-600 text-white' : 'bg-[#1a2d4a] text-gray-300 hover:bg-cyan-700 hover:text-white'" :style="page === currentPage ? { backgroundColor: config.primary_action_color } : { backgroundColor: config.secondary_action_color }">{{ page }}</button>
+      </template>
+
+      <button @click="goPage(currentPage + 1)" :disabled="currentPage >= totalPages" class="px-3 py-1.5 rounded-lg text-sm transition" :class="currentPage >= totalPages ? 'bg-[#0a1628] text-[#3a5a7a] cursor-not-allowed' : 'bg-[#1a2d4a] text-gray-300 hover:bg-cyan-700 hover:text-white'" :style="{ backgroundColor: config.secondary_action_color }">Next →</button>
+    </div><!-- DELETE CONFIRMATION MODAL -->
+    <div id="delete-modal" v-show="showDeleteModal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+     <div class="bg-[#0d1a2d] border border-[#1a2d4a] rounded-2xl p-8 max-w-md w-full shadow-2xl" :style="{ backgroundColor: config.surface_color }">
+      <div class="flex items-center gap-3 mb-4">
+       <div class="w-10 h-10 rounded-full bg-red-900/40 flex items-center justify-center">
+        <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+        </svg>
+       </div>
+       <h3 class="text-lg font-bold text-white" :style="{ color: config.text_color }">Konfirmasi Hapus</h3>
+      </div>
+      <p class="text-[#8baac8] mb-6">Yakin ingin menghapus report ini? Data yang dihapus tidak dapat dikembalikan.</p>
+      <div class="flex justify-end gap-3">
+       <button @click="closeDeleteModal" class="px-5 py-2.5 rounded-lg bg-[#1a2d4a] hover:bg-[#243d5c] text-gray-300 font-medium text-sm transition" :style="{ backgroundColor: config.secondary_action_color }">Batal</button> 
+       <button @click="confirmDelete" class="px-5 py-2.5 rounded-lg bg-red-600 hover:bg-red-500 text-white font-semibold text-sm transition">Hapus</button>
+      </div>
+     </div>
+    </div><!-- TOAST -->
+    <div id="toast-container" class="fixed top-6 right-6 z-50 flex flex-col gap-2">
+      <div v-for="t in toasts" :key="t.id" :class="t.class" class="text-white px-5 py-3 rounded-xl shadow-lg text-sm font-medium toast-slide">
+        {{ t.message }}
+      </div>
+    </div>
+   </div>
+
+   <script>
+    const { createApp, ref, reactive, computed, onMounted } = Vue;
+
+    const defaultConfig = {
+      page_title: 'History Report Pekerjaan Harian',
+      page_subtitle: 'Monitoring aktivitas kerja harian karyawan',
+      username: '',
+      background_color: '#060e1a',
+      surface_color: '#0a1628',
+      text_color: '#e2e8f0',
+      primary_action_color: '#0891b2',
+      secondary_action_color: '#1a2d4a',
+      font_family: 'Plus Jakarta Sans',
+      font_size: 14
+    };
+
+    const API_BASE_URL = '/auth/absensi/daily-report';
+
+    const fallbackData = [
+      { id:1, nama:"Ahmad Fauzi", lokasi_kerja:"KIP Surabaya", tanggal:"2026-04-15", jam_mulai:"08:00", jam_selesai:"17:00",
+        pekerjaan_list: JSON.stringify([
+          {id:0,project_name:"Proyek Alpha",job_type:"Development",job_title:"Backend API Module",description:"Membuat endpoint REST API\nIntegrasi database PostgreSQL\nUnit testing module auth",progress:75,kendala:"Server staging down 2 jam\nDependency library outdated",solusi:"Gunakan server backup\nUpdate library ke versi terbaru"},
+          {id:1,project_name:"Proyek Beta",job_type:"Documentation",job_title:"Technical Documentation",description:"Menulis dokumentasi API\nMembuat diagram arsitektur",progress:40,kendala:"Spesifikasi belum final\nTemplate belum disetujui",solusi:"Koordinasi dengan PM\nGunakan template sementara"}
+        ]),
+        rencana_besok:"Melanjutkan integrasi database\nReview code dari tim frontend\nMeeting dengan klien pukul 10:00"
+      }
+    ];
+
+    createApp({
+      setup() {
+        const config = ref({ ...defaultConfig });
+        const allData = ref([]);
+        const currentPage = ref(1);
+        const perPage = ref(20);
+        const expandedRows = ref(new Set());
+        const deleteTargetId = ref(null);
+        const showDeleteModal = ref(false);
+        const isLoading = ref(false);
+        const toasts = ref([]);
+
+        const authToken = ref('');
+        const namaKaryawan = ref('');
+        const roleKaryawan = ref('');
+
+        const filters = reactive({
+          startDate: '',
+          endDate: '',
+          nama: '',
+          lokasi: '',
+          project: '',
+          jobType: '',
+          jobTitle: ''
+        });
+
+        const appliedFilters = reactive({ ...filters });
+
+        const getCookie = (name) => {
+          const value = `; ${document.cookie}`;
+          const parts = value.split(`; ${name}=`);
+          if (parts.length === 2) return decodeURIComponent(parts.pop().split(';').shift());
+          return null;
+        };
+
+        const getCookieName = (name) => {
+          const cookies = document.cookie.split('; ');
+          for (let c of cookies) {
+            const [key, value] = c.split('=');
+            if (key === name) {
+              return decodeURIComponent(value.replace(/\+/g, ' '));
+            }
+          }
+          return null;
+        };
+
+        const showToast = (message, type = 'info') => {
+          const id = Date.now() + Math.random();
+          const colors = { success: 'bg-emerald-600', info: 'bg-cyan-600', error: 'bg-red-600' };
+          toasts.value.push({
+            id,
+            message,
+            class: colors[type] || colors.info
+          });
+          setTimeout(() => {
+            toasts.value = toasts.value.filter(t => t.id !== id);
+          }, 3000);
+        };
+
+        const loadReports = async () => {
+          isLoading.value = true;
+          try {
+            const response = await fetch(`${API_BASE_URL}?page=1&per_page=1000&nama=${namaKaryawan.value}&role=${roleKaryawan.value}`, {
+              method: 'GET',
+              headers: {
+                'Authorization': `Bearer ${authToken.value}`,
+                'Content-Type': 'application/json'
+              }
+            });
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            const data = await response.json();
+            allData.value = data.data || data || [];
+            showToast('Data berhasil dimuat dari server', 'success');
+          } catch (error) {
+            console.error('Failed to fetch reports:', error);
+            showToast('Gagal memuat data dari server. Menggunakan data lokal.', 'error');
+            allData.value = [...fallbackData];
+          } finally {
+            isLoading.value = false;
+          }
+        };
+
+        const getPekerjaanList = (r) => {
+          try {
+            return typeof r.pekerjaan_list === 'string'
+              ? JSON.parse(r.pekerjaan_list)
+              : r.pekerjaan_list;
+          } catch (e) {
+            return [];
+          }
+        };
+
+        const getPekerjaanCount = (r) => {
+          return getPekerjaanList(r).length;
+        };
+
+        const getProgressColor = (p) => {
+          if (p >= 80) return { bar: 'bg-emerald-500', text: 'text-emerald-400' };
+          if (p >= 50) return { bar: 'bg-cyan-500', text: 'text-cyan-400' };
+          if (p >= 25) return { bar: 'bg-yellow-500', text: 'text-yellow-400' };
+          return { bar: 'bg-red-500', text: 'text-red-400' };
+        };
+
+        const filteredData = computed(() => {
+          return allData.value.filter(r => {
+            const s = appliedFilters.startDate;
+            const e = appliedFilters.endDate;
+            const n = appliedFilters.nama;
+            const l = appliedFilters.lokasi;
+            const p = appliedFilters.project;
+            const jt = appliedFilters.jobType;
+            const jp = appliedFilters.jobTitle;
+
+            if (s && r.tanggal < s) return false;
+            if (e && r.tanggal > e) return false;
+            if (n && !r.nama.toLowerCase().includes(n.toLowerCase())) return false;
+            if (l && r.lokasi_kerja !== l) return false;
+
+            if (p || jt || jp) {
+              const pekerjaanList = getPekerjaanList(r);
+              const matchesWork = pekerjaanList.some(w => {
+                if (p && !w.project_name.toLowerCase().includes(p.toLowerCase())) return false;
+                if (jt && w.job_type !== jt) return false;
+                if (jp && !w.job_title.toLowerCase().includes(jp.toLowerCase())) return false;
+                return true;
+              });
+              if (!matchesWork) return false;
+            }
+
+            return true;
+          });
+        });
+
+        const totalPages = computed(() => {
+          return Math.ceil(filteredData.value.length / perPage.value) || 1;
+        });
+
+        const paginatedData = computed(() => {
+          const start = (currentPage.value - 1) * perPage.value;
+          return filteredData.value.slice(start, start + perPage.value);
+        });
+
+        const visiblePages = computed(() => {
+          const pages = [];
+          const total = totalPages.value;
+          if (total <= 7) {
+            for (let i = 1; i <= total; i++) pages.push(i);
+          } else {
+            pages.push(1);
+            if (currentPage.value > 3) {
+              pages.push('...');
+            }
+            const start = Math.max(2, currentPage.value - 1);
+            const end = Math.min(total - 1, currentPage.value + 1);
+            for (let i = start; i <= end; i++) {
+              if (!pages.includes(i)) pages.push(i);
+            }
+            if (currentPage.value < total - 2) {
+              pages.push('...');
+            }
+            if (!pages.includes(total)) pages.push(total);
+          }
+          return pages;
+        });
+
+        const toggleExpand = (id) => {
+          if (expandedRows.value.has(id)) {
+            expandedRows.value.delete(id);
+          } else {
+            expandedRows.value.clear();
+            expandedRows.value.add(id);
+          }
+        };
+
+        const isExpanded = (id) => {
+          return expandedRows.value.has(id);
+        };
+
+        const goPage = (p) => {
+          if (p < 1 || p > totalPages.value) return;
+          currentPage.value = p;
+        };
+
+        const changePerPage = () => {
+          currentPage.value = 1;
+        };
+
+        const applyFilter = () => {
+          Object.assign(appliedFilters, filters);
+          currentPage.value = 1;
+          expandedRows.value.clear();
+          showToast('Filter diterapkan', 'info');
+        };
+
+        const resetFilter = () => {
+          filters.startDate = '';
+          filters.endDate = '';
+          filters.nama = '';
+          filters.lokasi = '';
+          filters.project = '';
+          filters.jobType = '';
+          filters.jobTitle = '';
+          Object.assign(appliedFilters, filters);
+          currentPage.value = 1;
+          expandedRows.value.clear();
+          showToast('Filter direset', 'info');
+        };
+
+        const openDeleteModal = (id) => {
+          deleteTargetId.value = id;
+          showDeleteModal.value = true;
+        };
+
+        const closeDeleteModal = () => {
+          deleteTargetId.value = null;
+          showDeleteModal.value = false;
+        };
+
+        const confirmDelete = () => {
+          if (deleteTargetId.value !== null) {
+            allData.value = allData.value.filter(r => r.id !== deleteTargetId.value);
+            expandedRows.value.delete(deleteTargetId.value);
+            showToast('Report berhasil dihapus', 'success');
+          }
+          closeDeleteModal();
+        };
+
+        const editReport = (id) => {
+          document.cookie = `id_report=${id}; path=/;`;
+          window.location.href = `/absensi_daily_report`;
+        };
+
+        const exportXLS = () => {
+          showToast('Mengexport data ke format XLS...', 'success');
+          let csv = 'No,Nama,Lokasi,Tanggal,Jam Mulai,Jam Selesai,Jumlah Pekerjaan\n';
+          filteredData.value.forEach((r, i) => {
+            csv += `${i + 1},"${r.nama}","${r.lokasi_kerja}","${r.tanggal}","${r.jam_mulai}","${r.jam_selesai}",${getPekerjaanCount(r)}\n`;
+          });
+          const blob = new Blob([csv], { type: 'text/csv' });
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = 'report_pekerjaan_harian.csv';
+          a.click();
+        };
+
+        const exportPDF = () => {
+          showToast('Menyiapkan export PDF... (gunakan Print dialog)', 'info');
+          window.print();
+        };
+
+        const goBack = () => {
+          window.location.href = '/';
+        };
+
+        onMounted(() => {
+          authToken.value = getCookie('authToken') || '';
+          const rawName = getCookie('nama_karyawan');
+          namaKaryawan.value = rawName ? decodeURIComponent(rawName.replace(/\+/g, ' ')) : '';
+          roleKaryawan.value = getCookie('role') || '';
+
+          // Default filters to today
+          const today = new Date().toISOString().split('T')[0];
+          filters.startDate = today;
+          filters.endDate = today;
+          Object.assign(appliedFilters, filters);
+
+          if (!authToken.value) {
+            console.error('Authentication token not found');
+          }
+
+          loadReports();
+
+          // Initialize Element SDK
+          if (window.elementSdk) {
+            window.elementSdk.init({
+              defaultConfig,
+              onConfigChange: (newConfig) => {
+                config.value = { ...defaultConfig, ...newConfig };
+                document.body.style.backgroundColor = config.value.background_color;
+                document.body.style.color = config.value.text_color;
+                document.body.style.fontFamily = `${config.value.font_family}, sans-serif`;
+                document.body.style.fontSize = `${config.value.font_size}px`;
+              },
+              mapToCapabilities: (cfg) => {
+                const c = { ...defaultConfig, ...cfg };
+                return {
+                  recolorables: [
+                    { get: () => c.background_color, set: (v) => window.elementSdk.setConfig({ background_color: v }) },
+                    { get: () => c.surface_color, set: (v) => window.elementSdk.setConfig({ surface_color: v }) },
+                    { get: () => c.text_color, set: (v) => window.elementSdk.setConfig({ text_color: v }) },
+                    { get: () => c.primary_action_color, set: (v) => window.elementSdk.setConfig({ primary_action_color: v }) },
+                    { get: () => c.secondary_action_color, set: (v) => window.elementSdk.setConfig({ secondary_action_color: v }) }
+                  ],
+                  borderables: [],
+                  fontEditable: { get: () => c.font_family, set: (v) => window.elementSdk.setConfig({ font_family: v }) },
+                  fontSizeable: { get: () => c.font_size, set: (v) => window.elementSdk.setConfig({ font_size: v }) }
+                };
+              },
+              mapToEditPanelValues: (cfg) => {
+                const c = { ...defaultConfig, ...cfg };
+                return new Map([
+                  ['page_title', c.page_title],
+                  ['page_subtitle', c.page_subtitle],
+                  ['username', c.username]
+                ]);
+              }
+            });
+          }
+        });
+
+        return {
+          config,
+          allData,
+          currentPage,
+          perPage,
+          showDeleteModal,
+          isLoading,
+          toasts,
+          filters,
+          filteredData,
+          totalPages,
+          paginatedData,
+          visiblePages,
+          getPekerjaanCount,
+          getPekerjaanList,
+          getProgressColor,
+          toggleExpand,
+          isExpanded,
+          goPage,
+          changePerPage,
+          applyFilter,
+          resetFilter,
+          openDeleteModal,
+          closeDeleteModal,
+          confirmDelete,
+          editReport,
+          exportXLS,
+          exportPDF,
+          goBack
+        };
+      }
+    }).mount('#app');
+   </script>
+  </body>
+</html>

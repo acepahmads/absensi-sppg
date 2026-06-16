@@ -1,0 +1,3617 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Enterprise Dashboard System</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <style>[v-cloak] { display: none; }</style>
+  <script src="/_sdk/element_sdk.js"></script>
+   <link rel="preconnect" href="https://fonts.googleapis.com">
+   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    body {
+      box-sizing: border-box;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    :root {
+      /* Theme Default: Cyber (Cyan/Dark Blue) */
+      --bg-gradient: linear-gradient(135deg, #060a17 0%, #0c1224 50%, #050814 100%);
+      --panel-bg: rgba(10, 14, 26, 0.75);
+      --accent-color: #00d4ff;
+      --accent-glow: rgba(0, 212, 255, 0.4);
+      --border-color: rgba(0, 212, 255, 0.2);
+      --text-color: #e0e7ff;
+      --text-muted: #8b9dc3;
+      --sidebar-bg: rgba(10, 14, 26, 0.85);
+      --topbar-bg: rgba(10, 14, 26, 0.7);
+      --table-th-color: #00d4ff;
+      --row-hover: rgba(0, 212, 255, 0.08);
+      --row-selected: rgba(0, 212, 255, 0.15);
+    }
+
+    .theme-light {
+      --bg-gradient: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 50%, #cbd5e1 100%);
+      --panel-bg: rgba(255, 255, 255, 0.85);
+      --accent-color: #0066ff;
+      --accent-glow: rgba(0, 102, 255, 0.2);
+      --border-color: rgba(0, 102, 255, 0.15);
+      --text-color: #1e293b;
+      --text-muted: #64748b;
+      --sidebar-bg: rgba(255, 255, 255, 0.9);
+      --topbar-bg: rgba(255, 255, 255, 0.8);
+      --table-th-color: #0066ff;
+      --row-hover: rgba(0, 102, 255, 0.06);
+      --row-selected: rgba(0, 102, 255, 0.12);
+    }
+
+    .theme-synthwave {
+      --bg-gradient: linear-gradient(135deg, #1a0826 0%, #0c0414 50%, #150020 100%);
+      --panel-bg: rgba(25, 10, 40, 0.75);
+      --accent-color: #ff007f;
+      --accent-glow: rgba(255, 0, 127, 0.4);
+      --border-color: rgba(255, 0, 127, 0.2);
+      --text-color: #fce7f3;
+      --text-muted: #c084fc;
+      --sidebar-bg: rgba(25, 10, 40, 0.85);
+      --topbar-bg: rgba(25, 10, 40, 0.7);
+      --table-th-color: #d946ef;
+      --row-hover: rgba(255, 0, 127, 0.08);
+      --row-selected: rgba(255, 0, 127, 0.15);
+    }
+
+    .theme-matrix {
+      --bg-gradient: linear-gradient(135deg, #020a02 0%, #000000 50%, #040f04 100%);
+      --panel-bg: rgba(5, 15, 5, 0.75);
+      --accent-color: #00ff41;
+      --accent-glow: rgba(0, 255, 65, 0.4);
+      --border-color: rgba(0, 255, 65, 0.2);
+      --text-color: #d1ffd1;
+      --text-muted: #4e9a4e;
+      --sidebar-bg: rgba(5, 15, 5, 0.85);
+      --topbar-bg: rgba(5, 15, 5, 0.7);
+      --table-th-color: #00ff41;
+      --row-hover: rgba(0, 255, 65, 0.08);
+      --row-selected: rgba(0, 255, 65, 0.15);
+    }
+
+    .theme-light .tech-pattern {
+      opacity: 0.03;
+    }
+    .theme-light .tech-pattern::before {
+      display: none;
+    }
+    .theme-light .notes-input {
+      background: rgba(255, 255, 255, 0.8) !important;
+    }
+    .theme-light .validation-checkbox {
+      background: rgba(255, 255, 255, 0.8) !important;
+    }
+
+    .theme-switcher {
+      margin-right: 15px;
+    }
+    
+    .theme-select-control {
+      padding: 6px 12px;
+      background: rgba(0, 212, 255, 0.05);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      color: var(--accent-color);
+      font-size: 11px;
+      font-weight: 600;
+      font-family: inherit;
+      outline: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .theme-select-control:hover {
+      border-color: var(--accent-color);
+      box-shadow: 0 0 10px var(--accent-glow);
+    }
+
+    .dashboard-wrapper {
+      width: 100%;
+      height: 100%;
+      font-family: 'Outfit', 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg-gradient) !important;
+      color: var(--text-color) !important;
+      position: relative;
+      overflow: hidden;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+
+    .tech-pattern {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      opacity: 0.1;
+      background-image: 
+        linear-gradient(0deg, transparent 24%, rgba(0, 212, 255, 0.08) 25%, rgba(0, 212, 255, 0.08) 26%, transparent 27%, transparent 74%, rgba(0, 212, 255, 0.08) 75%, rgba(0, 212, 255, 0.08) 76%, transparent 77%, transparent),
+        linear-gradient(90deg, transparent 24%, rgba(0, 212, 255, 0.08) 25%, rgba(0, 212, 255, 0.08) 26%, transparent 27%, transparent 74%, rgba(0, 212, 255, 0.08) 75%, rgba(0, 212, 255, 0.08) 76%, transparent 77%, transparent);
+      background-size: 100px 100px;
+      pointer-events: none;
+      animation: patternMove 30s linear infinite;
+    }
+
+    @keyframes patternMove {
+      0% {
+        background-position: 0 0;
+      }
+      100% {
+        background-position: 100px 100px;
+      }
+    }
+
+    .tech-pattern::before {
+      content: '';
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(ellipse at 20% 30%, rgba(0, 212, 255, 0.2) 0%, transparent 50%),
+                  radial-gradient(ellipse at 80% 70%, rgba(0, 102, 255, 0.2) 0%, transparent 50%),
+                  radial-gradient(circle at 50% 50%, rgba(0, 212, 255, 0.15) 0%, transparent 60%);
+      opacity: 0.5;
+      animation: glowPulse 10s ease-in-out infinite;
+    }
+
+    @keyframes glowPulse {
+      0%, 100% {
+        opacity: 0.4;
+      }
+      50% {
+        opacity: 0.7;
+      }
+    }
+
+    .tech-pattern::after {
+      content: '';
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: 
+        repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(0, 212, 255, 0.03) 2px, rgba(0, 212, 255, 0.03) 4px),
+        repeating-linear-gradient(-45deg, transparent, transparent 2px, rgba(0, 102, 255, 0.03) 2px, rgba(0, 102, 255, 0.03) 4px);
+      animation: diagonalMove 15s linear infinite;
+    }
+
+    @keyframes diagonalMove {
+      0% {
+        background-position: 0 0, 0 0;
+      }
+      100% {
+        background-position: 50px 50px, -50px 50px;
+      }
+    }
+
+    .sidebar {
+      width: 200px;
+      height: 100%;
+      background: var(--sidebar-bg) !important;
+      border-right: 3px solid var(--accent-color) !important;
+      box-shadow: none !important;
+      position: relative;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+    }
+
+    .sidebar.collapsed {
+      width: 0px !important;
+      min-width: 0px !important;
+      max-width: 0px !important;
+      overflow: hidden;
+      border-right: 0px solid transparent !important;
+      padding: 0 !important;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .sidebar-resizer {
+      position: absolute;
+      top: 0;
+      right: -3px;
+      width: 6px;
+      height: 100%;
+      cursor: col-resize;
+      z-index: 20;
+    }
+
+    .sidebar-resizer:hover {
+      background: rgba(0, 212, 255, 0.3);
+    }
+
+    .resizing .sidebar {
+      transition: none !important;
+    }
+
+    .resizing * {
+      user-select: none !important;
+      cursor: col-resize !important;
+    }
+
+    .logo-section {
+      padding: 16px 14px;
+      text-align: center;
+    }
+
+    .logo-section h1 {
+      font-family: 'Orbitron', sans-serif !important;
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--accent-color) !important;
+      text-shadow: 0 0 20px var(--accent-glow);
+      letter-spacing: 2px;
+      transition: all 0.3s ease;
+    }
+
+    .nav-menu {
+      flex: 1;
+      padding: 12px 0;
+      overflow-y: auto;
+    }
+
+    .nav-item {
+      padding: 10px 14px;
+      margin: 4px 8px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-muted) !important;
+      border: 1px solid transparent;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .nav-item::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 0;
+      height: 100%;
+      background: linear-gradient(90deg, var(--row-selected), transparent);
+      transition: width 0.3s ease;
+    }
+
+    .nav-item:hover::before {
+      width: 100%;
+    }
+
+    .nav-item:hover {
+      background: var(--row-hover) !important;
+      border-color: var(--border-color) !important;
+      color: var(--accent-color) !important;
+      transform: translateX(4px);
+    }
+
+    .nav-item.active {
+      background: var(--row-selected) !important;
+      border-color: var(--accent-color) !important;
+      color: var(--accent-color) !important;
+      box-shadow: 0 0 20px var(--accent-glow);
+    }
+
+    .nav-item.active::before {
+      width: 100%;
+    }
+
+    .nav-icon {
+      width: 16px;
+      height: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .main-layout {
+      flex: 1;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .top-bar {
+      height: 50px;
+      background: var(--topbar-bg) !important;
+      border-bottom: none !important;
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      backdrop-filter: blur(15px);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      transition: all 0.3s ease;
+    }
+
+    .page-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--accent-color) !important;
+      text-shadow: 0 0 15px var(--accent-glow);
+      transition: all 0.3s ease;
+    }
+
+    .profile-section {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      background: var(--row-hover) !important;
+      border: 1px solid var(--border-color) !important;
+      border-radius: 8px;
+      box-shadow: 0 0 15px var(--accent-glow);
+      transition: all 0.3s ease;
+    }
+
+    .profile-section:hover {
+      background: var(--row-selected) !important;
+      box-shadow: 0 0 25px var(--accent-glow);
+    }
+
+    .avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent-color), #0066ff) !important;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      font-weight: 700;
+      font-size: 11px;
+      color: #fff;
+      box-shadow: 0 0 15px var(--accent-glow) !important;
+    }
+
+    .profile-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .profile-name {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-color) !important;
+      transition: all 0.3s ease;
+    }
+
+    .logout-btn {
+      font-size: 10px;
+      color: var(--text-muted) !important;
+      cursor: pointer;
+      transition: color 0.3s;
+    }
+
+    .logout-btn:hover {
+      color: #ff4757;
+    }
+
+    .content-area {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .stat-card {
+      background: var(--panel-bg) !important;
+      border: 1px solid var(--border-color) !important;
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+      transition: all 0.4s ease;
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(10px);
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(90deg, var(--accent-color), #0066ff, var(--accent-color)) !important;
+      background-size: 200% 100%;
+      box-shadow: 0 0 15px var(--accent-glow) !important;
+      animation: shimmer 3s linear infinite;
+    }
+
+    @keyframes shimmer {
+      0% {
+        background-position: -200% 0;
+      }
+      100% {
+        background-position: 200% 0;
+      }
+    }
+
+    .stat-card::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%) !important;
+      transform: translate(-50%, -50%);
+      transition: width 0.6s ease, height 0.6s ease;
+      border-radius: 50%;
+    }
+
+    .stat-card:hover::after {
+      width: 300px;
+      height: 300px;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-6px) scale(1.02);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5) !important;
+      border-color: var(--accent-color) !important;
+    }
+
+    .stat-label {
+      font-size: 10px;
+      color: var(--text-muted) !important;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--accent-color) !important;
+      text-shadow: 0 0 15px var(--accent-glow);
+      position: relative;
+      z-index: 1;
+      transition: all 0.3s ease;
+    }
+
+    .stat-trend {
+      font-size: 10px;
+      color: #4ade80;
+      margin-top: 6px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .filter-bar {
+      background: var(--panel-bg) !important;
+      border: 1px solid var(--border-color) !important;
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 16px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+      transition: all 0.3s ease;
+    }
+
+    .filter-input {
+      flex: 1;
+      min-width: 150px;
+      padding: 8px 12px;
+      background: rgba(0, 212, 255, 0.05) !important;
+      border: 1px solid var(--border-color) !important;
+      border-radius: 8px;
+      color: var(--text-color) !important;
+      font-size: 11px;
+      outline: none;
+      transition: all 0.3s;
+    }
+
+    .filter-input:focus {
+      border-color: var(--accent-color) !important;
+      box-shadow: 0 0 15px var(--accent-glow) !important;
+      background: rgba(0, 212, 255, 0.08) !important;
+    }
+
+    .filter-select {
+      padding: 8px 12px;
+      background: rgba(0, 212, 255, 0.05) !important;
+      border: 1px solid var(--border-color) !important;
+      border-radius: 8px;
+      color: var(--text-color) !important;
+      font-size: 11px;
+      outline: none;
+      cursor: pointer;
+      transition: all 0.3s;
+      min-width: 120px;
+    }
+
+    .filter-select:hover {
+      border-color: var(--accent-color) !important;
+      box-shadow: 0 0 15px var(--accent-glow) !important;
+    }
+
+    .status-chips {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      width: 100%;
+    }
+
+    .chip {
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      border: 1px solid transparent;
+    }
+
+    .chip.all {
+      background: var(--row-selected) !important;
+      color: var(--accent-color) !important;
+      border-color: var(--border-color) !important;
+      box-shadow: 0 0 10px var(--accent-glow);
+    }
+
+    .chip.open {
+      background: rgba(251, 191, 36, 0.15);
+      color: #fbbf24;
+      border-color: rgba(251, 191, 36, 0.4);
+    }
+
+    .chip.progress {
+      background: rgba(59, 130, 246, 0.15);
+      color: #3b82f6;
+      border-color: rgba(59, 130, 246, 0.4);
+    }
+
+    .chip.resolved {
+      background: rgba(74, 222, 128, 0.15);
+      color: #4ade80;
+      border-color: rgba(74, 222, 128, 0.4);
+    }
+
+    .chip:hover {
+      transform: scale(1.08);
+      box-shadow: 0 0 15px currentColor;
+    }
+
+    .chip.active-chip {
+      transform: scale(1.08);
+      box-shadow: 0 0 15px currentColor;
+      font-weight: 700;
+    }
+
+    .table-container {
+      background: var(--panel-bg) !important;
+      border: 1px solid var(--border-color) !important;
+      border-radius: 12px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+    }
+
+    .table-container::-webkit-scrollbar {
+      height: 8px;
+    }
+
+    .table-container::-webkit-scrollbar-track {
+      background: rgba(0, 212, 255, 0.05) !important;
+      border-radius: 10px;
+    }
+
+    .table-container::-webkit-scrollbar-thumb {
+      background: linear-gradient(90deg, var(--accent-color), #0066ff) !important;
+      border-radius: 10px;
+      box-shadow: 0 0 10px var(--accent-glow) !important;
+    }
+
+    .table-container::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(90deg, #0066ff, var(--accent-color)) !important;
+      box-shadow: 0 0 15px var(--accent-glow) !important;
+    }
+
+    table {
+      width: 100%;
+      min-width: 800px;
+      border-collapse: collapse;
+    }
+
+    thead {
+      background: var(--row-hover) !important;
+    }
+
+    th {
+      padding: 12px;
+      text-align: left;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--table-th-color) !important;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border-bottom: 2px solid var(--border-color) !important;
+      text-shadow: 0 0 10px var(--accent-glow);
+      transition: all 0.3s ease;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid var(--border-color) !important;
+      transition: all 0.3s;
+    }
+
+    tbody tr:nth-child(even) {
+      background: var(--row-hover) !important;
+    }
+
+    tbody tr:hover {
+      background: var(--row-hover) !important;
+    }
+
+    tbody tr.selected {
+      background: var(--row-selected) !important;
+      outline: 2.5px solid var(--accent-color) !important;
+      outline-offset: -2.5px;
+    }
+
+    td {
+      padding: 10px 12px;
+      font-size: 11px;
+      color: var(--text-color) !important;
+      transition: all 0.3s ease;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+      position: relative;
+      box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
+      transition: all 0.2s ease;
+    }
+    
+    .status-badge:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6), 0 0 10px currentColor;
+    }
+
+    .status-open {
+      background: rgba(251, 191, 36, 0.1) !important;
+      color: #fbbf24 !important;
+      border: 1px solid rgba(251, 191, 36, 0.4) !important;
+      text-shadow: 0 0 6px rgba(251, 191, 36, 0.5);
+    }
+
+    .status-progress {
+      background: rgba(59, 130, 246, 0.1) !important;
+      color: #3b82f6 !important;
+      border: 1px solid rgba(59, 130, 246, 0.4) !important;
+      text-shadow: 0 0 6px rgba(59, 130, 246, 0.5);
+    }
+
+    .status-resolved {
+      background: rgba(74, 222, 128, 0.1) !important;
+      color: #4ade80 !important;
+      border: 1px solid rgba(74, 222, 128, 0.4) !important;
+      text-shadow: 0 0 6px rgba(74, 222, 128, 0.5);
+    }
+
+    .status-offline {
+      background: rgba(239, 68, 68, 0.1) !important;
+      color: #ef4444 !important;
+      border: 1px solid rgba(239, 68, 68, 0.4) !important;
+      text-shadow: 0 0 6px rgba(239, 68, 68, 0.5);
+    }
+
+    .status-online {
+      background: rgba(16, 185, 129, 0.1) !important;
+      color: #10b981 !important;
+      border: 1px solid rgba(16, 185, 129, 0.4) !important;
+      text-shadow: 0 0 6px rgba(16, 185, 129, 0.5);
+    }
+
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+      padding: 16px;
+      background: linear-gradient(180deg, transparent, var(--row-hover)) !important;
+    }
+
+    .page-btn {
+      padding: 6px 10px;
+      background: var(--row-hover) !important;
+      border: 1px solid var(--border-color) !important;
+      border-radius: 6px;
+      color: var(--accent-color) !important;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .page-btn:hover:not(:disabled) {
+      background: var(--row-selected) !important;
+      box-shadow: 0 0 15px var(--accent-glow) !important;
+      transform: translateY(-3px);
+    }
+
+    .page-btn.active {
+      background: var(--accent-color) !important;
+      color: var(--panel-bg) !important;
+      border-color: var(--accent-color) !important;
+      box-shadow: 0 0 20px var(--accent-glow) !important;
+    }
+
+    .page-btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    .page-hidden {
+      display: none;
+    }
+
+    .action-btn {
+      padding: 6px 12px;
+      background: linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(0, 212, 255, 0.1)) !important;
+      border: 1px solid var(--border-color) !important;
+      border-radius: 6px;
+      color: var(--accent-color) !important;
+      font-size: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .action-btn:hover {
+      background: linear-gradient(135deg, rgba(0, 212, 255, 0.3), rgba(0, 212, 255, 0.2)) !important;
+      box-shadow: 0 0 15px var(--accent-glow) !important;
+      transform: translateY(-2px);
+    }
+
+    .action-btn svg {
+      width: 12px;
+      height: 12px;
+    }
+
+    .status-select {
+      padding: 4px 8px;
+      background: rgba(0, 212, 255, 0.1) !important;
+      border: 1px solid var(--border-color) !important;
+      border-radius: 6px;
+      color: var(--text-color) !important;
+      font-size: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+
+    .status-select:hover {
+      border-color: var(--accent-color) !important;
+      box-shadow: 0 0 10px var(--accent-glow) !important;
+    }
+
+    .status-select:focus {
+      border-color: var(--accent-color) !important;
+      box-shadow: 0 0 15px var(--accent-glow) !important;
+    }
+
+    /* Modal Styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      backdrop-filter: blur(5px);
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: var(--panel-bg) !important;
+      border: 2px solid var(--accent-color) !important;
+      border-radius: 20px;
+      padding: 32px;
+      max-width: 700px;
+      width: 90%;
+      max-height: 85%;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px var(--accent-glow) !important;
+      position: relative;
+      animation: modalSlideIn 0.3s ease;
+      color: var(--text-color) !important;
+    }
+
+    @keyframes modalSlideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-50px) scale(0.9);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid var(--border-color) !important;
+    }
+
+    .modal-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--accent-color) !important;
+      text-shadow: 0 0 15px var(--accent-glow);
+    }
+
+    .modal-close {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(255, 71, 87, 0.2);
+      border: 1px solid rgba(255, 71, 87, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .modal-close:hover {
+      background: rgba(255, 71, 87, 0.3);
+      box-shadow: 0 0 15px rgba(255, 71, 87, 0.4);
+      transform: rotate(90deg);
+    }
+
+    .modal-close svg {
+      stroke: #ff4757;
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+
+    .detail-item {
+      background: var(--row-hover) !important;
+      border: 1px solid var(--border-color) !important;
+      border-radius: 12px;
+      padding: 16px;
+      transition: all 0.3s ease;
+    }
+
+    .detail-item:hover {
+      background: var(--row-selected) !important;
+      border-color: var(--accent-color) !important;
+      transform: translateX(4px);
+    }
+
+    .detail-label {
+      font-size: 12px;
+      color: var(--text-muted) !important;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .detail-value {
+      font-size: 15px;
+      color: var(--text-color) !important;
+      font-weight: 600;
+    }
+
+    .detail-item.full-width {
+      grid-column: 1 / -1;
+    }
+
+    /* Welcome Banner */
+    .welcome-banner {
+      background: linear-gradient(135deg, var(--row-selected), var(--row-hover)) !important;
+      border: 1px solid var(--border-color) !important;
+      border-radius: 20px;
+      padding: 30px 40px;
+      margin-bottom: 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .welcome-banner::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -10%;
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%) !important;
+      border-radius: 50%;
+      animation: float 6s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% {
+        transform: translateY(0px);
+      }
+      50% {
+        transform: translateY(-20px);
+      }
+    }
+
+    .welcome-content {
+      position: relative;
+      z-index: 1;
+    }
+
+    .welcome-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text-color) !important;
+      margin-bottom: 8px;
+    }
+
+    .welcome-title span {
+      color: var(--accent-color) !important;
+      text-shadow: 0 0 15px var(--accent-glow);
+    }
+
+    .welcome-subtitle {
+      font-size: 15px;
+      color: var(--text-muted) !important;
+    }
+
+    .welcome-icon {
+      position: relative;
+      z-index: 1;
+    }
+
+    .welcome-icon svg {
+      stroke: var(--accent-color) !important;
+      filter: drop-shadow(0 0 15px var(--accent-glow));
+      animation: pulse 3s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 0.6;
+      }
+      50% {
+        opacity: 1;
+      }
+    }
+
+    /* Enhanced Stat Cards */
+    .stat-card {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .stat-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .stat-primary .stat-icon {
+      background: linear-gradient(135deg, var(--row-selected), var(--row-hover)) !important;
+      border: 1px solid var(--border-color) !important;
+      box-shadow: 0 0 20px var(--accent-glow) !important;
+    }
+
+    .stat-primary .stat-icon svg {
+      stroke: var(--accent-color) !important;
+      width: 24px;
+      height: 24px;
+    }
+
+    .stat-success .stat-icon {
+      background: linear-gradient(135deg, rgba(74, 222, 128, 0.2), rgba(74, 222, 128, 0.1));
+      border: 1px solid rgba(74, 222, 128, 0.4);
+      box-shadow: 0 0 20px rgba(74, 222, 128, 0.3);
+    }
+
+    .stat-success .stat-icon svg {
+      stroke: #4ade80;
+      width: 24px;
+      height: 24px;
+    }
+
+    .stat-warning .stat-icon {
+      background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(251, 191, 36, 0.1));
+      border: 1px solid rgba(251, 191, 36, 0.4);
+      box-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
+    }
+
+    .stat-warning .stat-icon svg {
+      stroke: #fbbf24;
+      width: 24px;
+      height: 24px;
+    }
+
+    .stat-info .stat-icon {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(59, 130, 246, 0.1));
+      border: 1px solid rgba(59, 130, 246, 0.4);
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+    }
+
+    .stat-info .stat-icon svg {
+      stroke: #3b82f6;
+      width: 24px;
+      height: 24px;
+    }
+
+    .stat-content {
+      flex: 1;
+      position: relative;
+      z-index: 1;
+    }
+
+    .trend-up {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .trend-up svg {
+      stroke: #4ade80;
+    }
+
+
+    .trend-down {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .trend-down svg {
+      stroke: #4ade80;
+    }
+
+    /* Dashboard Row */
+    .dashboard-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 24px;
+      margin-bottom: 30px;
+    }
+
+    .large-card {
+      background: var(--panel-bg) !important;
+      border: 1px solid var(--border-color) !important;
+      border-radius: 16px;
+      padding: 24px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+      transition: all 0.3s ease;
+    }
+
+    .card-header {
+      margin-bottom: 24px;
+    }
+
+    .card-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-color) !important;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.3s ease;
+    }
+
+    .card-title svg {
+      stroke: var(--accent-color) !important;
+    }
+
+    .performance-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .performance-item {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .perf-label {
+      font-size: 14px;
+      color: var(--text-muted) !important;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 12px;
+      background: var(--row-hover) !important;
+      border-radius: 20px;
+      overflow: hidden;
+      border: 1px solid var(--border-color) !important;
+      position: relative;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent-color), #0066ff) !important;
+      border-radius: 20px;
+      box-shadow: 0 0 15px var(--accent-glow) !important;
+      transition: width 1s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .progress-fill::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+      animation: progressShine 2s linear infinite;
+    }
+
+    @keyframes progressShine {
+      0% {
+        transform: translateX(-100%);
+      }
+      100% {
+        transform: translateX(100%);
+      }
+    }
+
+    .perf-value {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--accent-color) !important;
+      text-shadow: 0 0 10px var(--accent-glow);
+      transition: all 0.3s ease;
+    }
+
+    .small-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .mini-card {
+      background: var(--panel-bg) !important;
+      border: 1px solid var(--border-color) !important;
+      border-radius: 16px;
+      padding: 20px;
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 20px var(--accent-glow) !important;
+      transition: all 0.3s ease;
+    }
+
+    .mini-card:hover {
+      transform: translateX(4px);
+      box-shadow: 0 8px 30px var(--accent-glow) !important;
+      border-color: var(--accent-color) !important;
+    }
+
+    .mini-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--row-selected), var(--row-hover)) !important;
+      border: 1px solid var(--border-color) !important;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .mini-icon svg {
+      stroke: var(--accent-color) !important;
+    }
+
+    .mini-content {
+      flex: 1;
+    }
+
+    .mini-label {
+      font-size: 12px;
+      color: var(--text-muted) !important;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .mini-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--accent-color) !important;
+      text-shadow: 0 0 10px var(--accent-glow);
+      margin-bottom: 4px;
+      transition: all 0.3s ease;
+    }
+
+    .mini-subtitle {
+      font-size: 11px;
+      color: #4ade80;
+    }
+
+    /* Activity Section */
+    .activity-section {
+      background: var(--panel-bg) !important;
+      border: 1px solid var(--border-color) !important;
+      border-radius: 16px;
+      padding: 24px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8px 32px var(--accent-glow) !important;
+      transition: all 0.3s ease;
+    }
+
+    .activity-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .activity-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 16px;
+      background: var(--row-hover) !important;
+      border: 1px solid var(--border-color) !important;
+      border-radius: 12px;
+      transition: all 0.3s ease;
+    }
+
+    .activity-item:hover {
+      background: var(--row-selected) !important;
+      border-color: var(--accent-color) !important;
+      transform: translateX(4px);
+    }
+
+    .activity-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-top: 4px;
+      flex-shrink: 0;
+      box-shadow: 0 0 10px currentColor;
+    }
+
+    .dot-success {
+      background: #4ade80;
+    }
+
+    .dot-warning {
+      background: #fbbf24;
+    }
+
+    .dot-info {
+      background: #3b82f6;
+    }
+
+    .dot-primary {
+      background: var(--accent-color) !important;
+      box-shadow: 0 0 10px var(--accent-glow);
+    }
+
+    .activity-content {
+      flex: 1;
+    }
+
+    .activity-title {
+      font-size: 14px;
+      color: var(--text-color) !important;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .activity-time {
+      font-size: 12px;
+      color: var(--text-muted) !important;
+    }
+
+    @media (max-width: 1024px) {
+      .dashboard-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @keyframes glow-pulse {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+
+    @keyframes grid-move {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(20px); }
+    }
+
+    .cyber-grid {
+      background-image: 
+        linear-gradient(rgba(0, 198, 255, 0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 198, 255, 0.1) 1px, transparent 1px) !important;
+      background-size: 20px 20px;
+      animation: grid-move 2s linear infinite;
+    }
+
+    .neon-glow {
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+    }
+
+    .neon-glow-strong {
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5) !important;
+    }
+
+    .filter-chip {
+      transition: all 0.3s ease;
+    }
+
+
+    .filter-chip:hover {
+      transform: translateY(-2px);
+      box-shadow: 
+        0 0 20px var(--accent-glow),
+        0 0 40px var(--accent-glow) !important;
+    }
+
+    .filter-chip.active {
+      background: linear-gradient(135deg, var(--row-selected), var(--row-hover)) !important;
+      box-shadow: 
+        0 0 25px var(--accent-glow),
+        0 0 50px var(--accent-glow) !important;
+    }
+
+    .metric-card {
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .metric-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, var(--row-selected), transparent) !important;
+      transition: left 0.5s ease;
+    }
+
+    .metric-card:hover::before {
+      left: 100%;
+    }
+
+    .metric-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 
+        0 0 25px var(--accent-glow),
+        0 0 50px var(--accent-glow) !important;
+    }
+
+    .search-input {
+      transition: all 0.3s ease;
+    }
+
+    .search-input:focus {
+      box-shadow: 
+        0 0 15px var(--accent-glow),
+        0 0 30px var(--accent-glow) !important;
+      border-color: var(--accent-color) !important;
+    }
+
+    .title-underline {
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent-color), transparent) !important;
+      box-shadow: 0 0 10px var(--accent-glow);
+      animation: glow-pulse 2s ease-in-out infinite;
+    }
+
+    .holographic-mesh {
+      background: 
+        linear-gradient(135deg, transparent 0%, var(--row-hover) 50%, transparent 100%),
+        repeating-linear-gradient(45deg, transparent, transparent 10px, var(--border-color) 10px, var(--border-color) 20px) !important;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+
+    .data-table thead {
+      background: var(--row-hover) !important;
+      box-shadow: 0 0 20px var(--accent-glow);
+    }
+
+    .data-table th {
+      padding: 0.6rem 0.5rem;
+      text-align: left;
+      font-weight: 700;
+      color: var(--table-th-color) !important;
+      border-bottom: 2px solid var(--border-color) !important;
+      text-transform: uppercase;
+      font-size: 0.8rem;
+      letter-spacing: 0.05em;
+      position: sticky;
+      top: 0;
+      background: var(--topbar-bg) !important;
+      z-index: 10;
+      transition: all 0.3s ease;
+    }
+
+    .data-table tbody tr {
+      transition: all 0.3s ease;
+      border-bottom: 1px solid var(--border-color) !important;
+    }
+
+    .data-table tbody tr:nth-child(even) {
+      background: var(--row-hover) !important;
+    }
+
+    .data-table tbody tr:hover {
+      background: var(--row-hover) !important;
+    }
+
+    .data-table tbody tr.selected {
+      background: var(--row-selected) !important;
+      outline: 2.5px solid var(--accent-color) !important;
+      outline-offset: -2.5px;
+    }
+
+    .data-table td {
+      padding: 0.6rem 0.5rem;
+      color: var(--text-color) !important;
+      font-size: 0.825rem;
+      transition: all 0.3s ease;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 8px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+      position: relative;
+      box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
+      transition: all 0.2s ease;
+    }
+    
+    .status-badge:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6), 0 0 10px currentColor;
+    }
+
+    .status-hadir {
+      background: rgba(16, 185, 129, 0.15) !important;
+      color: #10b981 !important;
+      border: 1px solid rgba(16, 185, 129, 0.4) !important;
+      text-shadow: 0 0 6px rgba(16, 185, 129, 0.5);
+    }
+
+    .status-dinas {
+      background: rgba(139, 92, 246, 0.15) !important;
+      color: #a78bfa !important;
+      border: 1px solid rgba(139, 92, 246, 0.4) !important;
+      text-shadow: 0 0 6px rgba(167, 139, 250, 0.5);
+    }
+
+    .status-lembur {
+      background: rgba(16, 185, 129, 0.15) !important;
+      color: #ffffff !important;
+      border: 1px solid rgba(16, 185, 129, 0.4) !important;
+      text-shadow: 0 0 6px rgba(255, 255, 255, 0.5);
+    }
+
+    .status-terlambat {
+      background: rgba(245, 158, 11, 0.15) !important;
+      color: #f59e0b !important;
+      border: 1px solid rgba(245, 158, 11, 0.4) !important;
+      text-shadow: 0 0 6px rgba(245, 158, 11, 0.5);
+    }
+
+    .status-wfh {
+      background: rgba(59, 130, 246, 0.15) !important;
+      color: #60a5fa !important;
+      border: 1px solid rgba(59, 130, 246, 0.4) !important;
+      text-shadow: 0 0 6px rgba(96, 165, 250, 0.5);
+    }
+
+    .status-izin {
+      background: rgba(251, 191, 36, 0.15) !important;
+      color: #fbbf24 !important;
+      border: 1px solid rgba(251, 191, 36, 0.4) !important;
+      text-shadow: 0 0 6px rgba(251, 191, 36, 0.5);
+    }
+
+    .status-alpa {
+      background: rgba(239, 68, 68, 0.15) !important;
+      color: #ef4444 !important;
+      border: 1px solid rgba(239, 68, 68, 0.4) !important;
+      text-shadow: 0 0 6px rgba(239, 68, 68, 0.5);
+    }
+
+    .status-sakit {
+      background: rgba(249, 115, 22, 0.15) !important;
+      color: #f97316 !important;
+      border: 1px solid rgba(249, 115, 22, 0.4) !important;
+      text-shadow: 0 0 6px rgba(249, 115, 22, 0.5);
+    }
+    
+    /* Table borders & Grid lines */
+    .data-table th,
+    .data-table td {
+      border-right: 1px solid var(--border-color) !important;
+      border-bottom: 1px solid var(--border-color) !important;
+    }
+    
+    .data-table th:first-child,
+    .data-table td:first-child {
+      border-left: 1px solid var(--border-color) !important;
+    }
+    
+    .data-table thead th {
+      border-top: 1px solid var(--border-color) !important;
+    }
+
+    .table-container {
+      border-radius: 0.5rem;
+      border: 1px solid var(--border-color) !important;
+      box-shadow: 
+        0 0 20px var(--accent-glow),
+        inset 0 0 20px rgba(0, 198, 255, 0.05) !important;
+    }
+
+    .table-container::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .table-container::-webkit-scrollbar-track {
+      background: rgba(0, 20, 40, 0.5);
+      border-radius: 4px;
+    }
+
+    .table-container::-webkit-scrollbar-thumb {
+      background: var(--accent-color) !important;
+      border-radius: 4px;
+    }
+
+    .table-container::-webkit-scrollbar-thumb:hover {
+      background: var(--accent-color) !important;
+      opacity: 0.8;
+    }
+
+    .cyber-divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border-color), transparent) !important;
+      margin: 1.5rem 0;
+      box-shadow: 0 0 10px var(--accent-glow);
+    }
+
+    /* Custom checkbox styling */
+    .validation-checkbox {
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--border-color) !important;
+      border-radius: 4px;
+      background: var(--panel-bg) !important;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.3s ease;
+    }
+
+    .validation-checkbox:hover {
+      border-color: var(--accent-color) !important;
+      box-shadow: 0 0 10px var(--accent-glow);
+    }
+
+    .validation-checkbox:checked {
+      background: var(--row-selected) !important;
+      border-color: var(--accent-color) !important;
+      box-shadow: 0 0 15px var(--accent-glow);
+    }
+
+    .validation-checkbox:checked::after {
+      content: '✓';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #4ade80;
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    .validation-checkbox:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .validation-checkbox:disabled::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 12px;
+      height: 12px;
+      margin: -6px 0 0 -6px;
+      border: 2px solid var(--accent-color) !important;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Notes input styling */
+    .notes-input {
+      background: rgba(0, 20, 40, 0.5);
+      border: 1px solid var(--border-color) !important;
+      border-radius: 4px;
+      padding: 0.5rem;
+      color: var(--text-color) !important;
+      font-size: 0.875rem;
+      width: 150px;
+      transition: all 0.3s ease;
+    }
+
+    .notes-input:focus {
+      outline: none;
+      border-color: var(--accent-color) !important;
+      box-shadow: 0 0 10px var(--accent-glow);
+      background: rgba(0, 20, 40, 0.7);
+    }
+
+    .notes-input::placeholder {
+      color: var(--text-muted) !important;
+    }
+
+
+    .info-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+
+    .info-box {
+      background: var(--panel-bg) !important;
+      border: 1px solid var(--border-color) !important;
+      padding: 20px;
+      border-radius: 8px;
+      min-width: 300px;
+      text-align: center;
+      color: var(--text-color) !important;
+      box-shadow: 0 10px 30px var(--accent-glow) !important;
+    }
+
+    .info-message {
+      margin-bottom: 16px;
+      font-size: 14px;
+    }
+
+    .info-ok {
+      padding: 8px 16px;
+      border: none;
+      background: var(--accent-color) !important;
+      color: var(--panel-bg) !important;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .info-ok:hover {
+      opacity: 0.8;
+    }
+
+
+    .hidden {
+      display: none;
+    }
+
+    .nav-group-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 23px;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: background 0.2s;
+      font-size: 12px;
+      color: #8b9dc3;
+    }
+
+    .nav-group-header:hover {
+      background: rgba(0, 212, 255, 0.08);
+      border-color: rgba(0, 212, 255, 0.4);
+      color: #00d4ff;
+      transform: translateX(4px);
+    }
+
+    .nav-group-header.active {
+      background: rgba(0, 212, 255, 0.15);
+      border-color: rgba(0, 212, 255, 0.5);
+      color: #00d4ff;
+      font-weight: 600;
+    }
+
+    .nav-arrow {
+      margin-left: auto;
+      transition: transform 0.2s;
+    }
+
+    .nav-arrow.open {
+      transform: rotate(180deg);
+    }
+
+    .nav-group-children {
+      padding-left: 16px;
+      overflow: hidden;
+      transition: all 0.2s;
+    }
+
+    .nav-group-children.hidden {
+      display: none;
+    }
+
+    .nav-child {
+      padding-left: 7px !important;
+      font-size: 11.5px;
+    }
+
+    /* Theme Layout Overrides & Custom Classes */
+    .panel-gradient-bg {
+      background: var(--bg-gradient) !important;
+    }
+
+    .panel-card-content {
+      background: var(--panel-bg) !important;
+      border: 1px solid var(--border-color) !important;
+    }
+
+    .input-field-label {
+      background: var(--panel-bg) !important;
+      color: var(--accent-color) !important;
+      font-weight: 600;
+      font-size: 0.75rem;
+      border-radius: 4px;
+      padding: 0 4px;
+    }
+
+    .search-input {
+      background: var(--panel-bg) !important;
+      border: 1px solid var(--border-color) !important;
+      color: var(--text-color) !important;
+      transition: all 0.3s ease;
+      color-scheme: dark;
+    }
+    
+    .theme-light .search-input {
+      color-scheme: light !important;
+    }
+
+    .search-input:focus {
+      border-color: var(--accent-color) !important;
+      box-shadow: 0 0 10px var(--accent-glow) !important;
+    }
+
+    .search-input::placeholder {
+      color: var(--text-muted) !important;
+    }
+
+    .filter-chip {
+      background: var(--panel-bg) !important;
+      border: 1px solid var(--border-color) !important;
+      color: var(--text-color) !important;
+      border-radius: 9999px;
+      padding: 0.5rem 1rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .filter-chip:hover {
+      border-color: var(--accent-color) !important;
+      box-shadow: 0 0 10px var(--accent-glow) !important;
+      color: var(--accent-color) !important;
+    }
+
+    .filter-chip.active {
+      background: var(--row-selected) !important;
+      border-color: var(--accent-color) !important;
+      color: var(--accent-color) !important;
+      box-shadow: 0 0 15px var(--accent-glow) !important;
+    }
+
+    .metric-card {
+      background: var(--panel-bg) !important;
+      border: 1px solid var(--border-color) !important;
+      border-radius: 0.75rem;
+      padding: 1rem;
+      box-shadow: 0 4px 15px var(--accent-glow) !important;
+      transition: all 0.3s ease;
+    }
+
+    .metric-card:hover {
+      border-color: var(--accent-color) !important;
+      box-shadow: 0 0 20px var(--accent-glow) !important;
+      transform: translateY(-2px);
+    }
+
+    .metric-card p:first-of-type {
+      color: var(--text-muted) !important;
+    }
+
+    .metric-card p:last-of-type {
+      color: var(--text-color) !important;
+    }
+
+    /* Clean overrides: remove matrix design lines and shadows */
+    .tech-pattern, .cyber-grid, .cyber-divider, .holographic-mesh {
+      display: none !important;
+    }
+    
+    * {
+      box-shadow: none !important;
+      text-shadow: none !important;
+    }
+
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body>
+  <div id="app" v-cloak class="dashboard-wrapper" :class="[currentTheme, { 'resizing': isResizing }]">
+   <div class="tech-pattern"></div>
+   <div style="display: flex; width: 100%; height: 100%;">
+     <aside class="sidebar" :class="{ 'collapsed': !sidebarOpen }" :style="{ width: sidebarOpen ? sidebarWidth + 'px' : '0px', minWidth: sidebarOpen ? sidebarWidth + 'px' : '0px', maxWidth: sidebarOpen ? sidebarWidth + 'px' : '0px' }">
+       <div class="sidebar-resizer" @mousedown="startResize"></div>
+       <div class="logo-section">
+        <h1>{{ configState.company_name || 'ENTERPRISE' }}</h1>
+      </div>
+      <nav class="nav-menu">
+      
+        <!-- Dashboard -->
+        <div class="nav-item" :class="{ 'active': activePage === 'dashboard' }" @click="navigatePage('dashboard')">
+          <div class="nav-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+          </div>
+          <span>Dashboard</span>
+        </div>
+      
+        <!-- Absensi Group -->
+        <div class="nav-group">
+          <div class="nav-group-header" @click="toggleGroup('group-absensi')">
+            <div class="nav-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            </div>
+            <span>Absensi</span>
+            <div class="nav-arrow" :class="{ 'open': groupExpanded['group-absensi'] }">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </div>
+          </div>
+          <div class="nav-group-children" :class="{ 'hidden': !groupExpanded['group-absensi'] }">
+            <div class="nav-item nav-child" :class="{ 'active': activePage === 'absensi' }" @click="navigatePage('absensi')" v-show="isMenuVisible('absensi')">
+              <div class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="2"></circle></svg></div>
+              <span>Absensi</span>
+            </div>
+            <div class="nav-item nav-child" :class="{ 'active': activePage === 'input_absensi' }" @click="navigatePage('input_absensi')" v-show="isMenuVisible('input_absensi')">
+              <div class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="2"></circle></svg></div>
+              <span>Input Absensi</span>
+            </div>
+            <div class="nav-item nav-child" :class="{ 'active': activePage === 'absensi_saya' }" @click="navigatePage('absensi_saya')" v-show="isMenuVisible('absensi_saya')">
+              <div class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="2"></circle></svg></div>
+              <span>Absensi Saya</span>
+            </div>
+            <div class="nav-item nav-child" :class="{ 'active': activePage === 'absensi_perhitungan' }" @click="navigatePage('absensi_perhitungan')" v-show="isMenuVisible('absensi_perhitungan')">
+              <div class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="2"></circle></svg></div>
+              <span>Perhitungan Absensi</span>
+            </div>
+          </div>
+        </div>
+      
+      </nav>
+    </aside>
+    <main class="main-layout">
+     <header class="top-bar">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <button @click="toggleSidebar" class="p-1.5 text-cyan-400 hover:text-cyan-300 transition-colors focus:outline-none border border-cyan-500/30 rounded bg-cyan-950/20 hover:bg-cyan-500/10 flex items-center justify-center" title="Toggle Sidebar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+        <h2 class="page-title">{{ activePage === 'dashboard' ? (configState.dashboard_title || 'System Dashboard') : (configState.panel_title || 'Rekapan Absensi') }}</h2>
+      </div>
+      <div style="display: flex; align-items: center; gap: 20px;">
+        <div class="theme-switcher">
+          <select v-model="currentTheme" class="theme-select-control" @change="saveTheme">
+            <option value="theme-cyber">🌐 Cyber Mode (Dark)</option>
+            <option value="theme-light">☀️ Day Mode (Light)</option>
+            <option value="theme-synthwave">🔮 Synthwave (Purple)</option>
+            <option value="theme-matrix">📟 Matrix (Green)</option>
+          </select>
+        </div>
+
+       <div class="profile-section">
+        <div class="avatar">
+         {{ initials }}
+        </div>
+        <div class="profile-info">
+         <div class="profile-name">
+          {{ userProfile ? userProfile.name : '' }}
+         </div>
+         <div class="logout-btn" @click="handleLogout">
+          Logout →
+         </div>
+        </div>
+       </div>
+      </div>
+     </header>
+     <div class="content-area">
+      <div id="dashboard-page" v-show="activePage === 'dashboard'">
+       <div class="welcome-banner">
+        <div class="welcome-content">
+         <h3 class="welcome-title">Welcome back, <span>{{ userProfile ? userProfile.name.split(' ')[0] : 'Admin' }}</span></h3>
+         <p class="welcome-subtitle">Here's what's happening with your systems today</p>
+        </div>
+        <div class="welcome-icon">
+         <svg width="60" height="60" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5z"></path> <path d="M2 17l10 5 10-5M2 12l10 5 10-5"></path>
+         </svg>
+        </div>
+       </div>
+       <div class="stats-grid">
+        <div class="stat-card stat-primary">
+         <div class="stat-icon">
+          <svg width="32" height="32" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect> <line x1="8" y1="21" x2="16" y2="21"></line> <line x1="12" y1="17" x2="12" y2="21"></line>
+          </svg>
+         </div>
+         <div class="stat-content">
+          <div class="stat-label">
+           Total Systems
+          </div>
+          <div class="stat-value">
+           1,247
+          </div>
+          <div class="stat-trend trend-up">
+           <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline> <polyline points="17 6 23 6 23 12"></polyline>
+           </svg> 12% from last month
+          </div>
+         </div>
+        </div>
+        <div class="stat-card stat-success">
+         <div class="stat-icon">
+          <svg width="32" height="32" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path> <circle cx="9" cy="7" r="4"></circle> <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path> <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
+         </div>
+         <div class="stat-content">
+          <div class="stat-label">
+           Active Users
+          </div>
+          <div class="stat-value">
+           8,432
+          </div>
+          <div class="stat-trend trend-up">
+           <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline> <polyline points="17 6 23 6 23 12"></polyline>
+           </svg> 8% from last month
+          </div>
+         </div>
+        </div>
+        <div class="stat-card stat-warning">
+         <div class="stat-icon">
+          <svg width="32" height="32" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path> <polyline points="14 2 14 8 20 8"></polyline> <line x1="12" y1="18" x2="12" y2="12"></line> <line x1="12" y1="9" x2="12.01" y2="9"></line>
+          </svg>
+         </div>
+         <div class="stat-content">
+          <div class="stat-label">
+           Open Tickets
+          </div>
+          <div class="stat-value">
+           234
+          </div>
+          <div class="stat-trend trend-down">
+           <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline> <polyline points="17 18 23 18 23 12"></polyline>
+           </svg> 5% from last month
+          </div>
+         </div>
+        </div>
+        <div class="stat-card stat-info">
+         <div class="stat-icon">
+          <svg width="32" height="32" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle> <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+         </div>
+         <div class="stat-content">
+          <div class="stat-label">
+           System Uptime
+          </div>
+          <div class="stat-value">
+           99.8%
+          </div>
+          <div class="stat-trend trend-up">
+           <svg width="14" height="14" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline> <polyline points="17 6 23 6 23 12"></polyline>
+           </svg> 0.2% from last month
+          </div>
+         </div>
+        </div>
+       </div>
+       <div class="dashboard-row">
+        <div class="large-card">
+         <div class="card-header">
+          <h3 class="card-title">
+           <svg width="20" height="20" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line> <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+           </svg> System Performance</h3>
+         </div>
+         <div class="performance-grid">
+          <div class="performance-item">
+           <div class="perf-label">
+            CPU Usage
+           </div>
+           <div class="progress-bar">
+            <div class="progress-fill" style="width: 45%;"></div>
+           </div>
+           <div class="perf-value">
+            45%
+           </div>
+          </div>
+          <div class="performance-item">
+           <div class="perf-label">
+            Memory
+           </div>
+           <div class="progress-bar">
+            <div class="progress-fill" style="width: 62%;"></div>
+           </div>
+           <div class="perf-value">
+            62%
+           </div>
+          </div>
+          <div class="performance-item">
+           <div class="perf-label">
+            Storage
+           </div>
+           <div class="progress-bar">
+            <div class="progress-fill" style="width: 78%;"></div>
+           </div>
+           <div class="perf-value">
+            78%
+           </div>
+          </div>
+          <div class="performance-item">
+           <div class="perf-label">
+            Network
+           </div>
+           <div class="progress-bar">
+            <div class="progress-fill" style="width: 34%;"></div>
+           </div>
+           <div class="perf-value">
+            34%
+           </div>
+          </div>
+         </div>
+        </div>
+        <div class="small-cards">
+         <div class="mini-card">
+          <div class="mini-icon">
+           <svg width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+           </svg>
+          </div>
+          <div class="mini-content">
+           <div class="mini-label">
+            Engineering Tasks
+           </div>
+           <div class="mini-value">
+            156
+           </div>
+           <div class="mini-subtitle">
+            18 completed today
+           </div>
+          </div>
+         </div>
+         <div class="mini-card">
+          <div class="mini-icon">
+           <svg width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path> <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+           </svg>
+          </div>
+          <div class="mini-content">
+           <div class="mini-label">
+            RnD Projects
+           </div>
+           <div class="mini-value">
+            42
+           </div>
+           <div class="mini-subtitle">
+            3 new this week
+           </div>
+          </div>
+         </div>
+         <div class="mini-card">
+          <div class="mini-icon">
+           <svg width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect> <line x1="16" y1="2" x2="16" y2="6"></line> <line x1="8" y1="2" x2="8" y2="6"></line> <line x1="3" y1="10" x2="21" y2="10"></line>
+           </svg>
+          </div>
+          <div class="mini-content">
+           <div class="mini-label">
+            Attendance Rate
+           </div>
+           <div class="mini-value">
+            94.2%
+           </div>
+           <div class="mini-subtitle">
+            ↑ 2.1% from last week
+           </div>
+          </div>
+         </div>
+        </div>
+       </div>
+       <div class="activity-section">
+        <div class="card-header">
+         <h3 class="card-title">
+          <svg width="20" height="20" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+          </svg> Recent Activity</h3>
+        </div>
+        <div class="activity-list">
+         <div class="activity-item">
+          <div class="activity-dot dot-success"></div>
+          <div class="activity-content">
+           <div class="activity-title">
+            System Update Completed
+           </div>
+           <div class="activity-time">
+            2 minutes ago
+           </div>
+          </div>
+         </div>
+         <div class="activity-item">
+          <div class="activity-dot dot-warning"></div>
+          <div class="activity-content">
+           <div class="activity-title">
+            New Ticket #10245 Opened
+           </div>
+           <div class="activity-time">
+            15 minutes ago
+           </div>
+          </div>
+         </div>
+         <div class="activity-item">
+          <div class="activity-dot dot-info"></div>
+          <div class="activity-content">
+           <div class="activity-title">
+            Database Backup Created
+           </div>
+           <div class="activity-time">
+            1 hour ago
+           </div>
+          </div>
+         </div>
+         <div class="activity-item">
+          <div class="activity-dot dot-success"></div>
+          <div class="activity-content">
+           <div class="activity-title">
+            Security Scan Passed
+           </div>
+           <div class="activity-time">
+            3 hours ago
+           </div>
+          </div>
+         </div>
+         <div class="activity-item">
+          <div class="activity-dot dot-primary"></div>
+          <div class="activity-content">
+           <div class="activity-title">
+            New User Registered
+           </div>
+           <div class="activity-time">
+            5 hours ago
+           </div>
+          </div>
+         </div>
+        </div>
+       </div>
+      </div>
+      <div v-show="activePage === 'absensi'">
+      <div class="w-full panel-gradient-bg relative"><!-- Animated cyber grid background -->
+      <div class="cyber-grid absolute inset-0 opacity-30"></div>
+      <div class="holographic-mesh absolute inset-0"></div><!-- Main Panel Container -->
+      <div class="relative w-full">
+        <div class="w-full"><!-- Panel Content -->
+        <div class="panel-card-content backdrop-blur-sm rounded-2xl neon-glow p-6 space-y-6"><!-- Filter Section -->
+          <section class="flex flex-wrap items-center gap-4 w-full">
+            <!-- Search Bar -->
+            <div class="relative min-w-[200px] flex-grow">
+              <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+              <input v-model="searchTerm" type="text" :placeholder="configState.search_placeholder || 'Cari nama karyawan...'" class="search-input w-full rounded-lg pl-10 pr-4 py-3 focus:outline-none">
+            </div>
+            <!-- From Date -->
+            <div class="relative min-w-[130px] flex-grow">
+              <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+              <input v-model="dateFrom" type="date" placeholder="Dari" class="search-input w-full rounded-lg pl-10 pr-4 py-3 focus:outline-none" style="color-scheme: dark;">
+              <label class="input-field-label absolute -top-2 left-8 px-2 text-xs">Dari</label>
+            </div>
+            <!-- To Date -->
+            <div class="relative min-w-[130px] flex-grow">
+              <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+              <input v-model="dateTo" type="date" placeholder="Sampai" class="search-input w-full rounded-lg pl-10 pr-4 py-3 focus:outline-none" style="color-scheme: dark;">
+              <label class="input-field-label absolute -top-2 left-8 px-2 text-xs">Sampai</label>
+            </div>
+            <!-- Filter Chips -->
+            <div class="flex flex-wrap gap-2 items-center flex-grow">
+              <button type="button" @click="toggleFilter('filter-late')" :class="{ 'active': activeFilters.includes('filter-late') }" class="filter-chip flex-grow text-center"> {{ configState.filter_late || 'Terlambat' }} </button> 
+              <button @click="toggleFilter('filter-present')" :class="{ 'active': activeFilters.includes('filter-present') }" class="filter-chip flex-grow text-center"> {{ configState.filter_present || 'Kantor' }} </button> 
+              <button @click="toggleFilter('filter-site')" :class="{ 'active': activeFilters.includes('filter-site') }" class="filter-chip flex-grow text-center"> {{ configState.filter_site || 'Dinas' }} </button>
+              <button @click="toggleFilter('filter-permission')" :class="{ 'active': activeFilters.includes('filter-permission') }" class="filter-chip flex-grow text-center"> {{ configState.filter_permission || 'Cuti Thn' }} </button> 
+              <button @click="toggleFilter('filter-permission-site')" :class="{ 'active': activeFilters.includes('filter-permission-site') }" class="filter-chip flex-grow text-center"> {{ configState.filter_permission_site || 'Cuti Lap' }} </button> 
+              <button @click="toggleFilter('filter-absent')" :class="{ 'active': activeFilters.includes('filter-absent') }" class="filter-chip flex-grow text-center"> {{ configState.filter_absent || 'Alpa' }} </button> 
+              <button @click="toggleFilter('filter-wfh')" :class="{ 'active': activeFilters.includes('filter-wfh') }" class="filter-chip flex-grow text-center"> {{ configState.filter_wfh || 'WFH' }} </button>
+              <button @click="toggleFilter('filter-sick')" :class="{ 'active': activeFilters.includes('filter-sick') }" class="filter-chip flex-grow text-center"> {{ configState.filter_sick || 'Sakit' }} </button>
+              <button @click="toggleFilter('filter-hide-duplicate')" :class="{ 'active': activeFilters.includes('filter-hide-duplicate') }" class="filter-chip flex-grow text-center"> {{ configState.filter_hide_duplicate || 'No Duplikat' }} </button>
+            </div>
+          </section>
+
+          <!-- Top Row: Per Page Selector and Data Info & Export buttons -->
+          <div class="flex items-center justify-between flex-wrap gap-4 pt-4 border-t border-cyan-500/20">
+            <!-- Left side: Pagination info & controls -->
+            <div class="flex items-center space-x-4 flex-wrap gap-2">
+              <div class="flex items-center space-x-2">
+                <span class="text-cyan-300/70 text-sm">Baris per halaman: <span class="font-semibold text-cyan-100">12</span></span> 
+              </div>
+              <span class="text-cyan-300/70 text-sm">|</span>
+              <span class="text-cyan-300/70 text-sm">Total Data: {{ totalRecords }}</span>
+              <span class="text-cyan-300/70 text-sm">|</span>
+              <span class="text-cyan-300/70 text-sm">Menampilkan {{ totalRecords === 0 ? 0 : (currentPage - 1) * rowsPerPage + 1 }}-{{ Math.min(currentPage * rowsPerPage, totalRecords) }} dari {{ totalRecords }} data</span>
+              <span class="text-cyan-300/70 text-sm">|</span>
+              <span class="text-cyan-300/70 text-sm">Halaman {{ currentPage }} dari {{ totalPages }}</span>
+            </div>
+
+            <!-- Right side: Navigation & Export buttons -->
+            <div class="flex items-center space-x-4 flex-wrap gap-3">
+              <!-- Page Navigation -->
+              <div class="flex space-x-2">
+                <button id="first-page-top" @click="fetchAbsensiData(1)" :disabled="currentPage === 1" class="page-btn" title="Halaman Pertama">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"></path></svg>
+                </button>
+                <button id="prev-page-top" @click="fetchAbsensiData(currentPage - 1)" :disabled="currentPage === 1" class="page-btn" title="Halaman Sebelumnya">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                </button>
+                <button id="next-page-top" @click="fetchAbsensiData(currentPage + 1)" :disabled="currentPage >= totalPages" class="page-btn" title="Halaman Selanjutnya">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                </button>
+                <button id="last-page-top" @click="fetchAbsensiData(totalPages)" :disabled="currentPage >= totalPages" class="page-btn" title="Halaman Terakhir">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path></svg>
+                </button>
+              </div>
+
+              <span class="text-cyan-300/70 text-sm">|</span>
+
+              <!-- Download Buttons -->
+              <div class="flex space-x-2">
+                <!-- Excel -->
+                <div class="relative group">
+                  <button id="download-excel-btn-top" @click.stop="toggleExcelDropdown" class="px-3 py-2 bg-gradient-to-r from-blue-600/80 to-blue-700/80 border border-blue-500/50 rounded-lg text-white font-semibold hover:from-blue-500/80 hover:to-blue-600/80 transition-all neon-glow flex items-center space-x-2 text-sm">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    <span>Excel</span>
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                  </button>
+                  <div id="excel-dropdown-top" :class="{ 'hidden': !excelDropdownVisible }" class="absolute top-full mt-2 right-0 bg-gray-900/95 border border-cyan-500/50 rounded-lg overflow-hidden shadow-xl neon-glow min-w-[150px] z-20">
+                    <button @click="exportExcel(false)" class="w-full px-4 py-2.5 text-left text-cyan-100 hover:bg-cyan-500/20 transition-colors border-b border-cyan-500/30 flex items-center space-x-2 text-sm">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                      <span>Halaman Ini</span>
+                    </button>
+                    <button @click="exportExcel(true)" class="w-full px-4 py-2.5 text-left text-cyan-100 hover:bg-cyan-500/20 transition-colors flex items-center space-x-2 text-sm">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"></path></svg>
+                      <span>Semua Data</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- PDF -->
+                <div class="relative group">
+                  <button id="download-pdf-btn-top" @click.stop="togglePdfDropdown" class="px-3 py-2 bg-gradient-to-r from-red-600/80 to-red-700/80 border border-red-500/50 rounded-lg text-white font-semibold hover:from-red-500/80 hover:to-red-600/80 transition-all neon-glow flex items-center space-x-2 text-sm">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                    <span>PDF</span>
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                  </button>
+                  <div id="pdf-dropdown-top" :class="{ 'hidden': !pdfDropdownVisible }" class="absolute top-full mt-2 right-0 bg-gray-900/95 border border-cyan-500/50 rounded-lg overflow-hidden shadow-xl neon-glow min-w-[150px] z-20">
+                    <button @click="exportPdf(false)" class="w-full px-4 py-2.5 text-left text-cyan-100 hover:bg-cyan-500/20 transition-colors border-b border-cyan-500/30 flex items-center space-x-2 text-sm">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                      <span>Halaman Ini</span>
+                    </button>
+                    <button @click="exportPdf(true)" class="w-full px-4 py-2.5 text-left text-cyan-100 hover:bg-cyan-500/20 transition-colors flex items-center space-x-2 text-sm">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"></path></svg>
+                      <span>Semua Data</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="cyber-divider"></div><!-- Data Table Section -->
+          <section>
+          <!-- Bulk Actions Bar -->
+          <div v-show="selectedRecordIds.length > 0" class="flex items-center justify-between p-4 mb-4 bg-cyan-950/40 border border-cyan-500/30 rounded-xl flex-wrap gap-3">
+            <div class="flex items-center space-x-3">
+              <span class="text-cyan-300 text-sm font-semibold">{{ selectedRecordIds.length }} baris terpilih</span>
+            </div>
+            <div class="flex space-x-2">
+              <button @click="viewSelectedRecords" class="px-4 py-2 bg-gradient-to-r from-cyan-600/80 to-cyan-700/80 border border-cyan-500/50 rounded-lg text-white text-xs font-bold hover:from-cyan-500/80 hover:to-cyan-600/80 transition-all flex items-center space-x-1">
+                <span>View Terpilih</span>
+              </button>
+              <button @click="confirmDeleteSelectedRecords" class="px-4 py-2 bg-gradient-to-r from-red-600/80 to-red-700/80 border border-red-500/50 rounded-lg text-white text-xs font-bold hover:from-red-500/80 hover:to-red-600/80 transition-all flex items-center space-x-1">
+                <span>Hapus Terpilih</span>
+              </button>
+              <button @click="clearSelection" class="px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-cyan-300 text-xs font-bold hover:bg-gray-700 transition-all">
+                <span>Batal</span>
+              </button>
+            </div>
+          </div>
+          <div class="table-container">
+            <table class="data-table">
+            <thead>
+               <tr>
+               <th class="w-10"><input type="checkbox" class="validation-checkbox" :checked="isAllSelected" @change="toggleSelectAll" @click.stop></th>
+               <th class="hidden">{{ configState.header_id || 'ID' }}</th>
+               <th>{{ configState.header_name || 'Nama' }} / {{ configState.header_supervisor || 'Atasan' }}</th>
+               <th>{{ configState.header_date || 'Tanggal' }}</th>
+               <th>Jam Kerja ({{ configState.header_time_in || 'Masuk' }} → {{ configState.header_time_out || 'Pulang' }})</th>
+               <th>{{ configState.header_status || 'Status' }} / {{ configState.header_type || 'Tipe' }}</th>
+               <th>{{ configState.header_late_duration || 'Terlambat' }} / {{ configState.header_deduction || 'Potongan' }}</th>
+               <th>{{ configState.header_notes || 'Keterangan' }} (Admin / YBS)</th>
+               <th>{{ configState.header_photo || 'Dokumentasi' }}</th>
+               <th class="text-center">{{ configState.header_validation || 'Validasi' }}</th>
+               <th>{{ configState.header_action || 'Action' }}</th>
+               </tr>
+            </thead>
+            <tbody id="table-body">
+              <tr v-if="isLoadingData">
+                <td colspan="11" class="text-center py-8">
+                  <div class="flex flex-col items-center space-y-3">
+                    <svg class="animate-spin h-10 w-10 text-cyan-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span class="text-cyan-300">Memuat data...</span>
+                  </div>
+                </td>
+              </tr>
+              <tr v-else-if="apiData.length === 0">
+                <td colspan="11" class="text-center py-8 font-medium">
+                  <div class="flex flex-col items-center space-y-3">
+                    <svg class="h-10 w-10 text-cyan-400/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+                    </svg>
+                    <span class="text-cyan-300/70">Tidak ada data absensi ditemukan</span>
+                  </div>
+                </td>
+              </tr>
+              <tr v-else v-for="record in apiData" :key="record.id" :data-id="record.id" @click="selectRecord(record)" :class="{ 'selected': selectedRecordIds.includes(record.id) }" class="cursor-pointer">
+                <td @click.stop>
+                  <input type="checkbox" class="validation-checkbox" :checked="selectedRecordIds.includes(record.id)" @click.stop="selectRecord(record)">
+                </td>
+                <td class="font-medium" style="color: var(--accent-color) !important;">
+                  <div class="font-semibold">{{ record.name }}</div>
+                  <div class="text-[10px] text-gray-400 mt-0.5" v-if="record.supervisor">Atasan: {{ record.supervisor }}</div>
+                </td>
+                <td>
+                  <div>{{ record.date }}</div>
+                  <div class="text-[10px] text-gray-400 mt-0.5" v-if="record.date_out && record.date_out !== record.date">Pulang: {{ record.date_out }}</div>
+                </td>
+                <td>
+                  <div class="flex items-center space-x-1.5 font-medium">
+                    <span class="text-green-400">{{ ['Sakit', 'Cuti', 'Cuti Lapangan'].includes(record.status) ? '-' : (record.time_in || '-') }}</span>
+                    <span class="text-gray-500">→</span>
+                    <span class="text-blue-400">{{ record.time_out || '-' }}</span>
+                  </div>
+                </td>
+                <td>
+                  <div><span class="status-badge" :class="getStatusClass(record.status)">{{ record.status }}</span></div>
+                  <div class="text-[10px] text-gray-400 mt-1">Tipe: {{ record.attendance_type || '-' }}</div>
+                </td>
+                <td>
+                  <div v-if="record.LateMinutes > 0" class="text-yellow-400 font-semibold">{{ record.LateMinutes }} m</div>
+                  <div v-if="record.deduction > 0" class="text-red-400 font-semibold text-xs mt-0.5">{{ formatRupiah(record.deduction) }}</div>
+                  <div v-if="!(record.LateMinutes > 0) && !(record.deduction > 0)" class="text-gray-500">-</div>
+                </td>
+                <td class="max-w-[200px] break-words">
+                  <div v-if="record.notes" class="text-gray-200">{{ record.notes }}</div>
+                  <div v-if="record.pic_notes" class="text-[10px] text-yellow-500/80 font-medium mt-0.5">YBS: {{ record.pic_notes }}</div>
+                  <div v-if="!record.notes && !record.pic_notes" class="text-gray-500">-</div>
+                </td>
+                <td class="whitespace-nowrap" @click.stop>
+                  <div class="flex gap-1 flex-wrap">
+                    <button v-if="record.photo_masuk" @click="openPhotoModal(record, record.photo_masuk)" class="px-2 py-0.5 bg-cyan-950/60 border border-cyan-500/30 rounded text-cyan-300 hover:bg-cyan-500/20 text-[10px]" title="Photo Masuk">Masuk</button>
+                    <button v-if="record.photo_pulang" @click="openPhotoModal(record, record.photo_pulang)" class="px-2 py-0.5 bg-cyan-950/60 border border-cyan-500/30 rounded text-cyan-300 hover:bg-cyan-500/20 text-[10px]" title="Photo Keluar">Keluar</button>
+                    <button v-if="record.photo_bukti1" @click="openPhotoModal(record, record.photo_bukti1)" class="px-2 py-0.5 bg-cyan-950/60 border border-cyan-500/30 rounded text-cyan-300 hover:bg-cyan-500/20 text-[10px]" title="Bukti 1">Bukti 1</button>
+                    <button v-if="record.photo_bukti2" @click="openPhotoModal(record, record.photo_bukti2)" class="px-2 py-0.5 bg-cyan-950/60 border border-cyan-500/30 rounded text-cyan-300 hover:bg-cyan-500/20 text-[10px]" title="Bukti 2">Bukti 2</button>
+                    <span v-if="!record.photo_masuk && !record.photo_pulang && !record.photo_bukti1 && !record.photo_bukti2" class="text-gray-500">-</span>
+                  </div>
+                </td>
+                <td @click.stop>
+                  <div class="flex justify-center">
+                    <input v-if="['T3', 'T4', 'Alpha', 'Sakit', 'Cuti', 'Cuti Lapangan'].includes(record.status) || record.time_out === ''" type="checkbox" class="validation-checkbox" :checked="record.is_validated" @change="toggleValidation(record, $event)">
+                    <span v-else class="text-gray-500">-</span>
+                  </div>
+                </td>
+                <td class="whitespace-nowrap space-x-1" @click.stop>
+                  <button @click="viewRecordDetails(record)" class="text-cyan-400 hover:text-cyan-300 text-xs font-semibold px-2 py-1 border border-cyan-500/30 rounded hover:bg-cyan-500/10 transition-colors">View</button>
+                  <button @click="editRecordDetails(record)" class="text-yellow-400 hover:text-yellow-300 text-xs font-semibold px-2 py-1 border border-yellow-500/30 rounded hover:bg-yellow-500/10 transition-colors">Ubah</button>
+                  <button @click="confirmDeleteRecord(record)" class="text-red-400 hover:text-red-300 text-xs font-semibold px-2 py-1 border border-red-500/30 rounded hover:bg-red-500/10 transition-colors">Hapus</button>
+                </td>
+              </tr>
+            </tbody>
+            </table>
+            </div>
+          </section>
+
+        </div>
+        </div>
+       </div>
+      <!-- Photo Modal -->
+      <div id="photo-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm items-center justify-center z-50" :style="{ display: photoModalVisible ? 'flex' : 'none' }" @click.self="closePhotoModal">
+        <div class="modal-content relative" style="max-width: 42rem;"><!-- Close Button --> <button @click="closePhotoModal" class="absolute top-4 right-4 text-cyan-400 hover:text-cyan-300 transition-colors">
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg></button> <!-- Modal Header -->
+        <div class="mb-6">
+          <h2 class="text-2xl font-bold text-cyan-400 mb-2">Bukti Photo Absensi</h2>
+          <div class="title-underline"></div>
+          <div class="mt-3 space-y-1">
+          <p class="text-cyan-100 font-medium">Nama: <span class="text-cyan-300">{{ photoModalRecord ? photoModalRecord.name : '' }}</span></p>
+          <p class="text-cyan-100 font-medium">Tanggal: <span class="text-cyan-300">{{ photoModalRecord ? photoModalRecord.date : '' }}</span></p>
+          </div>
+        </div><!-- Photo Container -->
+        <div class="bg-gray-950/60 border border-cyan-500/30 rounded-xl p-4 flex items-center justify-center min-h-[400px]">
+          <div v-if="photoModalUrl" class="w-full">
+            <img :src="photoModalUrl" alt="Bukti absensi" class="max-w-full max-h-[400px] mx-auto rounded-lg" @error="handlePhotoError">
+          </div>
+          <div v-else class="text-center">
+            <svg class="w-32 h-32 mx-auto text-cyan-400/50 mb-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+            </svg>
+            <p class="text-cyan-300/70 text-sm">Photo Absensi</p>
+            <p class="text-cyan-500/50 text-xs mt-2">Format: JPG/PNG</p>
+          </div>
+        </div><!-- Modal Footer -->
+        <div class="mt-6 flex justify-end space-x-3"><button @click="closePhotoModal" class="px-6 py-2 bg-gray-800/80 border border-cyan-500/40 rounded-lg text-cyan-300 hover:bg-gray-700/80 transition-all neon-glow"> Tutup </button>
+        </div>
+        </div>
+      </div><!-- Save Confirmation Modal -->
+      <div id="save-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm items-center justify-center z-50" :style="{ display: saveModalVisible ? 'flex' : 'none' }" @click.self="saveModalVisible = false">
+        <div class="modal-content relative" style="max-width: 28rem;"><!-- Icon -->
+        <div class="flex justify-center mb-4">
+          <div class="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center">
+          <svg class="w-10 h-10 text-green-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path>
+          </svg>
+          </div>
+        </div><!-- Modal Header -->
+        <div class="text-center mb-6">
+          <h2 class="text-2xl font-bold text-green-400 mb-2">Konfirmasi Simpan</h2>
+          <div class="title-underline mx-auto" style="width: 100px;"></div>
+          <p class="text-cyan-100 mt-4">Apakah Anda yakin ingin menyimpan semua perubahan data absensi?</p>
+        </div><!-- Modal Footer -->
+        <div class="flex space-x-3"><button @click="saveModalVisible = false" class="flex-1 px-6 py-3 bg-gray-800/80 border border-cyan-500/40 rounded-lg text-cyan-300 hover:bg-gray-700/80 transition-all neon-glow font-medium"> Batal </button> <button @click="confirmSave" class="flex-1 px-6 py-3 bg-gradient-to-r from-green-600/80 to-green-700/80 border border-green-500/50 rounded-lg text-white hover:from-green-500/80 hover:to-green-600/80 transition-all neon-glow-strong font-medium"> Ya, Simpan </button>
+        </div>
+        </div>
+      </div>
+      
+<!-- Hide Confirmation Modal -->
+      <div id="hide-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm items-center justify-center z-50" :style="{ display: hideModalVisible ? 'flex' : 'none' }" @click.self="hideModalVisible = false">
+        <div class="modal-content relative" style="max-width: 28rem;"><!-- Icon -->
+        <div class="flex justify-center mb-4">
+          <div class="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center">
+          <svg class="w-10 h-10 text-red-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path>
+          </svg>
+          </div>
+        </div><!-- Modal Header -->
+        <div class="text-center mb-6">
+          <h2 class="text-2xl font-bold text-red-400 mb-2">Konfirmasi Hide</h2>
+          <div class="title-underline mx-auto" style="width: 100px; background: linear-gradient(90deg, #ef4444, transparent);"></div>
+          <p class="text-cyan-100 mt-4">Apakah Anda yakin ingin menyembunyikan data absensi untuk:</p>
+          <p class="text-cyan-300 font-medium mt-2">{{ hideModalRecord ? hideModalRecord.name : '' }}</p>
+          <p class="text-cyan-500 text-sm">{{ hideModalRecord ? hideModalRecord.date : '' }}</p>
+        </div><!-- Modal Footer -->
+        <div class="flex space-x-3"><button @click="hideModalVisible = false" class="flex-1 px-6 py-3 bg-gray-800/80 border border-cyan-500/40 rounded-lg text-cyan-300 hover:bg-gray-700/80 transition-all neon-glow font-medium"> Batal </button> <button @click="confirmHide" class="flex-1 px-6 py-3 bg-gradient-to-r from-red-600/80 to-red-700/80 border border-red-500/50 rounded-lg text-white hover:from-red-500/80 hover:to-red-600/80 transition-all neon-glow-strong font-medium"> Ya, Hide </button>
+        </div>
+        </div>
+      </div>
+
+      <!-- Delete Confirmation Modal -->
+      <div id="delete-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm items-center justify-center z-50" :style="{ display: deleteModalVisible ? 'flex' : 'none' }" @click.self="deleteModalVisible = false">
+        <div class="modal-content relative bg-gray-900/95 border border-red-500/30 rounded-2xl p-6 shadow-2xl" style="max-width: 28rem; width: 90%;">
+          <button @click="deleteModalVisible = false" class="absolute top-4 right-4 text-cyan-400 hover:text-cyan-300 transition-colors">
+            <svg width="20" height="20" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line> <line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+          <div class="flex justify-center mb-4">
+            <div class="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center">
+              <svg class="w-10 h-10 text-red-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+            </div>
+          </div>
+          <div class="text-center mb-6">
+            <h2 class="text-2xl font-bold text-red-400 mb-2">Konfirmasi Hapus</h2>
+            <div class="title-underline mx-auto" style="width: 100px; background: linear-gradient(90deg, #ef4444, transparent);"></div>
+            <p class="text-cyan-100 mt-4" v-if="deleteModalRecords.length === 1">Apakah Anda yakin ingin menghapus data absensi untuk:</p>
+            <p class="text-cyan-100 mt-4" v-else>Apakah Anda yakin ingin menghapus {{ deleteModalRecords.length }} data absensi terpilih?</p>
+            <div v-if="deleteModalRecords.length === 1" class="mt-2">
+              <p class="text-cyan-300 font-medium">{{ deleteModalRecords[0].name }}</p>
+              <p class="text-cyan-500 text-sm">{{ deleteModalRecords[0].date }}</p>
+            </div>
+          </div>
+          <div class="flex space-x-3">
+            <button @click="deleteModalVisible = false" class="flex-1 px-6 py-3 bg-gray-800/80 border border-cyan-500/40 rounded-lg text-cyan-300 hover:bg-gray-700/80 transition-all font-medium">Batal</button>
+            <button @click="submitDelete" class="flex-1 px-6 py-3 bg-gradient-to-r from-red-600/80 to-red-700/80 border border-red-500/50 rounded-lg text-white hover:from-red-500/80 hover:to-red-600/80 transition-all font-medium">Ya, Hapus</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Success Toast -->
+      <div id="success-toast" class="fixed top-4 right-4 bg-gradient-to-r from-green-600/95 to-green-700/95 border border-green-500/50 rounded-lg p-4 neon-glow-strong hidden z-50 min-w-[300px]">
+        <div class="flex items-center space-x-3">
+        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg><span class="text-white font-medium">Data berhasil disimpan!</span>
+        </div>
+      </div>
+      </div>
+
+     </div>
+    </main>
+   </div><!-- Modal for View Details -->
+   <div id="detail-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm items-center justify-center z-50" :style="{ display: viewModalVisible ? 'flex' : 'none' }" @click.self="viewModalVisible = false">
+      <div class="modal-content relative bg-gray-900/95 border border-cyan-500/30 rounded-2xl p-6 shadow-2xl" style="max-width: 36rem; width: 90%;">
+        <button @click="viewModalVisible = false" class="absolute top-4 right-4 text-cyan-400 hover:text-cyan-300 transition-colors">
+          <svg width="20" height="20" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line> <line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+        <div class="modal-header mb-4 border-b border-cyan-500/20 pb-2">
+          <h3 class="modal-title text-cyan-400 font-bold text-lg">Detail Absensi</h3>
+        </div>
+        <div class="grid grid-cols-2 gap-4 text-cyan-100 text-sm" v-if="activeViewRecord">
+          <div>
+            <span class="block text-xs text-cyan-500">Nama</span>
+            <span class="font-medium text-base text-cyan-300">{{ activeViewRecord.name }}</span>
+          </div>
+          <div>
+            <span class="block text-xs text-cyan-500">Tanggal</span>
+            <span class="font-medium text-base text-cyan-300">{{ activeViewRecord.date }}</span>
+          </div>
+          <div>
+            <span class="block text-xs text-cyan-500">Jam Masuk</span>
+            <span class="font-medium text-base text-cyan-300">{{ activeViewRecord.time_in || '-' }}</span>
+          </div>
+          <div>
+            <span class="block text-xs text-cyan-500">Jam Pulang</span>
+            <span class="font-medium text-base text-cyan-300">{{ activeViewRecord.time_out || '-' }}</span>
+          </div>
+          <div>
+            <span class="block text-xs text-cyan-500">Status</span>
+            <div><span class="status-badge text-xs mt-1" :class="getStatusClass(activeViewRecord.status)">{{ activeViewRecord.status }}</span></div>
+          </div>
+          <div>
+            <span class="block text-xs text-cyan-500">Tipe</span>
+            <span class="font-medium text-base text-cyan-300">{{ activeViewRecord.attendance_type || '-' }}</span>
+          </div>
+          <div>
+            <span class="block text-xs text-cyan-500">Durasi Keterlambatan</span>
+            <span class="font-medium text-base text-yellow-400">{{ activeViewRecord.LateMinutes ? activeViewRecord.LateMinutes + ' menit' : '-' }}</span>
+          </div>
+          <div>
+            <span class="block text-xs text-cyan-500">Jumlah Potongan</span>
+            <span class="font-medium text-base text-red-400">{{ formatRupiah(activeViewRecord.deduction) }}</span>
+          </div>
+          <div class="col-span-2">
+            <span class="block text-xs text-cyan-500">Keterangan</span>
+            <span class="font-medium block whitespace-pre-wrap text-base text-cyan-300">{{ activeViewRecord.notes || '-' }}</span>
+          </div>
+          <div class="col-span-2">
+            <span class="block text-xs text-cyan-500">Keterangan YBS</span>
+            <span class="font-medium block whitespace-pre-wrap text-base text-cyan-300">{{ activeViewRecord.pic_notes || '-' }}</span>
+          </div>
+          <div class="col-span-2">
+            <span class="block text-xs text-cyan-500">Atasan</span>
+            <span class="font-medium block text-base text-cyan-300">{{ activeViewRecord.supervisor || '-' }}</span>
+          </div>
+        </div>
+        <div class="mt-6 flex items-center justify-between flex-wrap gap-4 border-t border-cyan-500/20 pt-4">
+          <div class="flex items-center space-x-2" v-if="viewingMultiple">
+            <button @click="prevMultipleView" :disabled="currentViewIndex === 0" class="px-4 py-1.5 bg-gray-800 border border-cyan-500/30 rounded text-cyan-300 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-700 text-xs font-bold">
+              Sebelumnya
+            </button>
+            <span class="text-cyan-400 text-xs font-bold font-mono">
+              {{ currentViewIndex + 1 }} dari {{ selectedRecordIds.length }}
+            </span>
+            <button @click="nextMultipleView" :disabled="currentViewIndex === selectedRecordIds.length - 1" class="px-4 py-1.5 bg-gray-800 border border-cyan-500/30 rounded text-cyan-300 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-700 text-xs font-bold">
+              Selanjutnya
+            </button>
+          </div>
+          <div v-else></div>
+          <button @click="viewModalVisible = false" class="px-6 py-2 bg-gray-800/80 border border-cyan-500/40 rounded-lg text-cyan-300 hover:bg-gray-700/80 transition-all font-medium">Tutup</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal for Edit Details -->
+    <div id="edit-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm items-center justify-center z-50" :style="{ display: editModalVisible ? 'flex' : 'none' }" @click.self="editModalVisible = false">
+      <div class="modal-content relative bg-gray-900/95 border border-yellow-500/30 rounded-2xl p-6 shadow-2xl" style="max-width: 28rem; width: 90%;">
+        <button @click="editModalVisible = false" class="absolute top-4 right-4 text-cyan-400 hover:text-cyan-300 transition-colors">
+          <svg width="20" height="20" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line> <line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+        <div class="modal-header mb-4 border-b border-yellow-500/20 pb-2">
+          <h3 class="modal-title text-yellow-450 font-bold text-lg text-yellow-400">Ubah Absensi</h3>
+        </div>
+        <div class="space-y-4 text-cyan-100 text-sm" v-if="editModalRecord">
+          <div>
+            <span class="block text-xs text-cyan-500 mb-1">Nama</span>
+            <span class="font-medium text-base text-cyan-300">{{ editModalRecord.name }}</span>
+          </div>
+          <div>
+            <span class="block text-xs text-cyan-500 mb-1">Tanggal</span>
+            <span class="font-medium text-base text-cyan-300">{{ editModalRecord.date }}</span>
+          </div>
+          <div>
+            <label class="block text-xs text-cyan-500 mb-1">Status</label>
+            <select v-model="editModalStatus" class="bg-gray-950/85 border border-cyan-500/40 rounded-lg px-3 py-2 text-cyan-100 focus:outline-none focus:border-cyan-400 w-full cursor-pointer">
+              <option value="Kantor">Kantor</option>
+              <option value="WFH">WFH</option>
+              <option value="Dinas Lapangan">Dinas Lapangan</option>
+              <option value="Sakit">Sakit</option>
+              <option value="Cuti">Cuti</option>
+              <option value="Cuti Lapangan">Cuti Lapangan</option>
+              <option value="Alpa">Alpa</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs text-cyan-500 mb-1">Keterangan</label>
+            <textarea v-model="editModalNotes" class="bg-gray-950/85 border border-cyan-500/40 rounded-lg px-3 py-2 text-cyan-100 focus:outline-none focus:border-cyan-400 w-full h-24" placeholder="Masukkan keterangan..."></textarea>
+          </div>
+        </div>
+        <div class="mt-6 flex justify-end space-x-3">
+          <button @click="editModalVisible = false" class="px-6 py-2 bg-gray-800/80 border border-cyan-500/40 rounded-lg text-cyan-300 hover:bg-gray-700/80 transition-all font-medium">Batal</button>
+          <button @click="submitEditRecord" class="px-6 py-2 bg-gradient-to-r from-yellow-600/80 to-yellow-700/80 border border-yellow-500/50 rounded-lg text-white font-semibold hover:from-yellow-500/80 hover:to-yellow-600/80 transition-all font-medium">Simpan</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="info-modal" class="info-modal" :class="{ 'hidden': !infoModalVisible }">
+      <div class="info-box">
+        <div id="info-message" class="info-message" :style="{ color: infoModalType === 'error' ? '#f87171' : '#22c55e' }">{{ infoModalMessage }}</div>
+        <button @click="infoModalVisible = false" class="info-ok">OK</button>
+      </div>
+    </div>
+
+  </div>
+  <script>
+    const defaultConfig_ = {
+      company_name: "ENTERPRISE",
+      user_name: "Admin User",
+      dashboard_title: "System Dashboard",
+      complain_title: "Complain Handling",
+      background_color: "#0a0e27",
+      accent_color: "#00d4ff",
+      text_color: "#e0e7ff",
+      surface_color: "#0f1629",
+      card_border_color: "#00d4ff"
+    };
+
+    const defaultConfig = {
+      panel_title: "Rekapan Absensi",
+      search_placeholder: "Cari nama karyawan...",
+      filter_late: "Terlambat",
+      filter_present: "Kantor",
+      filter_site: "Dinas",
+      filter_permission: "Cuti Thn",
+      filter_permission_site: "Cuti Lap",
+      filter_absent: "Alpa",
+      filter_wfh: "WFH",
+      filter_sick: "Sakit",
+      filter_hide_duplicate: "No Duplikat",
+      header_name: "Nama",
+      header_date: "Tanggal Masuk",
+      header_date_out: "Tanggal Pulang",
+      header_time_in: "Jam Masuk",
+      header_time_out: "Jam Pulang",
+      header_type: "Tipe",
+      header_status: "Status",
+      header_late_duration: "Durasi Keterlambatan",
+      header_supervisor: "Atasan",
+      header_validation: "Validasi Atasan",
+      header_deduction: "Jumlah Potongan",
+      header_notes: "Keterangan",
+      header_photo: "Bukti Photo",
+      header_action: "Action",
+      metric_present: "Total Hadir",
+      metric_late: "Total Terlambat",
+      metric_wfh: "Total WFH",
+      metric_avg_late: "Rata-rata Keterlambatan",
+      metric_permission: "Total Izin"
+    };
+
+    const API_BASE_URL = '/auth/absensi';
+
+    // Helper functions
+    function getCookie(name) {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop().split(";").shift();
+      return null;
+    }
+
+    function formatRupiah(amount) {
+      if (!amount) return 'Rp 0';
+      const parsed = typeof amount === 'string' ? parseFloat(amount.replace(/[^0-9.-]+/g,"")) : amount;
+      return 'Rp ' + (isNaN(parsed) ? 0 : parsed).toLocaleString('id-ID');
+    }
+
+    const { createApp, nextTick } = Vue;
+
+    createApp({
+      data() {
+        return {
+          activePage: 'absensi',
+          sidebarOpen: true,
+          sidebarWidth: parseInt(localStorage.getItem('sidebarWidth')) || 200,
+          isResizing: false,
+          currentTheme: 'theme-cyber',
+          userProfile: null,
+          authToken: '',
+          userID: '',
+          leaderID: '',
+          
+          apiData: [],
+          isLoadingData: false,
+
+          // Search and Filters
+          searchTerm: '',
+          dateFrom: '',
+          dateTo: '',
+          activeFilters: [],
+          rowsPerPage: 12,
+          currentPage: 1,
+          totalPages: 1,
+          totalRecords: 0,
+
+          // Modals
+          photoModalVisible: false,
+          photoModalRecord: null,
+          photoModalUrl: '',
+
+          saveModalVisible: false,
+
+          hideModalVisible: false,
+          hideModalRecord: null,
+
+          infoModalVisible: false,
+          infoModalMessage: '',
+          infoModalType: 'info',
+
+          // View & Edit Modals & Selection
+          selectedRecordIds: [],
+          viewingMultiple: false,
+          currentViewIndex: 0,
+          deleteModalVisible: false,
+          deleteModalRecords: [],
+          viewModalVisible: false,
+          viewModalRecord: null,
+          editModalVisible: false,
+          editModalRecord: null,
+          editModalStatus: '',
+          editModalNotes: '',
+
+          // Dropdowns
+          excelDropdownVisible: false,
+          pdfDropdownVisible: false,
+
+          // Sidebar Menu Groups
+          groupExpanded: {
+            'group-absensi': true,
+            'group-daily-report': false,
+            'group-maintenance': false,
+            'group-inventory': false,
+          },
+
+          // SDK Configs
+          configState: { ...defaultConfig },
+          globalConfigState: { ...defaultConfig_ }
+        };
+      },
+      computed: {
+        isAllSelected() {
+          if (!this.apiData || this.apiData.length === 0) return false;
+          return this.apiData.every(r => this.selectedRecordIds.includes(r.id));
+        },
+        activeViewRecord() {
+          if (this.viewingMultiple && this.selectedRecordIds.length > 0) {
+            const currentId = this.selectedRecordIds[this.currentViewIndex];
+            return this.apiData.find(r => r.id === currentId) || this.viewModalRecord;
+          }
+          return this.viewModalRecord;
+        },
+        initials() {
+          if (!this.userProfile || !this.userProfile.name) return 'U';
+          return this.userProfile.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+        },
+        metrics() {
+          if (!this.apiData || this.apiData.length === 0) {
+            return {
+              total_hadir: 0,
+              total_terlambat: 0,
+              total_wfh: 0,
+              avg_late_minutes: 0,
+              total_izin_tahunan: 0,
+              total_izin_lapangan: 0
+            };
+          }
+
+          let hadir = 0;
+          let terlambat = 0;
+          let wfh = 0;
+          let cutiTahunan = 0;
+          let cutiLapangan = 0;
+          let totalLateMinutes = 0;
+          let lateCount = 0;
+
+          this.apiData.forEach(record => {
+            const status = record.status || '';
+            if (['Kantor', 'Dinas Lapangan', 'Lembur', 'T1', 'T2', 'T3', 'T4', 'WFH'].includes(status)) {
+              hadir++;
+            }
+            if (['T1', 'T2', 'T3', 'T4'].includes(status)) {
+              terlambat++;
+            }
+            if (status === 'WFH') {
+              wfh++;
+            }
+            if (['Cuti', 'Cuti1/2'].includes(status)) {
+              cutiTahunan++;
+            }
+            if (status === 'Cuti Lapangan') {
+              cutiLapangan++;
+            }
+            if (record.LateMinutes > 0) {
+              totalLateMinutes += record.LateMinutes;
+              lateCount++;
+            }
+          });
+
+          return {
+            total_hadir: hadir,
+            total_terlambat: terlambat,
+            total_wfh: wfh,
+            avg_late_minutes: lateCount > 0 ? Math.round(totalLateMinutes / lateCount) : 0,
+            total_izin_tahunan: cutiTahunan,
+            total_izin_lapangan: cutiLapangan
+          };
+        }
+      },
+      watch: {
+        searchTerm() {
+          this.debouncedSearch();
+        },
+        dateFrom() {
+          this.fetchAbsensiData(1);
+        },
+        dateTo() {
+          this.fetchAbsensiData(1);
+        }
+      },
+      mounted() {
+        this.currentTheme = localStorage.getItem('selectedTheme') || 'theme-cyber';
+        this.authToken = getCookie("authToken");
+        this.userID = getCookie("id");
+        this.leaderID = getCookie("id_leader");
+
+        if (!this.authToken || !this.userID) {
+          console.error("Missing auth credentials");
+          window.location.href = "/";
+          return;
+        }
+
+        this.fetchUserProfile();
+        this.fetchAbsensiData();
+
+        // Inactivity timeout
+        this.resetInactivityTimer();
+        const activityEvents = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
+        activityEvents.forEach(event => {
+          document.addEventListener(event, () => this.resetInactivityTimer(), true);
+        });
+
+        // Global click listener to close dropdowns
+        document.addEventListener('click', () => {
+          this.excelDropdownVisible = false;
+          this.pdfDropdownVisible = false;
+        });
+
+        // Element SDK init
+        if (window.elementSdk) {
+          window.elementSdk.init({
+            defaultConfig: defaultConfig,
+            onConfigChange: (newConfig) => {
+              this.configState = { ...this.configState, ...newConfig };
+              this.applyStyles(this.configState);
+            },
+            mapToCapabilities: (cfg) => ({
+              recolorables: [],
+              borderables: [],
+              fontEditable: undefined,
+              fontSizeable: undefined
+            }),
+            mapToEditPanelValues: (cfg) => new Map([
+              ["panel_title", cfg.panel_title || defaultConfig.panel_title],
+              ["search_placeholder", cfg.search_placeholder || defaultConfig.search_placeholder],
+              ["filter_late", cfg.filter_late || defaultConfig.filter_late],
+              ["filter_present", cfg.filter_present || defaultConfig.filter_present],
+              ["filter_site", cfg.filter_site || defaultConfig.filter_site],
+              ["filter_permission", cfg.filter_permission || defaultConfig.filter_permission],
+              ["filter_permission_site", cfg.filter_permission_site || defaultConfig.filter_permission_site],
+              ["filter_absent", cfg.filter_absent || defaultConfig.filter_absent],
+              ["filter_wfh", cfg.filter_wfh || defaultConfig.filter_wfh],
+              ["filter_sick", cfg.filter_sick || defaultConfig.filter_sick],
+              ["header_name", cfg.header_name || defaultConfig.header_name],
+              ["header_date", cfg.header_date || defaultConfig.header_date],
+              ["header_time_in", cfg.header_time_in || defaultConfig.header_time_in],
+              ["header_time_out", cfg.header_time_out || defaultConfig.header_time_out],
+              ["header_type", cfg.header_type || defaultConfig.header_type],
+              ["header_status", cfg.header_status || defaultConfig.header_status],
+              ["header_late_duration", cfg.header_late_duration || defaultConfig.header_late_duration],
+              ["header_supervisor", cfg.header_supervisor || defaultConfig.header_supervisor],
+              ["header_validation", cfg.header_validation || defaultConfig.header_validation],
+              ["header_deduction", cfg.header_deduction || defaultConfig.header_deduction],
+              ["header_notes", cfg.header_notes || defaultConfig.header_notes],
+              ["header_photo", cfg.header_photo || defaultConfig.header_photo],
+              ["header_action", cfg.header_action || defaultConfig.header_action],
+              ["metric_present", cfg.metric_present || defaultConfig.metric_present],
+              ["metric_late", cfg.metric_late || defaultConfig.metric_late],
+              ["metric_wfh", cfg.metric_wfh || defaultConfig.metric_wfh],
+              ["metric_avg_late", cfg.metric_avg_late || defaultConfig.metric_avg_late],
+              ["metric_permission", cfg.metric_permission || defaultConfig.metric_permission]
+            ])
+          });
+        }
+      },
+      methods: {
+        toggleSidebar() {
+          this.sidebarOpen = !this.sidebarOpen;
+        },
+        startResize(e) {
+          e.preventDefault();
+          this.isResizing = true;
+          const startX = e.clientX;
+          const startWidth = this.sidebarWidth;
+
+          const doDrag = (dragEvent) => {
+            const deltaX = dragEvent.clientX - startX;
+            const newWidth = startWidth + deltaX;
+            if (newWidth >= 160 && newWidth <= 400) {
+              this.sidebarWidth = newWidth;
+            }
+          };
+
+          const stopDrag = () => {
+            this.isResizing = false;
+            document.removeEventListener('mousemove', doDrag);
+            document.removeEventListener('mouseup', stopDrag);
+            localStorage.setItem('sidebarWidth', this.sidebarWidth);
+          };
+
+          document.addEventListener('mousemove', doDrag);
+          document.addEventListener('mouseup', stopDrag);
+        },
+        formatRupiah(amount) {
+          return formatRupiah(amount);
+        },
+        saveTheme() {
+          localStorage.setItem('selectedTheme', this.currentTheme);
+        },
+        toggleGroup(groupId) {
+          this.groupExpanded[groupId] = !this.groupExpanded[groupId];
+        },
+        isMenuVisible(menuId) {
+          if (['input_absensi', 'absensi_saya'].includes(menuId)) return false;
+          if (!this.userProfile) return false;
+          const role = this.userProfile.role;
+          if (['SuperAdmin', 'Manager'].includes(role)) return true;
+
+          const permissions = {
+            'absensi': ['SupervisorIT', 'SupervisorRND', 'SupervisorInventory', 'ManagerMarketing'],
+            'input_absensi': [],
+            'absensi_saya': [],
+            'absensi_perhitungan': ['HRDAdmin', 'SupervisorIT', 'SupervisorRND', 'SupervisorInventory', 'ManagerMarketing']
+          };
+
+          return permissions[menuId]?.includes(role) || false;
+        },
+        navigatePage(page) {
+          if (page === 'dashboard') {
+            this.activePage = 'dashboard';
+          } else {
+            const routes = {
+              'complain': '/complain_handling',
+              'absensi': '/rekapan_absensi',
+              'input_absensi': '/input_absensi',
+              'absensi_saya': '/absensi_karyawan',
+              'input_daily_report': '/absensi_daily_report',
+              'list_daily_report': '/absensi_daily_report_rekapan',
+              'list_site_report': '/absensi_list_site_report',
+              'list_lembur': '/absensi_list_lembur',
+              'absensi_perhitungan': '/absensi_perhitungan',
+              'input_maintenance_da': '/input_maintenance_da',
+              'rekapan_maintenance_da': '/rekapan_maintenance_da',
+              'inventory': '/inventory_mobile',
+              'inventory_management': '/inventory_management',
+              'inventory_peminjaman': '/inventory_peminjaman'
+            };
+            if (routes[page]) {
+              window.location.href = routes[page];
+            }
+          }
+        },
+        applyStyles(cfg) {
+          // Recap background color customization, etc.
+          if (cfg.background_color) {
+            document.documentElement.style.setProperty('--bg-color', cfg.background_color);
+          }
+          if (cfg.accent_color) {
+            document.documentElement.style.setProperty('--accent-color', cfg.accent_color);
+          }
+          if (cfg.text_color) {
+            document.documentElement.style.setProperty('--text-color', cfg.text_color);
+          }
+        },
+        async fetchUserProfile() {
+          try {
+            const response = await fetch(`/auth/user/profile?userID=${this.userID}`, {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${this.authToken}`
+              }
+            });
+            if (!response.ok) throw new Error('Profile fetch failed');
+            this.userProfile = await response.json();
+            
+            // Auto expand navigation group based on role/active page
+            const groups = {
+              'group-absensi': ['absensi', 'input_absensi', 'absensi_saya', 'absensi_perhitungan']
+            };
+            Object.entries(groups).forEach(([groupId, pages]) => {
+              if (pages.includes(this.activePage)) {
+                this.groupExpanded[groupId] = true;
+              }
+            });
+          } catch (e) {
+            console.error(e);
+          }
+        },
+        async fetchAbsensiData(page = 1) {
+          if (this.isLoadingData) return;
+          this.clearSelection();
+          this.isLoadingData = true;
+          this.currentPage = page;
+
+          try {
+            const activeFilters = this.getActiveStatusFilters();
+            const params = new URLSearchParams();
+            if (this.searchTerm) params.append('search', this.searchTerm);
+            if (this.dateFrom) params.append('date_from', this.dateFrom);
+            if (this.dateTo) params.append('date_to', this.dateTo);
+            
+            // Filter hide duplicate
+            const filterTerms = activeFilters.filter(f => f !== 'Hide Duplicate');
+            const hideDup = activeFilters.includes('Hide Duplicate');
+
+            if (filterTerms.length > 0) {
+              params.append('active_filters', filterTerms.join(','));
+            }
+            if (hideDup) {
+              params.append('active_filters', (filterTerms.length > 0 ? filterTerms.join(',') + ',' : '') + 'Hide Duplicate');
+            }
+
+            params.append('page', this.currentPage);
+            params.append('per_page', this.rowsPerPage);
+            params.append('id_leader', this.leaderID);
+
+            const response = await fetch(`${API_BASE_URL}?${params.toString()}`, {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${this.authToken}`
+              }
+            });
+
+            if (!response.ok) throw new Error(`HTTP error ${response.status}`);
+            const result = await response.json();
+            
+            this.apiData = result.data || [];
+            this.totalRecords = result.total || 0;
+            this.totalPages = result.total_pages || 1;
+            this.currentPage = result.current_page || 1;
+          } catch (e) {
+            console.error(e);
+            this.showToast('Gagal memuat data absensi.', 'error');
+            this.apiData = [];
+            this.totalRecords = 0;
+            this.totalPages = 1;
+          } finally {
+            this.isLoadingData = false;
+          }
+        },
+        getActiveStatusFilters() {
+          const filters = [];
+          const filterMap = {
+            'filter-late': 'T1,T2,T3,T4',
+            'filter-present': 'Kantor',
+            'filter-site': 'Dinas Lapangan',
+            'filter-permission': 'Cuti',
+            'filter-permission-site': 'Cuti lapangan',
+            'filter-absent': 'Alpha',
+            'filter-sick': 'Sakit',
+            'filter-wfh': 'WFH',
+            'filter-hide-duplicate': 'Hide Duplicate'
+          };
+          this.activeFilters.forEach(f => {
+            if (filterMap[f]) filters.push(filterMap[f]);
+          });
+          return filters;
+        },
+        toggleFilter(filterId) {
+          const idx = this.activeFilters.indexOf(filterId);
+          if (idx > -1) {
+            this.activeFilters.splice(idx, 1);
+          } else {
+            this.activeFilters.push(filterId);
+          }
+          this.fetchAbsensiData(1);
+        },
+        debouncedSearch() {
+          clearTimeout(this.searchDebounceTimer);
+          this.searchDebounceTimer = setTimeout(() => {
+            this.fetchAbsensiData(1);
+          }, 500);
+        },
+        normalizeStatus(status) {
+          if (!status) return '';
+          return status.toLowerCase().trim();
+        },
+        getStatusClass(status) {
+          if (!status) return 'status-hadir';
+          const norm = this.normalizeStatus(status);
+          if (norm === 'hadir' || norm === 'kantor') return 'status-hadir';
+          if (norm === 'dinas' || norm === 'dinas lapangan') return 'status-dinas';
+          if (norm === 'lembur') return 'status-lembur';
+          if (norm === 'wfh') return 'status-wfh';
+          if (norm === 'alpa' || norm === 'alpha') return 'status-alpa';
+          if (norm === 'sakit') return 'status-sakit';
+          if (norm === 'izin' || norm === 'cuti' || norm.includes('cuti')) return 'status-izin';
+          if (norm.startsWith('t') || norm.includes('lambat')) return 'status-terlambat';
+          return 'status-hadir';
+        },
+        openPhotoModal(record, url) {
+          this.photoModalRecord = record;
+          this.photoModalUrl = url;
+          this.photoModalVisible = true;
+        },
+        closePhotoModal() {
+          this.photoModalVisible = false;
+          this.photoModalRecord = null;
+          this.photoModalUrl = '';
+        },
+        handlePhotoError() {
+          this.photoModalUrl = '';
+        },
+        async toggleValidation(record, event) {
+          const isValidated = event.target.checked;
+          event.target.disabled = true;
+
+          try {
+            const response = await fetch(`${API_BASE_URL}/${record.id}/validate`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${this.authToken}`
+              },
+              body: JSON.stringify({ is_validated: isValidated })
+            });
+
+            if (!response.ok) throw new Error();
+            record.is_validated = isValidated;
+            this.showToast('Status validasi berhasil diperbarui');
+          } catch (e) {
+            event.target.checked = !isValidated;
+            this.showToast('Gagal memperbarui validasi. Silakan coba lagi.', 'error');
+          } finally {
+            event.target.disabled = false;
+          }
+        },
+        confirmHideRecord(record) {
+          this.hideModalRecord = record;
+          this.hideModalVisible = true;
+        },
+        async confirmHide() {
+          if (!this.hideModalRecord) return;
+          const recordId = this.hideModalRecord.id;
+
+          try {
+            const response = await fetch(`${API_BASE_URL}/${recordId}/hide`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${this.authToken}`
+              },
+              body: JSON.stringify({ is_hidden: true })
+            });
+
+            if (!response.ok) throw new Error();
+            
+            // Success animation
+            this.apiData = this.apiData.filter(r => r.id !== recordId);
+            this.showToast('Data berhasil disembunyikan');
+            this.hideModalVisible = false;
+            this.fetchAbsensiData(this.currentPage);
+          } catch (e) {
+            this.showToast('Gagal menyembunyikan data.', 'error');
+          }
+        },
+        confirmSave() {
+          this.saveModalVisible = false;
+          this.showToast('Data perubahan berhasil disimpan!');
+        },
+        selectRecord(record) {
+          const index = this.selectedRecordIds.indexOf(record.id);
+          if (index > -1) {
+            this.selectedRecordIds.splice(index, 1);
+          } else {
+            this.selectedRecordIds.push(record.id);
+          }
+        },
+        toggleSelectAll() {
+          if (this.isAllSelected) {
+            this.clearSelection();
+          } else {
+            this.selectedRecordIds = this.apiData.map(r => r.id);
+          }
+        },
+        clearSelection() {
+          this.selectedRecordIds = [];
+        },
+        viewSelectedRecords() {
+          if (this.selectedRecordIds.length === 0) return;
+          this.viewingMultiple = true;
+          this.currentViewIndex = 0;
+          this.viewModalVisible = true;
+        },
+        prevMultipleView() {
+          if (this.currentViewIndex > 0) {
+            this.currentViewIndex--;
+          }
+        },
+        nextMultipleView() {
+          if (this.currentViewIndex < this.selectedRecordIds.length - 1) {
+            this.currentViewIndex++;
+          }
+        },
+        confirmDeleteRecord(record) {
+          this.deleteModalRecords = [record];
+          this.deleteModalVisible = true;
+        },
+        confirmDeleteSelectedRecords() {
+          const records = this.apiData.filter(r => this.selectedRecordIds.includes(r.id));
+          if (records.length === 0) return;
+          this.deleteModalRecords = records;
+          this.deleteModalVisible = true;
+        },
+        async submitDelete() {
+          if (this.deleteModalRecords.length === 0) return;
+          this.deleteModalVisible = false;
+
+          const parseDateString = (dateStr) => {
+            if (!dateStr) return '';
+            const months = {
+              'January': '01', 'February': '02', 'March': '03', 'April': '04',
+              'May': '05', 'June': '06', 'July': '07', 'August': '08',
+              'September': '09', 'October': '10', 'November': '11', 'December': '12'
+            };
+            const parts = dateStr.trim().split(/\s+/);
+            if (parts.length < 3) return dateStr;
+            const day = parts[0].padStart(2, '0');
+            const monthName = parts[1];
+            const year = parts[2];
+            const month = months[monthName] || '01';
+            return `${year}-${month}-${day}`;
+          };
+
+          try {
+            const promises = this.deleteModalRecords.map(record => {
+              const formattedDate = parseDateString(record.date);
+              return fetch('/auth/absensi/inputleader', {
+                method: 'DELETE',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${this.authToken}`
+                },
+                body: JSON.stringify({
+                  name: record.name,
+                  date: formattedDate
+                })
+              });
+            });
+
+            const responses = await Promise.all(promises);
+            const allOk = responses.every(res => res.ok);
+
+            if (allOk) {
+              this.showToast('Data absensi berhasil dihapus.', 'success');
+              this.clearSelection();
+              this.fetchAbsensiData(this.currentPage);
+            } else {
+              this.showToast('Beberapa atau semua data gagal dihapus.', 'error');
+            }
+          } catch (e) {
+            console.error(e);
+            this.showToast('Terjadi kesalahan saat menghapus data.', 'error');
+          }
+        },
+        viewRecordDetails(record) {
+          this.viewingMultiple = false;
+          this.viewModalRecord = record;
+          this.viewModalVisible = true;
+        },
+        editRecordDetails(record) {
+          this.editModalRecord = record;
+          this.editModalStatus = record.status || 'Kantor';
+          this.editModalNotes = record.notes || '';
+          this.editModalVisible = true;
+        },
+        async submitEditRecord() {
+          if (!this.editModalRecord) return;
+          try {
+            const parseDateString = (dateStr) => {
+              if (!dateStr) return '';
+              const months = {
+                'January': '01', 'February': '02', 'March': '03', 'April': '04',
+                'May': '05', 'June': '06', 'July': '07', 'August': '08',
+                'September': '09', 'October': '10', 'November': '11', 'December': '12'
+              };
+              const parts = dateStr.trim().split(/\s+/);
+              if (parts.length < 3) return dateStr;
+              const day = parts[0].padStart(2, '0');
+              const monthName = parts[1];
+              const year = parts[2];
+              const month = months[monthName] || '01';
+              return `${year}-${month}-${day}`;
+            };
+
+            const formattedDate = parseDateString(this.editModalRecord.date);
+            const response = await fetch('/auth/absensi/inputleader', {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${this.authToken}`
+              },
+              body: JSON.stringify({
+                name: this.editModalRecord.name,
+                date: formattedDate,
+                status: this.editModalStatus,
+                notes: this.editModalNotes
+              })
+            });
+            if (!response.ok) throw new Error(`HTTP error ${response.status}`);
+            const res = await response.json();
+            if (res.success) {
+              this.showToast('Absensi berhasil diperbarui.', 'success');
+              this.editModalVisible = false;
+              this.fetchAbsensiData(this.currentPage);
+            } else {
+              this.showToast(res.message || 'Gagal memperbarui absensi.', 'error');
+            }
+          } catch (e) {
+            console.error(e);
+            this.showToast('Terjadi kesalahan saat memperbarui data.', 'error');
+          }
+        },
+        toggleExcelDropdown() {
+          this.excelDropdownVisible = !this.excelDropdownVisible;
+          this.pdfDropdownVisible = false;
+        },
+        togglePdfDropdown() {
+          this.pdfDropdownVisible = !this.pdfDropdownVisible;
+          this.excelDropdownVisible = false;
+        },
+        extractTableData(all) {
+          return this.apiData.map(item => ({
+            nama: item.name,
+            tanggal: item.date,
+            tanggalKeluar: item.date_out,
+            jamMasuk: item.time_in,
+            jamPulang: item.time_out,
+            status: item.status,
+            durasi: item.LateMinutes > 0 ? `${item.LateMinutes} menit` : '-',
+            atasan: item.supervisor,
+            validasi: item.is_validated ? 'Divalidasi' : 'Belum Divalidasi',
+            potongan: item.deduction,
+            keterangan: item.notes,
+            keteranganYbs: item.pic_notes
+          }));
+        },
+        exportExcel(all) {
+          const data = this.extractTableData(all);
+          const ws = XLSX.utils.json_to_sheet(data.map(item => ({
+            'Nama': item.nama,
+            'Tanggal Masuk': item.tanggal,
+            'Tanggal Pulang': item.tanggalKeluar,
+            'Jam Masuk': item.jamMasuk,
+            'Jam Pulang': item.jamPulang,
+            'Status': item.status,
+            'Durasi Keterlambatan': item.durasi,
+            'Jumlah Potongan': item.potongan,
+            'Keterangan': item.keterangan,
+            'Keterangan YBS': item.keteranganYbs,
+            'Atasan': item.atasan,
+            'Validasi Atasan': item.validasi,
+          })));
+
+          const wb = XLSX.utils.book_new();
+          XLSX.utils.book_append_sheet(wb, ws, 'Absensi');
+          XLSX.writeFile(wb, all ? 'Absensi_Semua_Data.xlsx' : `Absensi_Halaman_${this.currentPage}.xlsx`);
+          this.excelDropdownVisible = false;
+        },
+        exportPdf(all) {
+          const { jsPDF } = window.jspdf;
+          const doc = new jsPDF('l', 'mm', 'a4');
+          const data = this.extractTableData(all);
+
+          doc.setFontSize(16);
+          doc.text(all ? 'Rekapan Absensi - Semua Data' : 'Rekapan Absensi - Halaman ' + this.currentPage, 14, 15);
+
+          doc.autoTable({
+            startY: 25,
+            head: [['Nama', 'Tanggal', 'Jam Masuk', 'Jam Pulang', 'Status', 'Durasi', 'Atasan', 'Validasi', 'Potongan', 'Keterangan']],
+            body: data.map(item => [
+              item.nama,
+              item.tanggal,
+              item.jamMasuk,
+              item.jamPulang,
+              item.status,
+              item.durasi,
+              item.atasan,
+              item.validasi,
+              formatRupiah(item.potongan),
+              item.keterangan
+            ]),
+            styles: { fontSize: 8 },
+            headStyles: { fillColor: [0, 198, 255] }
+          });
+
+          doc.save(all ? 'Absensi_Semua_Data.pdf' : `Absensi_Halaman_${this.currentPage}.pdf`);
+          this.pdfDropdownVisible = false;
+        },
+        resetInactivityTimer() {
+          clearTimeout(this.inactivityTimer);
+          // Auto logout after 5 minutes can be handled here if required
+        },
+        async handleLogout() {
+          try {
+            await fetch('/auth/logout', { method: 'POST' });
+            this.showLogoutNotification();
+          } catch (e) {
+            this.showLogoutNotification();
+          }
+        },
+        showLogoutNotification() {
+          const overlay = document.createElement('div');
+          overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);backdrop-filter:blur(5px);z-index:9999;';
+          const notification = document.createElement('div');
+          notification.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:linear-gradient(135deg,rgba(15,22,41,0.98),rgba(26,31,58,0.98));border:2px solid rgba(0,212,255,0.5);border-radius:20px;padding:40px;z-index:10000;box-shadow:0 20px 60px rgba(0,212,255,0.4);text-align:center;min-width:400px;';
+          notification.innerHTML = `
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#00d4ff" stroke-width="2" style="margin-bottom:20px;margin-left:auto;margin-right:auto;">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+              <polyline points="16 17 21 12 16 7"></polyline>
+              <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+            <h3 style="color:#00d4ff;font-size:24px;font-weight:700;margin-bottom:16px;">Session Expired</h3>
+            <p style="color:#8b9dc3;font-size:15px;margin-bottom:8px;">You have been logged out</p>
+            <p style="color:#8b9dc3;font-size:13px;">Please login again to continue</p>
+          `;
+          document.body.appendChild(overlay);
+          document.body.appendChild(notification);
+          setTimeout(() => { window.location.href = "/"; }, 1500);
+        },
+        showToast(message, type = 'success') {
+          this.infoModalMessage = message;
+          this.infoModalType = type;
+          this.infoModalVisible = true;
+          setTimeout(() => {
+            this.infoModalVisible = false;
+          }, 3000);
+        }
+      }
+    }).mount('#app');
+  </script>
+</body>
+</html>

@@ -1,0 +1,3483 @@
+<!doctype html>
+<html lang="id" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Absensi HRD</title>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Orbitron:wght@600;700;800;900&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      /* Theme Default: Cyber (Cyan/Dark Blue) */
+      --bg-gradient: #060a17;
+      --panel-bg: rgba(10, 14, 26, 0.75);
+      --accent-color: #00d4ff;
+      --accent-glow: rgba(0, 212, 255, 0.4);
+      --border-color: rgba(0, 212, 255, 0.2);
+      --text-color: #e0e7ff;
+      --text-muted: #8b9dc3;
+      --sidebar-bg: rgba(10, 14, 26, 0.85);
+      --topbar-bg: rgba(10, 14, 26, 0.7);
+      --table-th-color: #00d4ff;
+      --row-hover: rgba(0, 212, 255, 0.08);
+      --row-selected: rgba(0, 212, 255, 0.15);
+      --solid-bg: #060a17;
+      --summary-bg: rgba(0, 212, 255, 0.1);
+      --weekend-bg: rgba(127, 29, 29, 0.35);
+      --holiday-bg: rgba(153, 27, 27, 0.25);
+      --fixed-col-hover: #0c152a;
+    }
+
+    .theme-light {
+      --bg-gradient: #cbd5e1;
+      --panel-bg: rgba(25, 25, 25, 0.85);
+      --accent-color: #0066ff;
+      --accent-glow: rgba(0, 102, 255, 0.2);
+      --border-color: rgba(0, 102, 255, 0.15);
+      --text-color: #1e293b;
+      --text-muted: #64748b;
+      --sidebar-bg: rgba(255, 255, 255, 0.9);
+      --topbar-bg: rgba(255, 255, 255, 0.8);
+      --table-th-color: #0066ff;
+      --row-hover: rgba(0, 102, 255, 0.06);
+      --row-selected: rgba(0, 102, 255, 0.12);
+      --solid-bg: #f8fafc;
+      --summary-bg: rgba(0, 102, 255, 0.08);
+      --weekend-bg: rgba(239, 68, 68, 0.1);
+      --holiday-bg: rgba(220, 38, 38, 0.15);
+      --fixed-col-hover: #f1f5f9;
+    }
+
+    .theme-synthwave {
+      --bg-gradient: #150020;
+      --panel-bg: rgba(25, 10, 40, 0.75);
+      --accent-color: #ff007f;
+      --accent-glow: rgba(255, 0, 127, 0.4);
+      --border-color: rgba(255, 0, 127, 0.2);
+      --text-color: #fce7f3;
+      --text-muted: #c084fc;
+      --sidebar-bg: rgba(25, 10, 40, 0.85);
+      --topbar-bg: rgba(25, 10, 40, 0.7);
+      --table-th-color: #d946ef;
+      --row-hover: rgba(255, 0, 127, 0.08);
+      --row-selected: rgba(255, 0, 127, 0.15);
+      --solid-bg: #150020;
+      --summary-bg: rgba(255, 0, 127, 0.1);
+      --weekend-bg: rgba(127, 29, 29, 0.35);
+      --holiday-bg: rgba(153, 27, 27, 0.25);
+      --fixed-col-hover: #210430;
+    }
+
+    .theme-matrix {
+      --bg-gradient: #020a02;
+      --panel-bg: rgba(5, 15, 5, 0.75);
+      --accent-color: #00ff41;
+      --accent-glow: rgba(0, 255, 65, 0.4);
+      --border-color: rgba(0, 255, 65, 0.2);
+      --text-color: #d1ffd1;
+      --text-muted: #4e9a4e;
+      --sidebar-bg: rgba(5, 15, 5, 0.85);
+      --topbar-bg: rgba(5, 15, 5, 0.7);
+      --table-th-color: #00ff41;
+      --row-hover: rgba(0, 255, 65, 0.08);
+      --row-selected: rgba(0, 255, 65, 0.15);
+      --solid-bg: #020a02;
+      --summary-bg: rgba(0, 255, 65, 0.1);
+      --weekend-bg: rgba(127, 29, 29, 0.35);
+      --holiday-bg: rgba(153, 27, 27, 0.25);
+      --fixed-col-hover: #081a08;
+    }
+
+    body {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Outfit', 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+      color: var(--text-color);
+      transition: background 0.3s, color 0.3s;
+    }
+    
+    * {
+      box-sizing: border-box;
+    }
+    
+    .app-wrapper {
+      width: 100%;
+      height: 100%;
+      background: var(--bg-gradient) !important;
+      overflow: hidden;
+      position: relative;
+      transition: background 0.3s;
+    }
+    
+    .app-wrapper::before {
+      content: '';
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: none !important;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .sidebar {
+      width: 200px;
+      height: 100%;
+      background: var(--sidebar-bg) !important;
+      border-right: 3px solid var(--accent-color) !important;
+      box-shadow: none !important;
+      position: relative;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      backdrop-filter: blur(20px);
+      transition: all 0.3s;
+    }
+
+    .sidebar.collapsed {
+      width: 0px !important;
+      min-width: 0px !important;
+      max-width: 0px !important;
+      overflow: hidden;
+      border-right: 0px solid transparent !important;
+      padding: 0 !important;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .sidebar-resizer {
+      position: absolute;
+      top: 0;
+      right: -3px;
+      width: 6px;
+      height: 100%;
+      cursor: col-resize;
+      z-index: 20;
+    }
+
+    .sidebar-resizer:hover {
+      background: rgba(0, 212, 255, 0.3);
+    }
+
+    .resizing .sidebar {
+      transition: none !important;
+    }
+
+    .resizing * {
+      user-select: none !important;
+      cursor: col-resize !important;
+    }
+
+    .logo-section-sidebar {
+      padding: 16px 14px;
+      text-align: center;
+    }
+
+    .logo-section-sidebar h1 {
+      font-family: 'Orbitron', sans-serif !important;
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--accent-color) !important;
+      text-shadow: 0 0 15px var(--accent-glow);
+      letter-spacing: 2px;
+      transition: all 0.3s;
+    }
+
+    .theme-switcher {
+      margin-right: 15px;
+    }
+    
+    .theme-select-control {
+      padding: 6px 12px;
+      background: rgba(0, 212, 255, 0.05);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      color: var(--accent-color);
+      font-size: 11px;
+      font-weight: 600;
+      font-family: inherit;
+      outline: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .theme-select-control:hover {
+      border-color: var(--accent-color);
+      box-shadow: 0 0 10px var(--accent-glow);
+    }
+
+    .nav-menu {
+      flex: 1;
+      padding: 12px 0;
+      overflow-y: auto;
+    }
+
+    .nav-item {
+      padding: 10px 14px;
+      margin: 4px 8px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 500;
+      color: #8b9dc3;
+      border: 1px solid transparent;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .nav-item::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 0;
+      height: 100%;
+      background: linear-gradient(90deg, var(--row-selected), transparent);
+      transition: width 0.3s ease;
+    }
+
+    .nav-item:hover::before {
+      width: 100%;
+    }
+
+    .nav-item:hover {
+      background: var(--row-hover);
+      border-color: var(--border-color);
+      color: var(--accent-color);
+      transform: translateX(4px);
+    }
+
+    .nav-item.active {
+      background: var(--row-selected);
+      border-color: var(--accent-color);
+      color: var(--accent-color);
+      box-shadow: 0 0 20px var(--accent-glow);
+    }
+
+    .nav-item.active::before {
+      width: 100%;
+    }
+
+    .nav-icon {
+      width: 16px;
+      height: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .main-layout {
+      flex: 1;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .top-bar {
+      height: 50px;
+      background: var(--topbar-bg) !important;
+      border-bottom: none !important;
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      transition: all 0.3s;
+    }
+
+    .page-title-top {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--accent-color);
+      text-shadow: 0 0 15px var(--accent-glow);
+      transition: all 0.3s;
+    }
+
+    .profile-section {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      background: var(--row-hover);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      box-shadow: 0 0 15px var(--accent-glow);
+      transition: all 0.3s ease;
+    }
+
+    .profile-section:hover {
+      background: var(--row-selected);
+      box-shadow: 0 0 25px var(--accent-glow);
+    }
+
+    .avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent-color), #0066ff);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 11px;
+      color: #fff;
+      box-shadow: 0 0 15px var(--accent-glow), inset 0 0 10px rgba(255, 255, 255, 0.2);
+      transition: all 0.3s;
+    }
+
+    .profile-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .profile-name {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-color);
+      transition: all 0.3s;
+    }
+
+    .logout-btn {
+      font-size: 10px;
+      color: #8b9dc3;
+      cursor: pointer;
+      transition: color 0.3s;
+    }
+
+    .logout-btn:hover {
+      color: #ff4757;
+    }
+
+    .content-area {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .nav-group-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 23px;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: background 0.2s;
+      font-size: 12px;
+      color: #8b9dc3;
+    }
+
+    .nav-group-header:hover {
+      background: var(--row-hover);
+      border-color: var(--border-color);
+      color: var(--accent-color);
+      transform: translateX(4px);
+    }
+
+    .nav-group-header.active {
+      background: var(--row-selected);
+      border-color: var(--border-color);
+      color: var(--accent-color);
+      font-weight: 600;
+    }
+
+    .nav-arrow {
+      margin-left: auto;
+      transition: transform 0.2s;
+    }
+
+    .nav-arrow.open {
+      transform: rotate(180deg);
+    }
+
+    .nav-group-children {
+      padding-left: 16px;
+      overflow: hidden;
+      transition: all 0.2s;
+    }
+
+    .nav-group-children.hidden {
+      display: none;
+    }
+
+    .nav-child {
+      padding-left: 7px !important;
+      font-size: 11.5px;
+    }
+    
+    .main-content {
+      max-width: 1920px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+    
+    /* Header Section */
+    .header-section {
+      background: var(--panel-bg) !important;
+      border: 1px solid var(--border-color) !important;
+      border-radius: 12px !important;
+      padding: 16px 24px;
+      margin-bottom: 20px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    
+    .header-grid {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex: 1;
+      width: 100%;
+    }
+    
+    .period-info {
+      text-align: right;
+    }
+    
+    .filter-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr auto;
+      gap: 16px;
+      align-items: end;
+    }
+    
+    .filter-group label {
+      display: block;
+      font-size: 10px;
+      color: #7b9ec8;
+      margin-bottom: 5px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    
+    .filter-input,
+    .filter-select {
+      width: 100%;
+      padding: 6px 10px;
+      background: rgba(0, 212, 255, 0.03) !important;
+      border: 1px solid rgba(0, 212, 255, 0.25) !important;
+      border-radius: 6px;
+      color: #e8f1ff;
+      font-size: 11px;
+      font-family: 'Outfit', 'IBM Plex Sans', sans-serif;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+    
+    .filter-input:focus,
+    .filter-select:focus {
+      border-color: #00d4ff !important;
+      box-shadow: 0 0 15px rgba(0, 212, 255, 0.25) !important;
+      background: rgba(0, 212, 255, 0.08) !important;
+    }
+    
+    .export-buttons {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .btn-export {
+      padding: 6px 14px;
+      background: linear-gradient(135deg, rgba(30, 74, 127, 0.6), rgba(30, 58, 95, 0.6)) !important;
+      border: 1px solid rgba(0, 212, 255, 0.3) !important;
+      border-radius: 6px !important;
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      transition: all 0.3s ease !important;
+      white-space: nowrap;
+    }
+    
+    .btn-export:hover {
+      background: linear-gradient(135deg, rgba(0, 212, 255, 0.25), rgba(0, 102, 255, 0.25)) !important;
+      border-color: #00d4ff !important;
+      box-shadow: 0 0 15px rgba(0, 212, 255, 0.4) !important;
+      transform: translateY(-2px);
+    }
+    
+    /* Filter Section */
+    .filter-section {
+      background: var(--panel-bg) !important;
+      border: 1px solid var(--border-color) !important;
+      border-radius: 10px !important;
+      padding: 16px 20px;
+      margin-bottom: 16px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+    
+    .filter-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr auto;
+      gap: 16px;
+      align-items: end;
+    }
+    
+    .filter-group label {
+      display: block;
+      font-size: 10px;
+      color: #7b9ec8;
+      margin-bottom: 5px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    
+    .filter-input,
+    .filter-select {
+      width: 100%;
+      padding: 6px 10px;
+      background: rgba(0, 212, 255, 0.03) !important;
+      border: 1px solid rgba(0, 212, 255, 0.25) !important;
+      border-radius: 6px;
+      color: #e8f1ff;
+      font-size: 11px;
+      font-family: 'Outfit', 'IBM Plex Sans', sans-serif;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+    
+    .filter-input:focus,
+    .filter-select:focus {
+      border-color: #00d4ff !important;
+      box-shadow: 0 0 15px rgba(0, 212, 255, 0.25) !important;
+      background: rgba(0, 212, 255, 0.08) !important;
+    }
+    
+    /* Table Wrapper */
+    .table-wrapper {
+      background: var(--panel-bg) !important;
+      border: 1px solid var(--border-color) !important;
+      border-radius: 12px !important;
+      overflow: hidden;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+    }
+    
+    .table-header-info {
+      padding: 16px 20px;
+      background: var(--panel-bg) !important;
+      border-bottom: 2px solid var(--border-color) !important;
+    }
+    
+    .table-header-info h2 {
+      font-size: 18px;
+      color: var(--accent-color) !important;
+      text-shadow: 0 0 10px var(--accent-glow);
+      margin: 0 0 4px 0;
+      font-weight: 700;
+    }
+    
+    .table-header-info p {
+      font-size: 14px;
+      color: var(--text-muted) !important;
+      margin: 0;
+    }
+    
+    .table-scroll-container {
+      overflow-x: auto;
+      overflow-y: auto;
+      position: relative;
+      max-height: calc(14 * 56px + 52px); /* 16 rows * row height + header height */
+    }
+    
+    .table-scroll-container::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    
+    .table-scroll-container::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: 3px;
+    }
+    
+    .table-scroll-container::-webkit-scrollbar-thumb {
+      background: rgba(0, 212, 255, 0.2) !important;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 3px;
+      transition: background 0.3s ease;
+    }
+    
+    .table-scroll-container::-webkit-scrollbar-thumb:hover {
+      background: var(--accent-color) !important;
+      box-shadow: 0 0 10px var(--accent-glow);
+    }
+    
+    /* Light Mode scrollbar overrides */
+    .theme-light .table-scroll-container::-webkit-scrollbar-thumb {
+      background: rgba(0, 102, 255, 0.25) !important;
+    }
+    .theme-light .table-scroll-container::-webkit-scrollbar-thumb:hover {
+      background: var(--accent-color) !important;
+    }
+    
+    /* Main Table Styling */
+    .attendance-table {
+      width: max-content !important;
+      min-width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+    
+    /* FIXED COLUMNS - NO GAPS */
+    .attendance-table thead th {
+      background: var(--solid-bg) !important;
+      color: var(--table-th-color) !important;
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 8px 6px;
+      border-bottom: 2px solid var(--border-color) !important;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    
+    /* Fixed Column 1: NO */
+    .col-no {
+      width: 45px;
+      min-width: 45px;
+      max-width: 45px;
+      padding-left: 0;
+      padding-right: 0;
+    }
+    
+    /* Fixed Column 2: NAMA */
+    .col-nama {
+      width: 160px;
+      min-width: 160px;
+      max-width: 160px;
+      padding-left: 10px;
+      padding-right: 10px;
+    }
+    
+    /* Fixed Column 3: DIVISI */
+    .col-divisi {
+      width: 110px;
+      min-width: 110px;
+      max-width: 110px;
+      padding-left: 10px;
+      padding-right: 10px;
+    }
+    
+    /* Sticky Positioning for Fixed Columns in Header (thead th) */
+    .attendance-table thead th.col-no {
+      position: sticky;
+      top: 0;
+      left: 0;
+      z-index: 30 !important;
+      background: var(--solid-bg) !important;
+      border-right: 1px solid var(--border-color) !important;
+      text-align: center;
+    }
+    
+    .attendance-table thead th.col-nama {
+      position: sticky;
+      top: 0;
+      left: 45px;
+      z-index: 30 !important;
+      background: var(--solid-bg) !important;
+      border-right: 1px solid var(--border-color) !important;
+      text-align: left;
+    }
+    
+    .attendance-table thead th.col-divisi {
+      position: sticky;
+      top: 0;
+      left: 205px;
+      z-index: 30 !important;
+      background: var(--solid-bg) !important;
+      border-right: 2px solid var(--border-color) !important;
+      text-align: left;
+    }
+    
+    /* Date Columns */
+    .col-date, .col-date-saturday, .col-date-sunday, .col-date-holiday {
+      width: 85px !important;
+      min-width: 85px !important;
+      max-width: 85px !important;
+      text-align: center;
+      white-space: nowrap !important;
+      border-right: 1px solid var(--border-color) !important;
+    }
+    
+    .col-date {
+      background: var(--solid-bg) !important;
+    }
+    
+    /* Weekend and Holiday Styling */
+    .col-date-saturday {
+      background: var(--weekend-bg) !important;
+    }
+    
+    th.col-date-saturday {
+      color: #fca5a5 !important;
+      position: relative;
+    }
+    
+    .col-date-sunday {
+      background: var(--weekend-bg) !important;
+    }
+    
+    th.col-date-sunday {
+      color: #fca5a5 !important;
+      position: relative;
+    }
+    
+    .day-label {
+      display: block;
+      font-size: 7px;
+      font-weight: 600;
+      margin-top: 1px;
+      letter-spacing: 0.2px;
+      opacity: 0.9;
+    }
+    
+    .day-icon {
+      display: inline-block;
+      font-size: 8px;
+      margin-left: 2px;
+      vertical-align: middle;
+    }
+    
+    .col-date-holiday {
+      background: var(--holiday-bg) !important;
+      position: relative;
+    }
+    
+    th.col-date-holiday {
+      color: #fca5a5 !important;
+      font-weight: 800 !important;
+    }
+    
+    /* Improve contrast for Light Mode Weekend/Holiday headers */
+    .theme-light th.col-date-saturday,
+    .theme-light th.col-date-sunday,
+    .theme-light th.col-date-holiday {
+      color: #991b1b !important;
+    }
+    
+    .holiday-indicator {
+      position: absolute;
+      top: 1px;
+      right: 1px;
+      width: 6px;
+      height: 6px;
+      background: #dc2626;
+      border-radius: 50%;
+      box-shadow: 0 0 4px rgba(220, 38, 38, 0.6);
+    }
+    
+    .holiday-flag {
+      display: inline-block;
+      font-size: 9px;
+      margin-left: 2px;
+      vertical-align: middle;
+      filter: drop-shadow(0 0 2px rgba(0,0,0,0.3));
+    }
+    
+    .holiday-tooltip {
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #7f1d1d;
+      border: 1px solid #dc2626;
+      border-radius: 4px;
+      padding: 4px 8px;
+      font-size: 8px;
+      color: #fecaca;
+      white-space: nowrap;
+      margin-bottom: 6px;
+      display: none;
+      z-index: 100;
+      font-weight: 600;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+      letter-spacing: 0.2px;
+    }
+    
+    .holiday-tooltip::before {
+      content: "🇮🇩 Libur Nasional";
+      display: block;
+      font-size: 7px;
+      margin-bottom: 2px;
+      opacity: 0.8;
+    }
+    
+    .col-date-holiday:hover .holiday-tooltip {
+      display: block;
+    }
+    
+    .attendance-table tbody td.col-date-saturday {
+      background: 
+        repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(255, 255, 255, 0.02) 8px, rgba(255, 255, 255, 0.02) 16px),
+        var(--weekend-bg) !important;
+    }
+    
+    .attendance-table tbody td.col-date-sunday {
+      background: 
+        repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(255, 255, 255, 0.02) 8px, rgba(255, 255, 255, 0.02) 16px),
+        var(--weekend-bg) !important;
+    }
+    
+    .attendance-table tbody td.col-date-holiday {
+      background: 
+        repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(255, 255, 255, 0.015) 8px, rgba(255, 255, 255, 0.015) 16px),
+        var(--holiday-bg) !important;
+    }
+    
+    /* Light Theme Saturday, Sunday, Holiday cell patterns */
+    .theme-light .attendance-table tbody td.col-date-saturday {
+      background: 
+        repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(0, 0, 0, 0.02) 8px, rgba(0, 0, 0, 0.02) 16px),
+        var(--weekend-bg) !important;
+    }
+    
+    .theme-light .attendance-table tbody td.col-date-sunday {
+      background: 
+        repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(0, 0, 0, 0.02) 8px, rgba(0, 0, 0, 0.02) 16px),
+        var(--weekend-bg) !important;
+    }
+    
+    .theme-light .attendance-table tbody td.col-date-holiday {
+      background: 
+        repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(0, 0, 0, 0.015) 8px, rgba(0, 0, 0, 0.015) 16px),
+        var(--holiday-bg) !important;
+    }
+    
+    .attendance-table tbody tr:hover td.col-date-saturday {
+      background: 
+        repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(255, 255, 255, 0.035) 8px, rgba(255, 255, 255, 0.035) 16px),
+        var(--weekend-bg) !important;
+      opacity: 0.95;
+    }
+
+    .attendance-table tbody tr:hover td.col-date-sunday {
+      background: 
+        repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(255, 255, 255, 0.035) 8px, rgba(255, 255, 255, 0.035) 16px),
+        var(--weekend-bg) !important;
+      opacity: 0.95;
+    }
+
+    .attendance-table tbody tr:hover td.col-date-holiday {
+      background: 
+        repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(255, 255, 255, 0.025) 8px, rgba(255, 255, 255, 0.025) 16px),
+        var(--holiday-bg) !important;
+      opacity: 0.95;
+    }
+
+    .theme-light .attendance-table tbody tr:hover td.col-date-saturday {
+      background: 
+        repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(0, 0, 0, 0.03) 8px, rgba(0, 0, 0, 0.03) 16px),
+        var(--weekend-bg) !important;
+    }
+
+    .theme-light .attendance-table tbody tr:hover td.col-date-sunday {
+      background: 
+        repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(0, 0, 0, 0.03) 8px, rgba(0, 0, 0, 0.03) 16px),
+        var(--weekend-bg) !important;
+    }
+
+    .theme-light .attendance-table tbody tr:hover td.col-date-holiday {
+      background: 
+        repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(0, 0, 0, 0.025) 8px, rgba(0, 0, 0, 0.025) 16px),
+        var(--holiday-bg) !important;
+    }
+    
+    /* Summary Columns */
+    .col-summary {
+      width: 45px;
+      min-width: 45px;
+      text-align: center;
+      background: var(--solid-bg) !important;
+      border-left: 2px solid var(--border-color) !important;
+      font-weight: 700;
+    }
+    
+    .col-summary-kantor { 
+      border-left: 3px solid var(--border-color) !important; 
+      background: var(--summary-bg) !important;
+    }
+    .col-summary-terlambat1 { 
+      background: var(--summary-bg) !important;
+    }
+    .col-summary-terlambat2 { 
+      background: var(--summary-bg) !important;
+    }
+    .col-summary-total { border-left: 2px solid var(--border-color) !important; }
+    
+    /* Table Body */
+    .attendance-table tbody tr {
+      transition: all 0.25s ease;
+      cursor: pointer;
+    }
+    
+    .attendance-table tbody tr:hover {
+      background: var(--row-hover) !important;
+    }
+    
+    /* Selected Row Styling */
+    .attendance-table tbody tr.row-selected {
+      background: var(--row-selected) !important;
+      outline: 1.5px solid var(--accent-color) !important;
+      outline-offset: -1.5px;
+    }
+    
+    .attendance-table tbody tr.row-selected td.col-no {
+      color: var(--accent-color) !important;
+      font-weight: 800;
+    }
+    
+    .attendance-table tbody tr.row-selected:hover {
+      background: var(--row-selected) !important;
+    }
+    
+    .attendance-table tbody td {
+      padding: 6px 6px;
+      border-bottom: 1px solid var(--border-color) !important;
+      font-size: 11px;
+    }
+    
+    /* Fixed columns in body */
+    .attendance-table tbody td.col-no {
+      position: sticky;
+      left: 0;
+      z-index: 20 !important;
+      color: var(--text-muted) !important;
+      font-weight: 600;
+      background: var(--solid-bg) !important;
+      border-right: 1px solid var(--border-color) !important;
+      text-align: center;
+    }
+    
+    .attendance-table tbody td.col-nama {
+      position: sticky;
+      left: 45px;
+      z-index: 20 !important;
+      color: var(--text-color) !important;
+      font-weight: 600;
+      background: var(--solid-bg) !important;
+      border-right: 1px solid var(--border-color) !important;
+      text-align: left;
+    }
+    
+    .attendance-table tbody td.col-divisi {
+      position: sticky;
+      left: 205px;
+      z-index: 20 !important;
+      color: var(--text-muted) !important;
+      font-weight: 500;
+      font-size: 11px;
+      background: var(--solid-bg) !important;
+      border-right: 2px solid var(--border-color) !important;
+      text-align: left;
+    }
+    
+    .attendance-table tbody tr:hover td.col-no,
+    .attendance-table tbody tr:hover td.col-nama,
+    .attendance-table tbody tr:hover td.col-divisi {
+      background: var(--fixed-col-hover) !important;
+    }
+    
+    .attendance-table tbody td.col-date,
+    .attendance-table tbody td.col-summary {
+      background: var(--solid-bg) !important;
+    }
+    
+    /* Highlighted Summary Columns in tbody */
+    .attendance-table tbody td.col-summary-hadir,
+    .attendance-table tbody td.col-summary-terlambat1,
+    .attendance-table tbody td.col-summary-terlambat2 {
+      background: rgba(30, 74, 127, 0.15) !important;
+    }
+    
+    .attendance-table tbody tr:hover td.col-date,
+    .attendance-table tbody tr:hover td.col-summary {
+      background: var(--row-hover) !important;
+    }
+    
+    .attendance-table tbody tr:hover td.col-summary-hadir,
+    .attendance-table tbody tr:hover td.col-summary-terlambat1,
+    .attendance-table tbody tr:hover td.col-summary-terlambat2 {
+      background: rgba(30, 74, 127, 0.25) !important;
+    }
+    
+    /* Status Badges */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3px 10px;
+      border-radius: 9999px; /* Pill shape */
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      white-space: nowrap;
+      position: relative;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      border: 1px solid transparent;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    }
+    
+    .status-badge:hover {
+      transform: translateY(-1.5px) scale(1.08);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+      z-index: 5;
+    }
+    
+    .lembur-indicator {
+      display: inline-block;
+      font-size: 7px;
+      font-weight: 900;
+      color: #fbbf24;
+      margin-left: 3px;
+      background: rgba(251, 191, 36, 0.2);
+      padding: 1px 3px;
+      border-radius: 4px;
+      border: 1px solid rgba(251, 191, 36, 0.4);
+      filter: drop-shadow(0 0 3px rgba(251, 191, 36, 0.3));
+    }
+    
+    /* HADIR / KANTOR */
+    .status-hadir, .status-kantor {
+      background: rgba(16, 185, 129, 0.15) !important;
+      color: #34d399 !important;
+      border: 1px solid rgba(16, 185, 129, 0.4) !important;
+      box-shadow: 0 0 8px rgba(16, 185, 129, 0.2), inset 0 0 4px rgba(16, 185, 129, 0.1);
+      text-shadow: 0 0 5px rgba(52, 211, 153, 0.5);
+    }
+    .status-hadir:hover, .status-kantor:hover {
+      background: rgba(16, 185, 129, 0.25) !important;
+      border-color: #34d399 !important;
+      box-shadow: 0 0 14px rgba(52, 211, 153, 0.4), inset 0 0 6px rgba(52, 211, 153, 0.2);
+    }
+    .theme-light .status-hadir, .theme-light .status-kantor {
+      background: rgba(16, 185, 129, 0.1) !important;
+      color: #047857 !important;
+      border: 1px solid rgba(16, 185, 129, 0.3) !important;
+      box-shadow: none;
+      text-shadow: none;
+    }
+    .theme-light .status-hadir:hover, .theme-light .status-kantor:hover {
+      background: rgba(16, 185, 129, 0.18) !important;
+      border-color: #059669 !important;
+      box-shadow: 0 2px 8px rgba(16, 185, 129, 0.15);
+    }
+    
+    /* WFH */
+    .status-wfh {
+      background: rgba(59, 130, 246, 0.15) !important;
+      color: #60a5fa !important;
+      border: 1px solid rgba(59, 130, 246, 0.4) !important;
+      box-shadow: 0 0 8px rgba(59, 130, 246, 0.2), inset 0 0 4px rgba(59, 130, 246, 0.1);
+      text-shadow: 0 0 5px rgba(96, 165, 250, 0.5);
+    }
+    .status-wfh:hover {
+      background: rgba(59, 130, 246, 0.25) !important;
+      border-color: #60a5fa !important;
+      box-shadow: 0 0 14px rgba(96, 165, 250, 0.4), inset 0 0 6px rgba(96, 165, 250, 0.2);
+    }
+    .theme-light .status-wfh {
+      background: rgba(59, 130, 246, 0.1) !important;
+      color: #1d4ed8 !important;
+      border: 1px solid rgba(59, 130, 246, 0.3) !important;
+      box-shadow: none;
+      text-shadow: none;
+    }
+    .theme-light .status-wfh:hover {
+      background: rgba(59, 130, 246, 0.18) !important;
+      border-color: #2563eb !important;
+      box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
+    }
+    
+    /* CUTI */
+    .status-cuti {
+      background: rgba(245, 158, 11, 0.15) !important;
+      color: #fbbf24 !important;
+      border: 1px solid rgba(245, 158, 11, 0.4) !important;
+      box-shadow: 0 0 8px rgba(245, 158, 11, 0.2), inset 0 0 4px rgba(245, 158, 11, 0.1);
+      text-shadow: 0 0 5px rgba(251, 191, 36, 0.5);
+    }
+    .status-cuti:hover {
+      background: rgba(245, 158, 11, 0.25) !important;
+      border-color: #fbbf24 !important;
+      box-shadow: 0 0 14px rgba(251, 191, 36, 0.4), inset 0 0 6px rgba(251, 191, 36, 0.2);
+    }
+    .theme-light .status-cuti {
+      background: rgba(245, 158, 11, 0.1) !important;
+      color: #b45309 !important;
+      border: 1px solid rgba(245, 158, 11, 0.3) !important;
+      box-shadow: none;
+      text-shadow: none;
+    }
+    .theme-light .status-cuti:hover {
+      background: rgba(245, 158, 11, 0.18) !important;
+      border-color: #d97706 !important;
+      box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);
+    }
+    
+    /* SAKIT */
+    .status-sakit {
+      background: rgba(249, 115, 22, 0.15) !important;
+      color: #ff7849 !important;
+      border: 1px solid rgba(249, 115, 22, 0.4) !important;
+      box-shadow: 0 0 8px rgba(249, 115, 22, 0.2), inset 0 0 4px rgba(249, 115, 22, 0.1);
+      text-shadow: 0 0 5px rgba(255, 120, 73, 0.5);
+    }
+    .status-sakit:hover {
+      background: rgba(249, 115, 22, 0.25) !important;
+      border-color: #ff7849 !important;
+      box-shadow: 0 0 14px rgba(255, 120, 73, 0.4), inset 0 0 6px rgba(255, 120, 73, 0.2);
+    }
+    .theme-light .status-sakit {
+      background: rgba(249, 115, 22, 0.1) !important;
+      color: #c2410c !important;
+      border: 1px solid rgba(249, 115, 22, 0.3) !important;
+      box-shadow: none;
+      text-shadow: none;
+    }
+    .theme-light .status-sakit:hover {
+      background: rgba(249, 115, 22, 0.18) !important;
+      border-color: #ea580c !important;
+      box-shadow: 0 2px 8px rgba(249, 115, 22, 0.15);
+    }
+    
+    /* DINAS */
+    .status-dinas {
+      background: rgba(139, 92, 246, 0.15) !important;
+      color: #a78bfa !important;
+      border: 1px solid rgba(139, 92, 246, 0.4) !important;
+      box-shadow: 0 0 8px rgba(139, 92, 246, 0.2), inset 0 0 4px rgba(139, 92, 246, 0.1);
+      text-shadow: 0 0 5px rgba(167, 139, 250, 0.5);
+    }
+    .status-dinas:hover {
+      background: rgba(139, 92, 246, 0.25) !important;
+      border-color: #a78bfa !important;
+      box-shadow: 0 0 14px rgba(167, 139, 250, 0.4), inset 0 0 6px rgba(167, 139, 250, 0.2);
+    }
+    .theme-light .status-dinas {
+      background: rgba(139, 92, 246, 0.1) !important;
+      color: #6d28d9 !important;
+      border: 1px solid rgba(139, 92, 246, 0.3) !important;
+      box-shadow: none;
+      text-shadow: none;
+    }
+    .theme-light .status-dinas:hover {
+      background: rgba(139, 92, 246, 0.18) !important;
+      border-color: #7c3aed !important;
+      box-shadow: 0 2px 8px rgba(139, 92, 246, 0.15);
+    }
+    
+    /* ALPHA */
+    .status-alpa, .status-alpha {
+      background: rgba(239, 68, 68, 0.15) !important;
+      color: #f87171 !important;
+      border: 1px solid rgba(239, 68, 68, 0.4) !important;
+      box-shadow: 0 0 8px rgba(239, 68, 68, 0.2), inset 0 0 4px rgba(239, 68, 68, 0.1);
+      text-shadow: 0 0 5px rgba(248, 113, 113, 0.5);
+    }
+    .status-alpa:hover, .status-alpha:hover {
+      background: rgba(239, 68, 68, 0.25) !important;
+      border-color: #f87171 !important;
+      box-shadow: 0 0 14px rgba(248, 113, 113, 0.4), inset 0 0 6px rgba(248, 113, 113, 0.2);
+    }
+    .theme-light .status-alpa, .theme-light .status-alpha {
+      background: rgba(239, 68, 68, 0.1) !important;
+      color: #b91c1c !important;
+      border: 1px solid rgba(239, 68, 68, 0.3) !important;
+      box-shadow: none;
+      text-shadow: none;
+    }
+    .theme-light .status-alpa:hover, .theme-light .status-alpha:hover {
+      background: rgba(239, 68, 68, 0.18) !important;
+      border-color: #dc2626 !important;
+      box-shadow: 0 2px 8px rgba(239, 68, 68, 0.15);
+    }
+    
+    /* TERLAMBAT */
+    .status-terlambat, .status-terlambat1, .status-terlambat2, .status-terlambat3, .status-terlambat4 {
+      background: rgba(245, 158, 11, 0.15) !important;
+      color: #fbbf24 !important;
+      border: 1px solid rgba(245, 158, 11, 0.4) !important;
+      box-shadow: 0 0 8px rgba(245, 158, 11, 0.2), inset 0 0 4px rgba(245, 158, 11, 0.1);
+      text-shadow: 0 0 5px rgba(251, 191, 36, 0.5);
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .status-terlambat:hover, .status-terlambat1:hover, .status-terlambat2:hover, .status-terlambat3:hover, .status-terlambat4:hover {
+      background: rgba(245, 158, 11, 0.25) !important;
+      border-color: #fbbf24 !important;
+      box-shadow: 0 0 14px rgba(251, 191, 36, 0.4), inset 0 0 6px rgba(251, 191, 36, 0.2);
+    }
+    .theme-light .status-terlambat, .theme-light .status-terlambat1, .theme-light .status-terlambat2, .theme-light .status-terlambat3, .theme-light .status-terlambat4 {
+      background: rgba(245, 158, 11, 0.1) !important;
+      color: #b45309 !important;
+      border: 1px solid rgba(245, 158, 11, 0.3) !important;
+      box-shadow: none;
+      text-shadow: none;
+    }
+    .theme-light .status-terlambat:hover, .theme-light .status-terlambat1:hover, .theme-light .status-terlambat2:hover, .theme-light .status-terlambat3:hover, .theme-light .status-terlambat4:hover {
+      background: rgba(245, 158, 11, 0.18) !important;
+      border-color: #d97706 !important;
+      box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);
+    }
+    
+    .validation-icon {
+      display: inline-block;
+      font-size: 8px;
+      margin-left: 2px;
+      font-weight: 900;
+    }
+    
+    .validation-approved {
+      color: #10b981;
+      filter: drop-shadow(0 0 2px rgba(16, 185, 129, 0.5));
+    }
+    
+    .validation-rejected {
+      color: #ef4444;
+      filter: drop-shadow(0 0 2px rgba(239, 68, 68, 0.5));
+    }
+    
+    /* CUTI LAPANGAN */
+    .status-cutilapangan {
+      background: rgba(217, 119, 6, 0.15) !important;
+      color: #f59e0b !important;
+      border: 1px solid rgba(217, 119, 6, 0.4) !important;
+      box-shadow: 0 0 8px rgba(217, 119, 6, 0.2), inset 0 0 4px rgba(217, 119, 6, 0.1);
+      text-shadow: 0 0 5px rgba(245, 158, 11, 0.5);
+    }
+    .status-cutilapangan:hover {
+      background: rgba(217, 119, 6, 0.25) !important;
+      border-color: #f59e0b !important;
+      box-shadow: 0 0 14px rgba(245, 158, 11, 0.4), inset 0 0 6px rgba(245, 158, 11, 0.2);
+    }
+    .theme-light .status-cutilapangan {
+      background: rgba(217, 119, 6, 0.1) !important;
+      color: #a16207 !important;
+      border: 1px solid rgba(217, 119, 6, 0.3) !important;
+      box-shadow: none;
+      text-shadow: none;
+    }
+    .theme-light .status-cutilapangan:hover {
+      background: rgba(217, 119, 6, 0.18) !important;
+      border-color: #ca8a04 !important;
+      box-shadow: 0 2px 8px rgba(217, 119, 6, 0.15);
+    }
+    
+    /* Table borders & Grid lines */
+    .attendance-table th,
+    .attendance-table td {
+      border-right: 1px solid var(--border-color) !important;
+      border-bottom: 1px solid var(--border-color) !important;
+    }
+    
+    .attendance-table th.col-no,
+    .attendance-table td.col-no {
+      border-left: 1px solid var(--border-color) !important;
+    }
+    
+    .attendance-table thead th {
+      border-top: 1px solid var(--border-color) !important;
+    }
+    
+    /* Summary Cell Styling */
+    .summary-value {
+      font-size: 11px;
+      font-weight: 700;
+      color: #e8f1ff;
+    }
+    
+    .summary-value-total {
+      font-size: 12px;
+      font-weight: 800;
+      color: #4a7bc8;
+    }
+    
+    /* Context Menu */
+    .context-menu {
+      position: fixed;
+      background: #1a2332;
+      border: 1px solid #2a5a8f;
+      border-radius: 8px;
+      padding: 6px 0;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+      z-index: 2000;
+      display: none;
+      min-width: 180px;
+    }
+    
+    .context-menu-item {
+      padding: 10px 16px;
+      color: #e8f1ff;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.15s;
+      position: relative;
+    }
+    
+    .context-menu-item:hover {
+      background: rgba(74, 123, 200, 0.2);
+      color: #ffffff;
+    }
+    
+    .context-menu-item:active {
+      background: rgba(74, 123, 200, 0.3);
+    }
+    
+    .context-menu-icon {
+      font-size: 14px;
+      width: 20px;
+      text-align: center;
+    }
+    
+    .context-menu-arrow {
+      margin-left: auto;
+      font-size: 10px;
+      opacity: 0.7;
+    }
+    
+    .context-menu-parent:hover .context-menu-arrow {
+      opacity: 1;
+    }
+    
+    .context-menu-divider {
+      height: 1px;
+      background: #2a4a6f;
+      margin: 4px 0;
+    }
+
+    /* Confirmation Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 3000;
+      backdrop-filter: blur(4px);
+    }
+    
+    .modal-overlay.show {
+      display: flex;
+    }
+    
+    .modal-content {
+      background: linear-gradient(135deg, #0d1420 0%, #1a2332 100%);
+      border: 2px solid #2a5a8f;
+      border-radius: 12px;
+      padding: 24px;
+      max-width: 480px;
+      width: 90%;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.8);
+      animation: modalSlideIn 0.3s ease-out;
+    }
+    
+    @keyframes modalSlideIn {
+      from {
+        transform: translateY(-50px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+    
+    .modal-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #2a4a6f;
+    }
+    
+    .modal-icon {
+      font-size: 32px;
+      line-height: 1;
+    }
+    
+    .modal-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #e8f1ff;
+      margin: 0;
+    }
+    
+    .modal-body {
+      margin-bottom: 24px;
+    }
+    
+    .modal-info {
+      background: rgba(30, 58, 95, 0.2);
+      border: 1px solid #2a4a6f;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 12px;
+    }
+    
+    .modal-info-row {
+      display: flex;
+      justify-content: space-between;
+      margin: 6px 0;
+      font-size: 12px;
+    }
+    
+    .modal-info-label {
+      color: #7b9ec8;
+      font-weight: 600;
+    }
+    
+    .modal-info-value {
+      color: #e8f1ff;
+      font-weight: 500;
+      text-align: right;
+    }
+    
+    .modal-message {
+      color: #9eb8d9;
+      font-size: 13px;
+      line-height: 1.6;
+      margin-top: 12px;
+    }
+    
+    .modal-footer {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+    
+    .modal-btn {
+      padding: 10px 24px;
+      border: none;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .modal-btn-cancel {
+      background: #374151;
+      color: #d1d5db;
+      border: 1px solid #4b5563;
+    }
+    
+    .modal-btn-cancel:hover {
+      background: #4b5563;
+      color: #ffffff;
+    }
+    
+    .modal-btn-confirm {
+      background: #1e4a7f;
+      color: #ffffff;
+      border: 1px solid #2a5a8f;
+    }
+    
+    .modal-btn-confirm:hover {
+      background: #2a5a9f;
+      box-shadow: 0 4px 12px rgba(30, 74, 127, 0.4);
+    }
+    
+    .modal-btn-confirm:active {
+      transform: scale(0.98);
+    }
+
+    /* Tooltip */
+    .tooltip {
+      position: fixed;
+      background: #1a2332;
+      border: 1px solid #2a5a8f;
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 10px;
+      color: #e8f1ff;
+      pointer-events: none;
+      z-index: 1000;
+      display: none;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+      max-width: 200px;
+    }
+    
+    .tooltip-row {
+      display: flex;
+      justify-content: space-between;
+      margin: 4px 0;
+      gap: 16px;
+    }
+    
+    .tooltip-label {
+      color: #7b9ec8;
+      font-weight: 600;
+    }
+    
+    .tooltip-value {
+      color: #ffffff;
+      font-weight: 500;
+    }
+    
+    /* Mobile Responsive */
+    @media (max-width: 1024px) {
+      .header-section {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+      }
+      
+      .filter-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .header-grid {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        width: 100%;
+      }
+      
+      .period-info {
+        text-align: left;
+      }
+      
+      .export-buttons {
+        width: 100%;
+      }
+      
+      .btn-export {
+        flex: 1;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .main-content {
+        padding: 16px;
+      }
+      
+      .header-section {
+        padding: 20px;
+      }
+      
+      .company-info h1 {
+        font-size: 24px;
+      }
+      
+      .col-nama {
+        width: 180px;
+        min-width: 180px;
+        left: 60px;
+      }
+      
+      .col-divisi {
+        width: 140px;
+        min-width: 140px;
+        left: 240px;
+      }
+      
+      .col-no {
+        width: 60px;
+        min-width: 60px;
+      }
+    }
+
+    /* Clean overrides: remove matrix design lines and shadows */
+    .tech-pattern, .cyber-grid, .cyber-divider, .holographic-mesh {
+      display: none !important;
+    }
+    
+    * {
+      box-shadow: none !important;
+      text-shadow: none !important;
+    }
+  </style>
+  <style>
+    @view-transition { navigation: auto; }
+    [v-cloak] { display: none !important; }
+  </style>
+<script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+ </head>
+ <body class="h-full">
+  <div id="app" v-cloak class="app-wrapper" :class="[currentTheme, { 'resizing': isResizing }]" :style="appWrapperStyle">
+   <div style="display: flex; width: 100%; height: 100%;">
+    <aside class="sidebar" :class="{ 'collapsed': !sidebarOpen }" :style="{ width: sidebarOpen ? sidebarWidth + 'px' : '0px', minWidth: sidebarOpen ? sidebarWidth + 'px' : '0px', maxWidth: sidebarOpen ? sidebarWidth + 'px' : '0px' }">
+      <div class="sidebar-resizer" @mousedown="startResize"></div>
+      <div class="logo-section-sidebar">
+        <h1>{{ configState.company_name || 'ENTERPRISE' }}</h1>
+      </div>
+      <nav class="nav-menu">
+        <!-- Dashboard -->
+        <div class="nav-item" :class="{ 'active': activePage === 'dashboard' }" @click="navigatePage('dashboard')">
+          <div class="nav-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+          </div>
+          <span>Dashboard</span>
+        </div>
+      
+        <!-- Absensi Group -->
+        <div class="nav-group">
+          <div class="nav-group-header" @click="toggleGroup('group-absensi')">
+            <div class="nav-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            </div>
+            <span>Absensi</span>
+            <div class="nav-arrow" :class="{ 'open': groupExpanded['group-absensi'] }">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </div>
+          </div>
+          <div class="nav-group-children" :class="{ 'hidden': !groupExpanded['group-absensi'] }">
+            <div class="nav-item nav-child" :class="{ 'active': activePage === 'absensi' }" @click="navigatePage('absensi')" v-show="isMenuVisible('absensi')">
+              <div class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="2"></circle></svg></div>
+              <span>Absensi</span>
+            </div>
+            <div class="nav-item nav-child" :class="{ 'active': activePage === 'input_absensi' }" @click="navigatePage('input_absensi')" v-show="isMenuVisible('input_absensi')">
+              <div class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="2"></circle></svg></div>
+              <span>Input Absensi</span>
+            </div>
+            <div class="nav-item nav-child" :class="{ 'active': activePage === 'absensi_saya' }" @click="navigatePage('absensi_saya')" v-show="isMenuVisible('absensi_saya')">
+              <div class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="2"></circle></svg></div>
+              <span>Absensi Saya</span>
+            </div>
+            <div class="nav-item nav-child" :class="{ 'active': activePage === 'absensi_perhitungan' }" @click="navigatePage('absensi_perhitungan')" v-show="isMenuVisible('absensi_perhitungan')">
+              <div class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="2"></circle></svg></div>
+              <span>Perhitungan Absensi</span>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </aside>
+    <main class="main-layout">
+      <header class="top-bar">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <button @click="toggleSidebar" class="p-1.5 text-cyan-400 hover:text-cyan-300 transition-colors focus:outline-none border border-cyan-500/30 rounded bg-cyan-950/20 hover:bg-cyan-500/10 flex items-center justify-center" title="Toggle Sidebar">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+          </button>
+          <h2 class="page-title-top">{{ configState.dashboard_title || defaultConfig.dashboard_title }}</h2>
+        </div>
+        <div style="display: flex; align-items: center; gap: 20px;">
+          <div class="theme-switcher">
+            <select v-model="currentTheme" class="theme-select-control" @change="saveTheme">
+              <option value="theme-cyber">🌐 Cyber Mode (Dark)</option>
+              <option value="theme-light">☀️ Day Mode (Light)</option>
+              <option value="theme-synthwave">🔮 Synthwave (Purple)</option>
+              <option value="theme-matrix">📟 Matrix (Green)</option>
+            </select>
+          </div>
+          <div class="profile-section">
+            <div class="avatar">
+              {{ initials }}
+            </div>
+            <div class="profile-info">
+              <div class="profile-name">
+                {{ userProfile ? userProfile.name : '' }}
+              </div>
+              <div class="logout-btn" @click="handleLogout">
+                Logout →
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+      <div class="content-area">
+       <div class="main-content">
+    <!-- Header Section -->
+    <div class="header-section" :style="headerSectionStyle">
+     <!-- Logo Section -->
+     <div class="logo-section">
+      <svg width="50" height="50" viewbox="0 0 100 100" style="filter: drop-shadow(0 4px 12px rgba(74, 123, 200, 0.4));"><defs>
+        <lineargradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+         <stop offset="0%" style="stop-color:#4a7bc8;stop-opacity:1" />
+         <stop offset="100%" style="stop-color:#1e4a7f;stop-opacity:1" />
+        </lineargradient>
+       </defs> <circle cx="50" cy="50" r="45" fill="url(#logoGradient)" stroke="#5b8dc9" stroke-width="2" /> <path d="M 30 50 L 45 65 L 70 35" stroke="#e8f1ff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none" /> <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1" />
+      </svg>
+     </div>
+     <div class="header-grid">
+      <div class="company-info">
+       <h1 id="dashboard-title" :style="dashboardTitleStyle">{{ configState.dashboard_title || defaultConfig.dashboard_title }}</h1>
+       <p id="company-name" :style="companyNameStyle">{{ configState.company_name || defaultConfig.company_name }}</p>
+      </div>
+      <div class="period-info" :style="headerSectionStyle">
+       <p class="period-label" id="period-label" :style="periodLabelStyle">{{ configState.period_label || defaultConfig.period_label }}</p>
+       <p class="period-value" id="period-value">{{ formatPeriodLong(periodDates) }}</p>
+      </div>
+     </div>
+    </div>
+    
+    <!-- Period Selection & Filter Section in 1 Row -->
+    <div class="filter-section" style="margin-bottom: 16px;" :style="filterSectionStyle">
+     <div style="display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; width: 100%;">
+      <!-- Cari Karyawan -->
+      <div class="filter-group" style="flex: 2 1 180px; min-width: 150px;">
+        <label for="search-input">Cari Karyawan</label>
+        <input type="text" id="search-input" class="filter-input" placeholder="Ketik nama..." v-model="searchTerm" :style="filterInputStyle">
+      </div>
+      <!-- Filter Divisi -->
+      <div class="filter-group" style="flex: 1 1 120px; min-width: 120px;">
+        <label for="division-filter">Filter Divisi</label>
+        <select id="division-filter" class="filter-select" v-model="divisionFilter" :style="filterInputStyle">
+          <option value="">Semua Divisi</option>
+          <option v-for="div in divisions" :key="div" :value="div">{{ div }}</option>
+        </select>
+      </div>
+      <!-- Filter Status -->
+      <div class="filter-group" style="flex: 1 1 120px; min-width: 120px;">
+        <label for="status-filter">Filter Status</label>
+        <select id="status-filter" class="filter-select" v-model="statusFilter" :style="filterInputStyle"> 
+          <option value="">Semua Status</option> 
+          <option value="Kantor">Kantor</option> 
+          <option value="WFH">WFH</option> 
+          <option value="T1">T1</option> 
+          <option value="T2">T2</option>
+          <option value="T3">T3</option>
+          <option value="T4">T4</option> 
+          <option value="Alpha">Alpha</option> 
+          <option value="Sakit">Sakit</option> 
+          <option value="Cuti">Cuti</option> 
+          <option value="Cuti Lapangan">Cuti Lapangan</option> 
+          <option value="Dinas Lapangan">Dinas Lapangan</option>
+        </select>
+      </div>
+      <!-- Tanggal Mulai -->
+      <div class="filter-group" style="flex: 1 1 130px; min-width: 120px;">
+        <label for="start-date">Mulai</label>
+        <input type="date" id="start-date" class="filter-input" v-model="startDate" :style="filterInputStyle">
+      </div>
+      <!-- Tanggal Akhir -->
+      <div class="filter-group" style="flex: 1 1 130px; min-width: 120px;">
+        <label for="end-date">Akhir</label>
+        <input type="date" id="end-date" class="filter-input" v-model="endDate" :style="filterInputStyle">
+      </div>
+      <!-- Actions Button Group -->
+      <div class="flex items-center gap-2 flex-wrap" style="flex: 0 0 auto; margin-bottom: 2px;">
+        <button id="btn-apply-period" class="btn-export" style="height: 30px;" :style="btnExportStyle" @click="applyPeriod">
+          🔄 Terapkan
+        </button>
+        <button id="btn-excel" class="btn-export" style="height: 30px;" :style="btnExportStyle" @click="exportToExcel">📊 Excel</button>
+        <button id="btn-pdf" class="btn-export" style="height: 30px;" :style="btnExportStyle" @click="exportToPDF">📄 PDF</button>
+      </div>
+     </div>
+    </div>
+    
+    <!-- Table Section -->
+    <div class="table-wrapper" :style="filterSectionStyle">
+     <div class="table-scroll-container">
+      <table class="attendance-table">
+       <thead>
+        <tr>
+          <th class="col-no">NO</th>
+          <th class="col-nama">NAMA KARYAWAN</th>
+          <th class="col-divisi">DIVISI</th>
+          <th v-for="date in periodDates" :key="date.toISOString()" :class="getDateHeaderClass(date)">
+            <div>
+              {{ formatDateShort(date) }}
+              <span v-if="isHoliday(date)" class="holiday-flag">🇮🇩</span>
+              <span v-else-if="isWeekend(date).isSunday" class="day-icon">🚫</span>
+              <span v-else-if="isWeekend(date).isSaturday" class="day-icon">⏳</span>
+            </div>
+            <span class="day-label" v-if="isHoliday(date)">LIBUR</span>
+            <span class="day-label" v-else-if="isWeekend(date).isSunday">MINGGU</span>
+            <span class="day-label" v-else-if="isWeekend(date).isSaturday">SABTU</span>
+            
+            <template v-if="isHoliday(date)">
+              <span class="holiday-indicator"></span>
+              <div class="holiday-tooltip">{{ isHoliday(date) }}</div>
+            </template>
+          </th>
+          <th class="col-summary col-summary-total">Jumlah Hari</th>
+          <th class="col-summary col-summary-kantor">Kantor</th>
+          <th class="col-summary col-summary-terlambat1">T1</th>
+          <th class="col-summary col-summary-terlambat2">T2</th>
+          <th class="col-summary col-summary-terlambat3">T3</th>
+          <th class="col-summary col-summary-terlambat4">T4</th>
+          <th class="col-summary col-summary-total">Jum.Hari TA</th>
+          <th class="col-summary col-summary-wfh">WFH</th>
+          <th class="col-summary col-summary-alpa">Alpha</th>
+          <th class="col-summary col-summary-sakit">Sakit</th>
+          <th class="col-summary col-summary-cuti">Cuti</th>
+          <th class="col-summary col-summary-cutilapangan">C.LAP</th>
+          <th class="col-summary col-summary-dinas">Dinas</th>
+          <th class="col-summary col-summary-potongan">Jumlah Potongan</th>
+          <th class="col-summary col-summary-uang-makan">Jumlah Uang Makan</th>
+          <th class="col-summary col-summary-uang-makan-bayar">Uang Makan THP</th>
+          <th class="col-summary col-summary-uang-lembur">Jumlah Lembur</th>
+        </tr>
+       </thead>
+       <tbody>
+        <!-- Loading state -->
+        <tr v-if="isLoading">
+          <td colspan="100%" style="text-align: center; padding: 60px 20px; color: #7b9ec8;">
+            <div style="font-size: 48px; margin-bottom: 16px;">⏳</div>
+            <div style="font-size: 16px; font-weight: 600;">Memuat data absensi...</div>
+          </td>
+        </tr>
+        
+        <!-- Empty state -->
+        <tr v-else-if="filteredEmployees.length === 0">
+          <td colspan="100%" style="text-align: center; padding: 40px 20px; color: #7b9ec8;">
+            <div style="font-size: 36px; margin-bottom: 12px;">📭</div>
+            <div style="font-size: 14px; font-weight: 500;">Tidak ada data karyawan yang cocok.</div>
+          </td>
+        </tr>
+        
+        <!-- Data rows -->
+        <tr v-else v-for="(emp, idx) in filteredEmployees" :key="emp.id"
+            :class="{ 'row-selected': selectedRows.includes(emp.id) }"
+            @click="toggleRowSelection(emp.id)">
+          <td class="col-no">{{ idx + 1 }}</td>
+          <td class="col-nama">{{ emp.name }}</td>
+          <td class="col-divisi">{{ emp.division }}</td>
+          
+          <td v-for="date in periodDates" :key="date.toISOString()"
+              :class="[getDateCellClass(date), 'attendance-cell']"
+              @mouseenter="showTooltip($event, emp, date)"
+              @mouseleave="hideTooltip"
+              @contextmenu.prevent="openContextMenu($event, emp, date)">
+            <span v-if="getAttendance(emp.id, date)" class="status-badge" :class="getStatusClass(getAttendance(emp.id, date).status)">
+              {{ getStatusDisplayName(getAttendance(emp.id, date).status) }}
+              
+              <span v-if="hasValidation(emp.id, date, true)" class="validation-icon validation-approved">✓</span>
+              <span v-else-if="hasValidation(emp.id, date, false)" class="validation-icon validation-rejected">✗</span>
+              
+              <span v-if="hasLembur(emp.id, date)" class="lembur-indicator">L</span>
+            </span>
+            <span v-else class="status-badge" style="background: rgba(100,100,100,0.15); color: #666; border: 1px solid #444;">-</span>
+          </td>
+          
+          <td class="col-summary col-summary-total">
+            <span class="summary-value-total">{{ getEmployeeSummary(emp).total }}</span>
+          </td>
+          <td class="col-summary col-summary-kantor">
+            <span class="summary-value">{{ getEmployeeSummary(emp).kantor }}</span>
+          </td>
+          <td class="col-summary col-summary-terlambat1">
+            <span class="summary-value">{{ getEmployeeSummary(emp).terlambat1 }}</span>
+          </td>
+          <td class="col-summary col-summary-terlambat2">
+            <span class="summary-value">{{ getEmployeeSummary(emp).terlambat2 }}</span>
+          </td>
+          <td class="col-summary col-summary-terlambat3">
+            <span class="summary-value">{{ getEmployeeSummary(emp).terlambat3 }}</span>
+          </td>
+          <td class="col-summary col-summary-terlambat4">
+            <span class="summary-value">{{ getEmployeeSummary(emp).terlambat4 }}</span>
+          </td>
+          <td class="col-summary col-summary-total">
+            <span class="summary-value-total">{{ getEmployeeSummary(emp).jumlahHariTA }}</span>
+          </td>
+          <td class="col-summary col-summary-wfh">
+            <span class="summary-value">{{ getEmployeeSummary(emp).wfh }}</span>
+          </td>
+          <td class="col-summary col-summary-alpa">
+            <span class="summary-value">{{ getEmployeeSummary(emp).alpa }}</span>
+          </td>
+          <td class="col-summary col-summary-sakit">
+            <span class="summary-value">{{ getEmployeeSummary(emp).sakit }}</span>
+          </td>
+          <td class="col-summary col-summary-cuti">
+            <span class="summary-value">{{ getEmployeeSummary(emp).cuti }}</span>
+          </td>
+          <td class="col-summary col-summary-cutilapangan">
+            <span class="summary-value">{{ getEmployeeSummary(emp).cutiLapangan }}</span>
+          </td>
+          <td class="col-summary col-summary-dinas">
+            <span class="summary-value">{{ getEmployeeSummary(emp).dinas }}</span>
+          </td>
+          <td class="col-summary col-summary-potongan">
+            <span class="summary-value-total">{{ formatNumber(getEmployeeSummary(emp).totalPotongan) }}</span>
+          </td>
+          <td class="col-summary col-summary-uang-makan">
+            <span class="summary-value-total">{{ formatNumber(getEmployeeSummary(emp).totalUangMakan) }}</span>
+          </td>
+          <td class="col-summary col-summary-uang-makan-bayar">
+            <span class="summary-value-total">{{ formatNumber(getEmployeeSummary(emp).totalBayar) }}</span>
+          </td>
+          <td class="col-summary col-summary-uang-lembur">
+            <span class="summary-value-total">{{ formatNumber(getEmployeeSummary(emp).jumlahLembur) }}</span>
+          </td>
+        </tr>
+       </tbody>
+      </table>
+     </div>
+    </div>
+    
+    <!-- Tooltip -->
+    <div ref="tooltip" v-if="tooltip.show" :style="{ left: tooltip.left + 'px', top: tooltip.top + 'px' }" class="tooltip" style="display: block;">
+      <div class="tooltip-row">
+        <span class="tooltip-label">Jenis Absensi:</span>
+        <span class="tooltip-value">{{ tooltip.attendanceType }}</span>
+      </div>
+      <div class="tooltip-row">
+        <span class="tooltip-label">Jam Masuk:</span>
+        <span class="tooltip-value">{{ tooltip.checkIn }}</span>
+      </div>
+      <div class="tooltip-row">
+        <span class="tooltip-label">Jam Pulang:</span>
+        <span class="tooltip-value">{{ tooltip.checkOut }}</span>
+      </div>
+      <div class="tooltip-row">
+        <span class="tooltip-label">Potongan:</span>
+        <span class="tooltip-value">{{ tooltip.potongan }}</span>
+      </div>
+      <div v-if="tooltip.uangLembur > 0" class="tooltip-row">
+        <span class="tooltip-label">💰 Uang Lembur:</span>
+        <span class="tooltip-value" style="color: #fbbf24; font-weight: 700;">{{ formatCurrency(tooltip.uangLembur) }}</span>
+      </div>
+      <div v-if="tooltip.notes" class="tooltip-row">
+        <span class="tooltip-label">Keterangan:</span>
+        <span class="tooltip-value">{{ tooltip.notes }}</span>
+      </div>
+    </div>
+    
+    <!-- Context Menu -->
+    <div v-if="contextMenu.show" :style="{ left: contextMenu.x + 'px', top: contextMenu.y + 'px' }" class="context-menu" style="display: block;" @click.stop>
+      <div class="context-menu-item context-menu-parent" @mouseenter="showSubmenu('input', $event)"><span class="context-menu-icon">➕</span> <span>Input Absen</span> <span class="context-menu-arrow">▶</span>
+      </div>
+      <div class="context-menu-item context-menu-parent" @mouseenter="showSubmenu('edit', $event)"><span class="context-menu-icon">✏  </span> <span>Ubah Absen Ke</span> <span class="context-menu-arrow">▶</span>
+      </div>
+      <div class="context-menu-item" @click="handleAction('delete')"><span class="context-menu-icon">🗑️</span> <span>Hapus Absen</span>
+      </div>
+      <div class="context-menu-divider"></div>
+      <div class="context-menu-item" @click="handleAction('validate')"><span class="context-menu-icon">✓</span> <span>Validasi</span>
+      </div>
+    </div>
+    
+    <!-- Sub Menu Input Absen -->
+    <div v-if="submenuInput.show" :style="{ left: submenuInput.x + 'px', top: submenuInput.y + 'px' }" class="context-menu" style="display: block;" @click.stop>
+      <div class="context-menu-item" @click="handleAction('input-kantor')"><span class="context-menu-icon">🏢</span> <span>Kantor</span>
+      </div>
+      <div class="context-menu-item" @click="handleAction('input-wfh')"><span class="context-menu-icon">🏠</span> <span>WFH</span>
+      </div>
+      <div class="context-menu-item" @click="handleAction('input-dinas')"><span class="context-menu-icon">🚗</span> <span>Dinas Lapangan</span>
+      </div>
+    </div>
+    
+    <!-- Sub Menu Edit Absen Ke -->
+    <div v-if="submenuEdit.show" :style="{ left: submenuEdit.x + 'px', top: submenuEdit.y + 'px' }" class="context-menu" style="display: block;" @click.stop>
+      <div class="context-menu-item" @click="handleAction('edit-kantor')"><span class="context-menu-icon">🏢</span> <span>Kantor</span>
+      </div>
+      <div class="context-menu-item" @click="handleAction('edit-wfh')"><span class="context-menu-icon">🏠</span> <span>WFH</span>
+      </div>
+      <div class="context-menu-item" @click="handleAction('edit-dinas')"><span class="context-menu-icon">🚗</span> <span>Dinas Lapangan</span>
+      </div>
+    </div>
+    
+    <!-- Confirmation Modal -->
+    <div id="confirmation-modal" class="modal-overlay" :class="{ show: confirmationModal.show }" @click.self="closeConfirmationModal">
+      <div class="modal-content">
+       <div class="modal-header">
+        <span class="modal-icon">{{ confirmationModal.icon }}</span>
+        <h3 class="modal-title">{{ confirmationModal.title }}</h3>
+       </div>
+       <div class="modal-body">
+        <div class="modal-info">
+          <div class="modal-info-row">
+            <span class="modal-info-label">Nama Karyawan:</span>
+            <span class="modal-info-value">{{ confirmationModal.info.name }}</span>
+          </div>
+          <div class="modal-info-row">
+            <span class="modal-info-label">Divisi:</span>
+            <span class="modal-info-value">{{ confirmationModal.info.division }}</span>
+          </div>
+          <div class="modal-info-row">
+            <span class="modal-info-label">Tanggal:</span>
+            <span class="modal-info-value">{{ confirmationModal.info.date }}</span>
+          </div>
+          <div v-if="confirmationModal.action === 'input' && confirmationModal.info.inputType" class="modal-info-row">
+            <span class="modal-info-label">Tipe Input:</span>
+            <span class="modal-info-value" style="color: #4a7bc8; font-weight: 700;">{{ confirmationModal.info.inputType }}</span>
+          </div>
+          <div v-if="confirmationModal.action === 'edit' && confirmationModal.info.editType" class="modal-info-row">
+            <span class="modal-info-label">Status Saat Ini:</span>
+            <span class="modal-info-value">{{ confirmationModal.info.currentStatus }}</span>
+          </div>
+          <div v-if="confirmationModal.action === 'edit' && confirmationModal.info.editType" class="modal-info-row">
+            <span class="modal-info-label">Ubah Menjadi:</span>
+            <span class="modal-info-value" style="color: #10b981; font-weight: 700;">{{ confirmationModal.info.editType }}</span>
+          </div>
+          <div v-if="confirmationModal.action !== 'input' && confirmationModal.action !== 'edit'" class="modal-info-row">
+            <span class="modal-info-label">Status Saat Ini:</span>
+            <span class="modal-info-value">{{ confirmationModal.info.currentStatus }}</span>
+          </div>
+        </div>
+        <p class="modal-message" :style="{ color: confirmationModal.action === 'delete' ? '#f87171' : '#9eb8d9' }">
+          {{ confirmationModal.message }}
+        </p>
+       </div>
+       <div class="modal-footer">
+        <button class="modal-btn modal-btn-cancel" @click="closeConfirmationModal">❌ Batal</button>
+        <button class="modal-btn modal-btn-confirm" @click="confirmAction">✅ Ya</button>
+       </div>
+      </div>
+     </div>
+      
+       </div> <!-- closes main-content -->
+      </div> <!-- closes content-area -->
+     </main> <!-- closes main-layout -->
+    </div> <!-- closes display flex -->
+   </div> <!-- closes app -->
+  <script>
+    const { createApp } = Vue;
+
+    createApp({
+      data() {
+        return {
+          defaultConfig: {
+            company_name: "PT. Cakrawala Bima Instrument",
+            dashboard_title: "Rekapan Absensi",
+            period_label: "Periode Absensi",
+            background_color: "#0a0e1a",
+            surface_color: "#0d1420",
+            text_color: "#e8f1ff",
+            primary_color: "#1e4a7f",
+            accent_color: "#4a7bc8",
+            font_family: "Outfit",
+            font_size: 12
+          },
+          configState: {},
+          authToken: '',
+          userID: '',
+          idLeader: '',
+          activePage: 'absensi_perhitungan',
+          userProfile: null,
+          groupExpanded: {
+            'group-absensi': true
+          },
+          currentTheme: 'theme-cyber',
+          sidebarOpen: true,
+          sidebarWidth: parseInt(localStorage.getItem('sidebarWidth')) || 200,
+          isResizing: false,
+          
+          startDate: '',
+          endDate: '',
+          activeStartDate: '',
+          activeEndDate: '',
+          
+          employees: [],
+          attendanceData: {},
+          selectedRows: [],
+          
+          isLoading: false,
+          indonesianHolidays: {},
+          
+          // Tooltip
+          tooltip: {
+            show: false,
+            left: 0,
+            top: 0,
+            attendanceType: '',
+            checkIn: '-',
+            checkOut: '-',
+            potongan: '',
+            uangLembur: 0,
+            notes: ''
+          },
+          
+          // Context Menu
+          contextMenu: {
+            show: false,
+            x: 0,
+            y: 0,
+            employee: null,
+            date: null,
+            dateKey: '',
+            currentStatus: ''
+          },
+          submenuInput: {
+            show: false,
+            x: 0,
+            y: 0
+          },
+          submenuEdit: {
+            show: false,
+            x: 0,
+            y: 0
+          },
+          
+          // Confirmation Modal
+          confirmationModal: {
+            show: false,
+            action: '',
+            icon: '❓',
+            title: 'Konfirmasi',
+            message: 'Apakah Anda yakin ingin melanjutkan?',
+            info: {},
+            onConfirm: null
+          },
+          
+          searchTerm: '',
+          divisionFilter: '',
+          statusFilter: ''
+        };
+      },
+      created() {
+        this.configState = { ...this.defaultConfig };
+      },
+      computed: {
+        initials() {
+          if (!this.userProfile || !this.userProfile.name) return 'U';
+          return this.userProfile.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+        },
+        periodDates() {
+          if (!this.activeStartDate || !this.activeEndDate) return [];
+          const dates = [];
+          const current = new Date(this.activeStartDate);
+          const end = new Date(this.activeEndDate);
+          
+          while (current <= end) {
+            dates.push(new Date(current));
+            current.setDate(current.getDate() + 1);
+          }
+          
+          return dates;
+        },
+        divisions() {
+          return [...new Set(this.employees.map(e => e.division))].filter(Boolean);
+        },
+        filteredEmployees() {
+          const search = this.searchTerm.toLowerCase();
+          return this.employees.filter(emp => {
+            const matchSearch = emp.name.toLowerCase().includes(search);
+            const matchDivision = !this.divisionFilter || emp.division === this.divisionFilter;
+            
+            let matchStatus = true;
+            if (this.statusFilter) {
+              const empAttendance = this.attendanceData[emp.id];
+              if (empAttendance) {
+                matchStatus = Object.values(empAttendance).some(att => {
+                  const disp = this.getStatusDisplayName(att.status).toLowerCase();
+                  const filterDisp = this.statusFilter.toLowerCase();
+                  return disp === filterDisp || att.status.toLowerCase() === filterDisp;
+                });
+              } else {
+                matchStatus = false;
+              }
+            }
+            
+            return matchSearch && matchDivision && matchStatus;
+          });
+        },
+        fontStack() {
+          const customFont = this.configState.font_family || this.defaultConfig.font_family;
+          return `${customFont}, 'IBM Plex Sans', system-ui, -apple-system, sans-serif`;
+        },
+        baseSize() {
+          return this.configState.font_size || this.defaultConfig.font_size;
+        },
+        accentColor() {
+          return this.configState.accent_color || this.defaultConfig.accent_color;
+        },
+        primaryColor() {
+          return this.configState.primary_color || this.defaultConfig.primary_color;
+        },
+        appWrapperStyle() {
+          const bg = this.configState.background_color || this.defaultConfig.background_color;
+          return {
+            backgroundColor: bg
+          };
+        },
+        dashboardTitleStyle() {
+          return {
+            fontSize: `${this.baseSize * 2}px`,
+            fontFamily: this.fontStack
+          };
+        },
+        companyNameStyle() {
+          return {
+            fontSize: `${this.baseSize * 0.9375}px`,
+            fontFamily: this.fontStack,
+            color: this.accentColor
+          };
+        },
+        periodLabelStyle() {
+          return {
+            fontSize: `${this.baseSize * 0.8125}px`,
+            fontFamily: this.fontStack
+          };
+        },
+        headerSectionStyle() {
+          const surface = this.configState.surface_color || this.defaultConfig.surface_color;
+          return {
+            backgroundColor: surface,
+            borderColor: this.primaryColor
+          };
+        },
+        filterSectionStyle() {
+          const bg = this.configState.background_color || this.defaultConfig.background_color;
+          return {
+            backgroundColor: bg,
+            borderColor: this.primaryColor
+          };
+        },
+        btnExportStyle() {
+          return {
+            backgroundColor: this.primaryColor,
+            fontSize: `${this.baseSize * 0.875}px`,
+            fontFamily: this.fontStack
+          };
+        },
+        filterInputStyle() {
+          const text = this.configState.text_color || this.defaultConfig.text_color;
+          return {
+            fontSize: `${this.baseSize * 0.875}px`,
+            fontFamily: this.fontStack,
+            color: text
+          };
+        }
+      },
+      methods: {
+        saveTheme() {
+          localStorage.setItem('selectedTheme', this.currentTheme);
+        },
+        toggleSidebar() {
+          this.sidebarOpen = !this.sidebarOpen;
+        },
+        startResize(e) {
+          e.preventDefault();
+          this.isResizing = true;
+          const startX = e.clientX;
+          const startWidth = this.sidebarWidth;
+
+          const doDrag = (dragEvent) => {
+            const deltaX = dragEvent.clientX - startX;
+            const newWidth = startWidth + deltaX;
+            if (newWidth >= 160 && newWidth <= 400) {
+              this.sidebarWidth = newWidth;
+            }
+          };
+
+          const stopDrag = () => {
+            this.isResizing = false;
+            document.removeEventListener('mousemove', doDrag);
+            document.removeEventListener('mouseup', stopDrag);
+            localStorage.setItem('sidebarWidth', this.sidebarWidth);
+          };
+
+          document.addEventListener('mousemove', doDrag);
+          document.addEventListener('mouseup', stopDrag);
+        },
+        toggleGroup(groupId) {
+          this.groupExpanded[groupId] = !this.groupExpanded[groupId];
+        },
+        isMenuVisible(menuId) {
+          if (['input_absensi', 'absensi_saya', 'complain'].includes(menuId)) return false;
+          if (!this.userProfile) return false;
+          const role = this.userProfile.role;
+          if (['SuperAdmin', 'Manager'].includes(role)) return true;
+
+          const permissions = {
+            'absensi': ['SupervisorIT', 'SupervisorRND', 'SupervisorInventory', 'ManagerMarketing'],
+            'input_absensi': [],
+            'absensi_saya': [],
+            'absensi_perhitungan': ['HRDAdmin', 'SupervisorIT', 'SupervisorRND', 'SupervisorInventory', 'ManagerMarketing']
+          };
+
+          return permissions[menuId]?.includes(role) || false;
+        },
+        navigatePage(page) {
+          if (page === 'dashboard') {
+            window.location.href = '/dashboard';
+          } else {
+            const routes = {
+              'complain': '/complain_handling',
+              'absensi': '/rekapan_absensi',
+              'input_absensi': '/input_absensi',
+              'absensi_saya': '/absensi_karyawan',
+              'input_daily_report': '/absensi_daily_report',
+              'list_daily_report': '/absensi_daily_report_rekapan',
+              'list_site_report': '/absensi_list_site_report',
+              'list_lembur': '/absensi_list_lembur',
+              'absensi_perhitungan': '/absensi_perhitungan',
+              'input_maintenance_da': '/input_maintenance_da',
+              'rekapan_maintenance_da': '/rekapan_maintenance_da',
+              'inventory': '/inventory_mobile',
+              'inventory_management': '/inventory_management',
+              'inventory_peminjaman': '/inventory_peminjaman'
+            };
+            if (routes[page]) {
+              window.location.href = routes[page];
+            }
+          }
+        },
+        async fetchUserProfile() {
+          try {
+            const response = await fetch(`/auth/user/profile?userID=${this.userID}`, {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${this.authToken}`
+              }
+            });
+            if (!response.ok) throw new Error('Profile fetch failed');
+            this.userProfile = await response.json();
+            
+            // Auto expand navigation group based on role/active page
+            const groups = {
+              'group-absensi': ['absensi', 'input_absensi', 'absensi_saya', 'absensi_perhitungan']
+            };
+            Object.entries(groups).forEach(([groupId, pages]) => {
+              if (pages.includes(this.activePage)) {
+                this.groupExpanded[groupId] = true;
+              }
+            });
+          } catch (e) {
+            console.error(e);
+          }
+        },
+        async handleLogout() {
+          try {
+            await fetch('/auth/logout', { method: 'POST' });
+            this.showLogoutNotification();
+          } catch (e) {
+            this.showLogoutNotification();
+          }
+        },
+        showLogoutNotification() {
+          const overlay = document.createElement('div');
+          overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);backdrop-filter:blur(5px);z-index:9999;';
+          const notification = document.createElement('div');
+          notification.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:linear-gradient(135deg,rgba(15,22,41,0.98),rgba(26,31,58,0.98));border:2px solid rgba(0,212,255,0.5);border-radius:20px;padding:40px;z-index:10000;box-shadow:0 20px 60px rgba(0,212,255,0.4);text-align:center;min-width:400px;';
+          notification.innerHTML = `
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#00d4ff" stroke-width="2" style="margin-bottom:20px;margin-left:auto;margin-right:auto;">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+              <polyline points="16 17 21 12 16 7"></polyline>
+              <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+            <h3 style="color:#00d4ff;font-size:24px;font-weight:700;margin-bottom:16px;">Session Expired</h3>
+            <p style="color:#8b9dc3;font-size:15px;margin-bottom:8px;">You have been logged out</p>
+            <p style="color:#8b9dc3;font-size:13px;">Please login again to continue</p>
+          `;
+          document.body.appendChild(overlay);
+          document.body.appendChild(notification);
+          setTimeout(() => { window.location.href = "/"; }, 1500);
+        },
+        getCookie(name) {
+          const value = `; ${document.cookie}`;
+          const parts = value.split(`; ${name}=`);
+          if (parts.length === 2) return parts.pop().split(";").shift();
+          return null;
+        },
+        formatLocalDate(date) {
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          const day = String(date.getDate()).padStart(2, '0');
+          return `${year}-${month}-${day}`;
+        },
+        formatDateShort(date) {
+          const day = String(date.getDate()).padStart(2, '0');
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          return `${day}-${month}`;
+        },
+        formatDateLong(dateString) {
+          const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 
+                         'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+          
+          const [day, month] = dateString.split('-');
+          const matchingDate = this.periodDates.find(d => {
+            const dDay = String(d.getDate()).padStart(2, '0');
+            const dMonth = String(d.getMonth() + 1).padStart(2, '0');
+            return dDay === day && dMonth === month;
+          });
+          
+          if (matchingDate) {
+            return `${matchingDate.getDate()} ${months[matchingDate.getMonth()]} ${matchingDate.getFullYear()}`;
+          }
+          
+          return dateString;
+        },
+        formatPeriodLong(dates) {
+          if (!dates || dates.length === 0) return '';
+          const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 
+                         'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+          const start = dates[0];
+          const end = dates[dates.length - 1];
+          return `${start.getDate()} ${months[start.getMonth()]} ${start.getFullYear()} – ${end.getDate()} ${months[end.getMonth()]} ${end.getFullYear()}`;
+        },
+        formatNumber(val) {
+          if (val === null || val === undefined) return '0';
+          return Number(val).toLocaleString('id-ID');
+        },
+        formatCurrency(val) {
+          if (val === null || val === undefined) return 'Rp 0';
+          return 'Rp ' + Number(val).toLocaleString('id-ID');
+        },
+        isWeekend(date) {
+          const day = date.getDay();
+          return { isSaturday: day === 6, isSunday: day === 0 };
+        },
+        isHoliday(date) {
+          if (!this.indonesianHolidays) return null;
+          const dateKey = this.formatLocalDate(date);
+          return this.indonesianHolidays[dateKey] || null;
+        },
+        getDateHeaderClass(date) {
+          const weekend = this.isWeekend(date);
+          const holiday = this.isHoliday(date);
+          let cls = 'col-date';
+          if (holiday) {
+            cls += ' col-date-holiday';
+          } else if (weekend.isSunday) {
+            cls += ' col-date-sunday';
+          } else if (weekend.isSaturday) {
+            cls += ' col-date-saturday';
+          }
+          return cls;
+        },
+        getDateCellClass(date) {
+          const weekend = this.isWeekend(date);
+          const holiday = this.isHoliday(date);
+          let cls = 'col-date';
+          if (holiday) {
+            cls += ' col-date-holiday';
+          } else if (weekend.isSunday) {
+            cls += ' col-date-sunday';
+          } else if (weekend.isSaturday) {
+            cls += ' col-date-saturday';
+          }
+          return cls;
+        },
+        async initHolidays() {
+          try {
+            const response = await fetch("/api/indHolidays", {
+              method: 'GET',
+              headers: { 'Accept': 'application/json' }
+            });
+            if (response.ok) {
+              this.indonesianHolidays = await response.json();
+            }
+          } catch (error) {
+            console.error('Error fetching holidays:', error);
+          }
+        },
+        async fetchAttendanceData(startDate, endDate) {
+          this.isLoading = true;
+          
+          try {
+            const start = this.formatLocalDate(startDate);
+            const end   = this.formatLocalDate(endDate);
+
+            const response = await fetch(
+              `/auth/absensi/perhitungan?start_date=${start}&end_date=${end}&id_leader=${this.idLeader}`,
+              {
+                method: 'GET',
+                headers: {
+                  'Authorization': `Bearer ${this.authToken}`,
+                  'Accept': 'application/json'
+                }
+              }
+            );
+
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            
+            if (result.employees && result.attendance) {
+              this.employees = result.employees;
+              this.attendanceData = result.attendance;
+              this.showNotification('✅ Data absensi berhasil dimuat!');
+            } else {
+              throw new Error('Invalid API response format');
+            }
+          } catch (error) {
+            console.error('Error fetching attendance data:', error);
+            this.showNotification('⚠️ Gagal memuat data dari server. Menggunakan data contoh.');
+            this.loadSampleData();
+          } finally {
+            this.isLoading = false;
+          }
+        },
+        loadSampleData() {
+          this.employees = [
+            { id: 15, name: "Dedi Supriadi", division: "Operations", summary: { kantor: 18, wfh: 3, terlambat1: 2, alpa: 1, sakit: 1, cuti: 1, cutiLapangan: 0, dinas: 1, total: 28 } }
+          ];
+          
+          this.attendanceData = this.generateSampleAttendanceData(this.periodDates);
+        },
+        generateSampleAttendanceData(dates) {
+          const data = {};
+          this.employees.forEach(emp => {
+            data[emp.id] = {};
+            dates.forEach(date => {
+              const rand = Math.random();
+              let status;
+              if (rand < 0.60) status = 'Kantor';
+              else if (rand < 0.70) status = 'WFH';
+              else if (rand < 0.78) status = 'Terlambat1';
+              else if (rand < 0.86) status = 'Cuti';
+              else if (rand < 0.90) status = 'Sakit';
+              else if (rand < 0.93) status = 'Dinas';
+              else if (rand < 0.96) status = 'CutiLapangan';
+              else status = 'Alpa';
+              
+              const checkIn = (status === 'Kantor' || status === 'WFH') ? '08:00' : 
+                             status === 'Terlambat1' ? '08:15' : '-';
+              const checkOut = (status === 'Kantor' || status === 'Terlambat1' || status === 'WFH') ? '17:00' : '-';
+              const notes = status === 'Sakit' ? 'Demam tinggi' : 
+                           status === 'Cuti' ? 'Cuti tahunan' : 
+                           status === 'CutiLapangan' ? 'Cuti lapangan' :
+                           status === 'Dinas' ? 'Kunjungan klien' : 
+                           status === 'Terlambat1' ? 'Terlambat < 30 menit' : '';
+              
+              let supervisorValidation = null;
+              if (status === 'Terlambat1') {
+                const validationRand = Math.random();
+                supervisorValidation = validationRand < 0.7 ? true : validationRand < 0.9 ? false : null;
+              }
+              
+              data[emp.id][this.formatLocalDate(date)] = {
+                status: status,
+                checkIn: checkIn,
+                checkOut: checkOut,
+                notes: notes,
+                supervisorValidation: supervisorValidation
+              };
+            });
+          });
+          return data;
+        },
+        normalizeStatus(status) {
+          if (!status) return '';
+          return status.toLowerCase().trim();
+        },
+        getStatusClass(status) {
+          if (!status) return 'status-cuti';
+          const norm = this.normalizeStatus(status);
+          
+          if (norm === 'hadir' || norm === 'kantor') return 'status-hadir';
+          if (norm === 'wfh') return 'status-wfh';
+          if (norm === 'alpa' || norm === 'alpha') return 'status-alpa';
+          if (norm === 'terlambat' || norm.startsWith('t')) return 'status-terlambat';
+          if (norm === 'sakit') return 'status-sakit';
+          if (norm === 'izin' || norm === 'cuti' || norm.includes('cuti')) {
+            if (norm.includes('lapangan')) return 'status-cutilapangan';
+            return 'status-cuti';
+          }
+          if (norm === 'dinas' || norm.includes('dinas')) return 'status-dinas';
+          
+          return 'status-cuti';
+        },
+        getStatusDisplayName(status) {
+          if (!status) return '-';
+          const norm = this.normalizeStatus(status);
+          const map = {
+            'hadir': 'Hadir',
+            'kantor': 'Kantor',
+            'wfh': 'WFH',
+            'alpa': 'Alpha',
+            'alpha': 'Alpha',
+            'terlambat': 'Terlambat',
+            't1': 'T1',
+            't2': 'T2',
+            't3': 'T3',
+            't4': 'T4',
+            'sakit': 'Sakit',
+            'izin': 'Cuti',
+            'cuti': 'Cuti',
+            'cuti lapangan': 'C.Lap',
+            'cutilapangan': 'C.Lap',
+            'dinas': 'Dinas',
+            'dinas lapangan': 'Dinas'
+          };
+          return map[norm] || status;
+        },
+        getAttendance(employeeId, date) {
+          const dateKey = this.formatLocalDate(date);
+          return this.attendanceData[employeeId] && this.attendanceData[employeeId][dateKey];
+        },
+        hasValidation(employeeId, date, status) {
+          const att = this.getAttendance(employeeId, date);
+          if (!att) return false;
+          const valid = att.supervisorValidation;
+          if (valid === null || valid === undefined) return false;
+          return valid === status;
+        },
+        hasLembur(employeeId, date) {
+          const att = this.getAttendance(employeeId, date);
+          return att && att.uangLembur && att.uangLembur > 0;
+        },
+        getEmployeeSummary(emp) {
+          return emp.summary || this.calculateSummary(emp.id);
+        },
+        calculateSummary(employeeId) {
+          const summary = {
+            kantor: 0,
+            wfh: 0,
+            terlambat1: 0,
+            terlambat2: 0,
+            terlambat3: 0,
+            terlambat4: 0,
+            jumlahHariTA: 0,
+            alpa: 0,
+            sakit: 0,
+            cuti: 0,
+            cutiLapangan: 0,
+            dinas: 0,
+            total: 0,
+            totalPotongan: 0,
+            totalUangMakan: 0,
+            totalBayar: 0,
+            jumlahLembur: 0
+          };
+          
+          const records = this.attendanceData[employeeId];
+          if (!records) return summary;
+          
+          Object.values(records).forEach(att => {
+            const norm = this.normalizeStatus(att.status);
+            if (norm === 'kantor' || norm === 'hadir') summary.kantor++;
+            else if (norm === 'wfh') summary.wfh++;
+            else if (norm === 'terlambat1' || norm === 't1') summary.terlambat1++;
+            else if (norm === 't2') summary.terlambat2++;
+            else if (norm === 't3') summary.terlambat3++;
+            else if (norm === 't4') summary.terlambat4++;
+            else if (norm === 'terlambat') summary.terlambat1++;
+            else if (norm === 'alpa' || norm === 'alpha') summary.alpa++;
+            else if (norm === 'sakit') summary.sakit++;
+            else if (norm === 'cuti' || norm === 'izin') summary.cuti++;
+            else if (norm === 'cutilapangan' || norm === 'cuti lapangan') summary.cutiLapangan++;
+            else if (norm === 'dinas' || norm === 'dinas lapangan') summary.dinas++;
+            
+            if (att.jumlahPotongan) summary.totalPotongan += Number(att.jumlahPotongan);
+            if (att.totalUangMakan) summary.totalUangMakan += Number(att.totalUangMakan);
+            if (att.totalBayar) summary.totalBayar += Number(att.totalBayar);
+            if (att.uangLembur) summary.jumlahLembur += Number(att.uangLembur);
+            
+            summary.total++;
+          });
+          
+          summary.jumlahHariTA = summary.terlambat1 + summary.terlambat2 + summary.terlambat3 + summary.terlambat4;
+          return summary;
+        },
+        toggleRowSelection(employeeId) {
+          const idx = this.selectedRows.indexOf(employeeId);
+          if (idx > -1) {
+            this.selectedRows.splice(idx, 1);
+          } else {
+            this.selectedRows.push(employeeId);
+          }
+        },
+        showTooltip(event, employee, date) {
+          const dateKey = this.formatLocalDate(date);
+          const att = this.attendanceData[employee.id] && this.attendanceData[employee.id][dateKey];
+          if (!att) return;
+
+          const rect = event.currentTarget.getBoundingClientRect();
+          
+          this.tooltip = {
+            show: true,
+            left: rect.left,
+            top: rect.top,
+            attendanceType: att.attendanceType || '',
+            checkIn: att.checkIn || '-',
+            checkOut: att.checkOut || '-',
+            potongan: att.jumlahPotongan ? Number(att.jumlahPotongan).toLocaleString('id-ID') : '',
+            uangLembur: att.uangLembur || 0,
+            notes: att.notes || ''
+          };
+
+          this.$nextTick(() => {
+            const tooltipEl = this.$refs.tooltip;
+            if (tooltipEl) {
+              this.tooltip.top = rect.top - tooltipEl.offsetHeight - 10;
+            }
+          });
+        },
+        hideTooltip() {
+          this.tooltip.show = false;
+        },
+        openContextMenu(event, employee, date) {
+          const dateKey = this.formatLocalDate(date);
+          const att = this.attendanceData[employee.id] && this.attendanceData[employee.id][dateKey];
+          const statusText = att ? this.getStatusDisplayName(att.status) : '';
+          
+          const allowedStatuses = ['Kantor', 'Dinas Lapangan', 'Alpha', 'T3', 'T4', 'Sakit', 'WFH', 'Cuti', 'Cuti1/2', 'C.Lap', ''];
+          if (!allowedStatuses.includes(statusText)) {
+            return;
+          }
+          
+          this.contextMenu = {
+            show: true,
+            x: event.clientX,
+            y: event.clientY,
+            employee: employee,
+            date: date,
+            dateKey: dateKey,
+            currentStatus: att ? att.status : ''
+          };
+          
+          this.submenuInput.show = false;
+          this.submenuEdit.show = false;
+        },
+        closeContextMenu() {
+          this.contextMenu.show = false;
+          this.submenuInput.show = false;
+          this.submenuEdit.show = false;
+        },
+        showSubmenu(type, event) {
+          const rect = event.currentTarget.getBoundingClientRect();
+          if (type === 'input') {
+            this.submenuInput = {
+              show: true,
+              x: rect.right + 5,
+              y: rect.top
+            };
+            this.submenuEdit.show = false;
+          } else if (type === 'edit') {
+            this.submenuEdit = {
+              show: true,
+              x: rect.right + 5,
+              y: rect.top
+            };
+            this.submenuInput.show = false;
+          }
+        },
+        hideSubmenus() {
+          this.submenuInput.show = false;
+          this.submenuEdit.show = false;
+        },
+        openConfirmationModal(options) {
+          this.confirmationModal = {
+            show: true,
+            action: options.action,
+            icon: options.icon,
+            title: options.title,
+            message: options.message,
+            info: options.info || {},
+            onConfirm: options.onConfirm
+          };
+        },
+        closeConfirmationModal() {
+          this.confirmationModal.show = false;
+        },
+        confirmAction() {
+          if (this.confirmationModal.onConfirm) {
+            this.confirmationModal.onConfirm();
+          }
+          this.closeConfirmationModal();
+        },
+        handleAction(action) {
+          this.closeContextMenu();
+          
+          const employee = this.contextMenu.employee;
+          const date = this.contextMenu.date;
+          const dateKey = this.contextMenu.dateKey;
+          const currentStatus = this.contextMenu.currentStatus;
+          
+          const dateText = this.formatDateShort(date);
+          const dateLong = this.formatDateLong(dateText);
+          const dateISO = this.formatLocalDate(date);
+          
+          const employeeData = {
+            id: employee.id,
+            name: employee.name,
+            division: employee.division,
+            date: dateLong,
+            dateISO: dateISO,
+            currentStatus: currentStatus
+          };
+          
+          if (action.startsWith('input-')) {
+            const inputType = action.replace('input-', '');
+            const inputTypeLabel = inputType === 'kantor' ? 'Kantor' : inputType === 'wfh' ? 'WFH' : 'Dinas Lapangan';
+            
+            this.openConfirmationModal({
+              action: 'input',
+              icon: '➕',
+              title: `Konfirmasi Input Absen ${inputTypeLabel}`,
+              message: `Apakah Anda yakin ingin menginput data absensi ${inputTypeLabel.toLowerCase()} ini?`,
+              info: { ...employeeData, inputType: inputTypeLabel },
+              onConfirm: async () => {
+                await this.submitInputAbsen({ ...employeeData, inputType: inputTypeLabel });
+              }
+            });
+          } else if (action.startsWith('edit-')) {
+            const editType = action.replace('edit-', '');
+            const editTypeLabel = editType === 'kantor' ? 'Kantor' : editType === 'wfh' ? 'WFH' : 'Dinas Lapangan';
+            
+            this.openConfirmationModal({
+              action: 'edit',
+              icon: '✏️',
+              title: `Konfirmasi Ubah Absen Ke ${editTypeLabel}`,
+              message: `Apakah Anda yakin ingin mengubah data absensi menjadi ${editTypeLabel.toLowerCase()} ini?`,
+              info: { ...employeeData, editType: editTypeLabel },
+              onConfirm: async () => {
+                await this.submitEditAbsen({ ...employeeData, editType: editTypeLabel });
+              }
+            });
+          } else if (action === 'delete') {
+            this.openConfirmationModal({
+              action: 'delete',
+              icon: '🗑️',
+              title: 'Konfirmasi Hapus Absen',
+              message: 'Apakah Anda yakin ingin menghapus data absensi ini? Data yang dihapus tidak dapat dikembalikan.',
+              info: employeeData,
+              onConfirm: async () => {
+                await this.submitDeleteAbsen(employeeData);
+              }
+            });
+          } else if (action === 'validate') {
+            this.openConfirmationModal({
+              action: 'validate',
+              icon: '✓',
+              title: 'Konfirmasi Validasi',
+              message: 'Apakah Anda yakin ingin memvalidasi data absensi ini?',
+              info: employeeData,
+              onConfirm: () => {
+                this.showNotification(`✅ Validasi Absen untuk ${employee.name} pada tanggal ${dateLong} berhasil!`);
+              }
+            });
+          }
+        },
+        async submitInputAbsen(employeeData) {
+          this.showNotification('⏳ Mengirim data ke server...');
+          
+          try {
+            let statusToSend = employeeData.currentStatus;
+            if (employeeData.inputType) {
+              if (employeeData.inputType === 'Kantor') {
+                statusToSend = 'Kantor';
+              } else if (employeeData.inputType === 'WFH') {
+                statusToSend = 'WFH';
+              } else if (employeeData.inputType === 'Dinas Lapangan') {
+                statusToSend = 'Dinas Lapangan';
+              }
+            }
+            
+            const response = await fetch('/auth/absensi/inputleader', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${this.authToken}`
+              },
+              body: JSON.stringify({
+                name: employeeData.name,
+                date: employeeData.dateISO,
+                status: statusToSend,
+                notes: `Input ${employeeData.inputType || 'absensi'} oleh leader untuk ${employeeData.name}`
+              })
+            });
+
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            
+            if (result.success || result.status === 'success') {
+              this.showNotification(`✅ Berhasil! Input absen ${employeeData.inputType || ''} untuk ${employeeData.name} telah tersimpan.`);
+              await this.fetchAttendanceData(new Date(this.activeStartDate), new Date(this.activeEndDate));
+            } else {
+              throw new Error(result.message || 'Gagal menyimpan data');
+            }
+          } catch (error) {
+            console.error('Error submitting input absen:', error);
+            this.showNotification(`❌ Gagal menyimpan data! ${error.message || 'Terjadi kesalahan.'}`);
+          }
+        },
+        async submitDeleteAbsen(employeeData) {
+          this.showNotification('⏳ Menghapus data dari server...');
+          
+          try {
+            const response = await fetch('/auth/absensi/inputleader', {
+              method: 'DELETE',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${this.authToken}`
+              },
+              body: JSON.stringify({
+                name: employeeData.name,
+                date: employeeData.dateISO,
+                status: '',
+                notes: `Delete oleh leader untuk ${employeeData.name}`
+              })
+            });
+
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            
+            if (result.success || result.status === 'success') {
+              this.showNotification(`✅ Berhasil! Data absen untuk ${employeeData.name} telah dihapus.`);
+              await this.fetchAttendanceData(new Date(this.activeStartDate), new Date(this.activeEndDate));
+            } else {
+              throw new Error(result.message || 'Gagal menghapus data');
+            }
+          } catch (error) {
+            console.error('Error deleting absen:', error);
+            this.showNotification(`❌ Gagal menghapus data! ${error.message || 'Terjadi kesalahan.'}`);
+          }
+        },
+        async submitEditAbsen(employeeData) {
+          this.showNotification('⏳ Mengubah data ke server...');
+          
+          try {
+            let statusToSend = employeeData.currentStatus;
+            if (employeeData.editType) {
+              if (employeeData.editType === 'Kantor') {
+                statusToSend = 'Hadir';
+              } else if (employeeData.editType === 'WFH') {
+                statusToSend = 'WFH';
+              } else if (employeeData.editType === 'Dinas Lapangan') {
+                statusToSend = 'Dinas';
+              }
+            }
+            
+            const response = await fetch('/auth/absensi/inputleader', {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${this.authToken}`
+              },
+              body: JSON.stringify({
+                name: employeeData.name,
+                date: employeeData.dateISO,
+                status: statusToSend,
+                notes: `Ubah status absensi menjadi ${employeeData.editType || 'absensi'} oleh leader untuk ${employeeData.name}`
+              })
+            });
+
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            
+            if (result.success || result.status === 'success') {
+              this.showNotification(`✅ Berhasil! Status absen ${employeeData.name} diubah menjadi ${employeeData.editType}.`);
+              await this.fetchAttendanceData(new Date(this.activeStartDate), new Date(this.activeEndDate));
+            } else {
+              throw new Error(result.message || 'Gagal mengubah data');
+            }
+          } catch (error) {
+            console.error('Error editing absen:', error);
+            this.showNotification(`❌ Gagal mengubah data! ${error.message || 'Terjadi kesalahan.'}`);
+          }
+        },
+        async applyPeriod() {
+          if (this.isLoading) return;
+          if (!this.startDate || !this.endDate) {
+            this.showNotification('⚠️ Pilih tanggal mulai dan akhir terlebih dahulu!');
+            return;
+          }
+          
+          const start = new Date(this.startDate);
+          const end = new Date(this.endDate);
+          
+          if (start > end) {
+            this.showNotification('⚠️ Tanggal mulai tidak boleh lebih besar dari tanggal akhir!');
+            return;
+          }
+          
+          const daysDiff = Math.floor((end - start) / (1000 * 60 * 60 * 24));
+          if (daysDiff > 365) {
+            this.showNotification('⚠️ Maksimal periode adalah 365 hari!');
+            return;
+          }
+          
+          this.activeStartDate = this.startDate;
+          this.activeEndDate = this.endDate;
+          
+          await this.fetchAttendanceData(start, end);
+        },
+        showNotification(message) {
+          const notif = document.createElement('div');
+          notif.style.cssText = `
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            background: #1e4a7f;
+            color: white;
+            padding: 16px 24px;
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            z-index: 9999;
+            font-weight: 600;
+            border: 1px solid #2a5a8f;
+          `;
+          notif.textContent = message;
+          document.body.appendChild(notif);
+          setTimeout(() => notif.remove(), 3000);
+        },
+        exportToExcel() {
+          this.showNotification('📊 Sedang membuat file Excel...');
+          
+          let html = `
+            <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+            <head>
+              <meta charset="utf-8">
+              <!--[if gte mso 9]>
+              <xml>
+                <x:ExcelWorkbook>
+                  <x:ExcelWorksheets>
+                    <x:ExcelWorksheet>
+                      <x:Name>Rekapan Absensi</x:Name>
+                      <x:WorksheetOptions>
+                        <x:DisplayGridlines/>
+                      </x:WorksheetOptions>
+                    </x:ExcelWorksheet>
+                  </x:ExcelWorksheets>
+                </x:ExcelWorkbook>
+              </xml>
+              <![endif]-->
+              <style>
+                table { border-collapse: collapse; width: 100%; }
+                th, td { border: 1px solid #000; padding: 8px; text-align: center; font-size: 11pt; }
+                th { background-color: #4472C4; color: white; font-weight: bold; }
+                .header-row { background-color: #D9E1F2; font-weight: bold; }
+                .col-nama { text-align: left; }
+                .col-divisi { text-align: left; }
+                .weekend { background-color: #FFE6E6; }
+                .holiday { background-color: #FFCCCC; font-weight: bold; }
+                .summary-col { background-color: #E7E6E6; font-weight: bold; }
+                .title { font-size: 16pt; font-weight: bold; text-align: center; margin-bottom: 10px; }
+                .subtitle { font-size: 12pt; text-align: center; margin-bottom: 20px; color: #666; }
+              </style>
+            </head>
+            <body>
+              <div class="title">${this.configState.company_name}</div>
+              <div class="subtitle">Rekapan Absensi - ${this.formatPeriodLong(this.periodDates)}</div>
+              <table>
+                <thead>
+                  <tr>
+                    <th rowspan="2" style="vertical-align: middle;">NO</th>
+                    <th rowspan="2" style="vertical-align: middle; min-width: 200px;">NAMA KARYAWAN</th>
+                    <th rowspan="2" style="vertical-align: middle; min-width: 150px;">DIVISI</th>
+                    <th colspan="${this.periodDates.length}" style="background-color: #5B9BD5;">TANGGAL ABSENSI</th>
+                    <th colspan="13" style="background-color: #70AD47;">REKAPITULASI</th>
+                  </tr>
+                  <tr>
+          `;
+          
+          this.periodDates.forEach(date => {
+            const weekend = this.isWeekend(date);
+            const holiday = this.isHoliday(date);
+            let style = 'background-color: #4472C4;';
+            if (holiday) {
+              style = 'background-color: #C00000; color: white;';
+            } else if (weekend.isSunday) {
+              style = 'background-color: #E74C3C; color: white;';
+            } else if (weekend.isSaturday) {
+              style = 'background-color: #F39C12; color: white;';
+            }
+            html += `<th style="${style}">${this.formatDateShort(date)}</th>`;
+          });
+          
+          html += `
+                    <th style="background-color: #70AD47; font-weight: bold;">JHari</th>
+                    <th style="background-color: #70AD47;">Kantor</th>
+                    <th style="background-color: #70AD47;">T1</th>
+                    <th style="background-color: #70AD47;">T2</th>
+                    <th style="background-color: #70AD47;">T3</th>
+                    <th style="background-color: #70AD47;">T4</th>
+                    <th style="background-color: #70AD47;">JHariTA</th>
+                    <th style="background-color: #70AD47;">WFH</th>
+                    <th style="background-color: #70AD47;">Alpha</th>
+                    <th style="background-color: #70AD47;">Sakit</th>
+                    <th style="background-color: #70AD47;">Cuti</th>
+                    <th style="background-color: #70AD47;">C.Lap</th>
+                    <th style="background-color: #70AD47;">Dinas</th>
+                    <th style="background-color: #70AD47; font-weight: bold;">Jum.Potongan</th>
+                    <th style="background-color: #70AD47; font-weight: bold;">Jum.Makan</th>
+                    <th style="background-color: #70AD47; font-weight: bold;">Jum.MakanTHP</th>
+                  </tr>
+                </thead>
+                <tbody>
+          `;
+          
+          this.filteredEmployees.forEach((emp, idx) => {
+            const summary = emp.summary || this.calculateSummary(emp.id);
+            html += '<tr>';
+            html += `<td>${idx + 1}</td>`;
+            html += `<td class="col-nama" style="text-align: left;">${emp.name}</td>`;
+            html += `<td class="col-divisi" style="text-align: left;">${emp.division}</td>`;
+            
+            this.periodDates.forEach(date => {
+              const dateKey = this.formatLocalDate(date);
+              const att = this.attendanceData[emp.id] && this.attendanceData[emp.id][dateKey];
+              const weekend = this.isWeekend(date);
+              const holiday = this.isHoliday(date);
+              
+              let cellStyle = '';
+              if (holiday) {
+                cellStyle = 'background-color: #FFCCCC;';
+              } else if (weekend.isSaturday || weekend.isSunday) {
+                cellStyle = 'background-color: #FFE6E6;';
+              }
+              
+              const status = att ? this.getStatusDisplayName(att.status) : '-';
+              html += `<td style="${cellStyle}">${status}</td>`;
+            });
+            
+            html += `<td class="summary-col" style="background-color: #BDD7EE; font-weight: bold;">${summary.total}</td>`;
+            html += `<td class="summary-col">${summary.kantor}</td>`;
+            html += `<td class="summary-col">${summary.terlambat1}</td>`;
+            html += `<td class="summary-col">${summary.terlambat2}</td>`;
+            html += `<td class="summary-col">${summary.terlambat3}</td>`;
+            html += `<td class="summary-col">${summary.terlambat4}</td>`;
+            html += `<td class="summary-col">${summary.jumlahHariTA}</td>`;
+            html += `<td class="summary-col">${summary.wfh}</td>`;
+            html += `<td class="summary-col">${summary.alpa}</td>`;
+            html += `<td class="summary-col">${summary.sakit}</td>`;
+            html += `<td class="summary-col">${summary.cuti}</td>`;
+            html += `<td class="summary-col">${summary.cutiLapangan}</td>`;
+            html += `<td class="summary-col">${summary.dinas}</td>`;
+            html += `<td class="summary-col" style="background-color: #BDD7EE; font-weight: bold;">${Number(summary.totalPotongan).toLocaleString('id-ID')}</td>`;
+            html += `<td class="summary-col" style="background-color: #BDD7EE; font-weight: bold;">${Number(summary.totalUangMakan).toLocaleString('id-ID')}</td>`;
+            html += `<td class="summary-col" style="background-color: #BDD7EE; font-weight: bold;">${Number(summary.totalBayar).toLocaleString('id-ID')}</td>`;
+            
+            html += '</tr>';
+          });
+          
+          html += `
+                </tbody>
+              </table>
+              <p style="margin-top: 20px; font-size: 9pt; color: #666;">Dicetak pada: ${new Date().toLocaleString('id-ID')}</p>
+            </body>
+            </html>
+          `;
+          
+          const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
+          const link = document.createElement('a');
+          const url = URL.createObjectURL(blob);
+          
+          const fileName = `Rekapan_Absensi_${this.formatLocalDate(this.periodDates[0])}_to_${this.formatLocalDate(this.periodDates[this.periodDates.length-1])}.xls`;
+          
+          link.setAttribute('href', url);
+          link.setAttribute('download', fileName);
+          link.style.visibility = 'hidden';
+          document.body.appendChild(link);
+          link.click();
+        },
+        exportToPDF() {
+          this.showNotification('📄 Sedang membuat file PDF...');
+          
+          const printWindow = window.open('', '_blank');
+          
+          const htmlContent = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <meta charset="UTF-8">
+              <title>Rekapan Absensi - ${this.formatPeriodLong(this.periodDates)}</title>
+              <style>
+                * { margin: 0; padding: 0; box-sizing: border-box; }
+                body {
+                  font-family: Arial, sans-serif;
+                  padding: 20px;
+                  font-size: 10px;
+                }
+                .header {
+                  text-align: center;
+                  margin-bottom: 20px;
+                  border-bottom: 2px solid #000;
+                  padding-bottom: 10px;
+                }
+                .header h1 {
+                  font-size: 18px;
+                  margin-bottom: 5px;
+                }
+                .header p {
+                  font-size: 11px;
+                  color: #333;
+                }
+                table {
+                  width: 100%;
+                  border-collapse: collapse;
+                  margin-top: 10px;
+                }
+                th, td {
+                  border: 1px solid #333;
+                  padding: 4px 6px;
+                  text-align: center;
+                  font-size: 8px;
+                }
+                th {
+                  background-color: #2c3e50;
+                  color: white;
+                  font-weight: bold;
+                  font-size: 7px;
+                }
+                .col-no { width: 30px; }
+                .col-nama { 
+                  width: 120px; 
+                  text-align: left;
+                  font-weight: 600;
+                }
+                .col-divisi { 
+                  width: 80px; 
+                  text-align: left;
+                }
+                .col-date { width: 35px; }
+                .col-summary { 
+                  width: 30px;
+                  font-weight: bold;
+                }
+                .weekend {
+                  background-color: #ffe6e6;
+                }
+                .holiday {
+                  background-color: #ffcccc;
+                  font-weight: bold;
+                }
+                tr:nth-child(even) {
+                  background-color: #f9f9f9;
+                }
+                .footer {
+                  margin-top: 20px;
+                  text-align: right;
+                  font-size: 9px;
+                  color: #666;
+                }
+                @media print {
+                  body { padding: 10px; }
+                  .no-print { display: none; }
+                }
+              </style>
+            </head>
+            <body>
+              <div class="header">
+                <h1>${this.configState.company_name}</h1>
+                <h2>${this.configState.dashboard_title}</h2>
+                <p>${this.configState.period_label}: ${this.formatPeriodLong(this.periodDates)}</p>
+              </div>
+              
+              <table>
+                <thead>
+                  <tr>
+                    <th class="col-no">NO</th>
+                    <th class="col-nama">NAMA</th>
+                    <th class="col-divisi">DIVISI</th>
+                    ${this.periodDates.map(date => {
+                      const weekend = this.isWeekend(date);
+                      const holiday = this.isHoliday(date);
+                      const cssClass = holiday ? 'col-date holiday' : 
+                                      (weekend.isSaturday || weekend.isSunday) ? 'col-date weekend' : 'col-date';
+                      return `<th class="${cssClass}">${this.formatDateShort(date)}</th>`;
+                    }).join('')}
+                    <th class="col-summary">JHari</th>
+                    <th class="col-summary">K</th>
+                    <th class="col-summary">T1</th>
+                    <th class="col-summary">T2</th>
+                    <th class="col-summary">T3</th>
+                    <th class="col-summary">T4</th>
+                    <th class="col-summary">JHariTA</th>
+                    <th class="col-summary">WFH</th>
+                    <th class="col-summary">A</th>
+                    <th class="col-summary">S</th>
+                    <th class="col-summary">C</th>
+                    <th class="col-summary">CL</th>
+                    <th class="col-summary">D</th>
+                    <th class="col-summary">POT</th>
+                    <th class="col-summary">JMKN</th>
+                    <th class="col-summary">JMKNTHP</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${this.filteredEmployees.map((emp, idx) => {
+                    const summary = emp.summary || this.calculateSummary(emp.id);
+                    return `
+                      <tr>
+                        <td class="col-no">${idx + 1}</td>
+                        <td class="col-nama">${emp.name}</td>
+                        <td class="col-divisi">${emp.division}</td>
+                        ${this.periodDates.map(date => {
+                          const dateKey = this.formatLocalDate(date);
+                          const att = this.attendanceData[emp.id] && this.attendanceData[emp.id][dateKey];
+                          const weekend = this.isWeekend(date);
+                          const holiday = this.isHoliday(date);
+                          const cssClass = holiday ? 'col-date holiday' : 
+                                          (weekend.isSaturday || weekend.isSunday) ? 'col-date weekend' : 'col-date';
+                          const status = att ? this.getStatusDisplayName(att.status) : '-';
+                          return `<td class="${cssClass}">${status}</td>`;
+                        }).join('')}
+                        <td class="col-summary">${summary.total}</td>
+                        <td class="col-summary">${summary.kantor}</td>
+                        <td class="col-summary">${summary.terlambat1}</td>
+                        <td class="col-summary">${summary.terlambat2}</td>
+                        <td class="col-summary">${summary.terlambat3}</td>
+                        <td class="col-summary">${summary.terlambat4}</td>
+                        <td class="col-summary">${summary.jumlahHariTA}</td>
+                        <td class="col-summary">${summary.wfh}</td>
+                        <td class="col-summary">${summary.alpa}</td>
+                        <td class="col-summary">${summary.sakit}</td>
+                        <td class="col-summary">${summary.cuti}</td>
+                        <td class="col-summary">${summary.cutiLapangan}</td>
+                        <td class="col-summary">${summary.dinas}</td>
+                        <td class="col-summary">${Number(summary.totalPotongan).toLocaleString('id-ID')}</td>
+                        <td class="col-summary">${Number(summary.totalUangMakan).toLocaleString('id-ID')}</td>
+                        <td class="col-summary">${Number(summary.totalBayar).toLocaleString('id-ID')}</td>
+                      </tr>
+                    `;
+                  }).join('')}
+                </tbody>
+              </table>
+              
+              <div class="footer">
+                <p>Dicetak pada: ${new Date().toLocaleString('id-ID')}</p>
+              </div>
+              
+              <div class="no-print" style="margin-top: 20px; text-align: center;">
+                <button onclick="window.print()" style="padding: 10px 30px; font-size: 14px; cursor: pointer; background: #2c3e50; color: white; border: none; border-radius: 5px;">
+                  🖨️ Cetak PDF
+                </button>
+                <button onclick="window.close()" style="padding: 10px 30px; font-size: 14px; cursor: pointer; background: #e74c3c; color: white; border: none; border-radius: 5px; margin-left: 10px;">
+                  ✖️ Tutup
+                </button>
+              </div>
+            </body>
+            </html>
+          `;
+          
+          printWindow.document.write(htmlContent);
+          printWindow.document.close();
+          
+          this.showNotification('✅ Jendela cetak PDF telah dibuka!');
+        }
+      },
+      async mounted() {
+        this.currentTheme = localStorage.getItem('selectedTheme') || 'theme-cyber';
+        this.authToken = this.getCookie("authToken");
+        this.userID = this.getCookie("id");
+        this.idLeader = this.getCookie("id_leader");
+        
+        if (!this.authToken || !this.userID || !this.idLeader) {
+          console.error('Authentication cookie credentials not found');
+          this.showNotification('❌ Error: Token autentikasi tidak ditemukan.');
+          return;
+        }
+        
+        await this.fetchUserProfile();
+        
+        const today = new Date();
+        const end = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        const firstDayOfCurrentMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        const lastDayOfPrevMonth = new Date(firstDayOfCurrentMonth);
+        lastDayOfPrevMonth.setDate(0);
+        const daysInPrevMonth = lastDayOfPrevMonth.getDate();
+        const start = new Date(today);
+        start.setDate(today.getDate() - daysInPrevMonth);
+
+        this.startDate = this.formatLocalDate(start);
+        this.endDate = this.formatLocalDate(end);
+        this.activeStartDate = this.startDate;
+        this.activeEndDate = this.endDate;
+
+        await this.initHolidays();
+        await this.fetchAttendanceData(start, end);
+
+        document.addEventListener('click', this.closeContextMenu);
+        document.addEventListener('scroll', this.closeContextMenu, true);
+
+        if (window.elementSdk) {
+          window.elementSdk.init({
+            defaultConfig: this.defaultConfig,
+            onConfigChange: (config) => {
+              Object.assign(this.configState, config);
+              const customFont = config.font_family || this.defaultConfig.font_family;
+              document.body.style.fontFamily = `${customFont}, 'IBM Plex Sans', system-ui, -apple-system, sans-serif`;
+            },
+            mapToCapabilities: (config) => ({
+              recolorables: [
+                {
+                  get: () => config.background_color || this.defaultConfig.background_color,
+                  set: (value) => {
+                    config.background_color = value;
+                    window.elementSdk.setConfig({ background_color: value });
+                  }
+                },
+                {
+                  get: () => config.surface_color || this.defaultConfig.surface_color,
+                  set: (value) => {
+                    config.surface_color = value;
+                    window.elementSdk.setConfig({ surface_color: value });
+                  }
+                },
+                {
+                  get: () => config.text_color || this.defaultConfig.text_color,
+                  set: (value) => {
+                    config.text_color = value;
+                    window.elementSdk.setConfig({ text_color: value });
+                  }
+                },
+                {
+                  get: () => config.primary_color || this.defaultConfig.primary_color,
+                  set: (value) => {
+                    config.primary_color = value;
+                    window.elementSdk.setConfig({ primary_color: value });
+                  }
+                },
+                {
+                  get: () => config.accent_color || this.defaultConfig.accent_color,
+                  set: (value) => {
+                    config.accent_color = value;
+                    window.elementSdk.setConfig({ accent_color: value });
+                  }
+                }
+              ],
+              borderables: [],
+              fontEditable: {
+                get: () => config.font_family || this.defaultConfig.font_family,
+                set: (value) => {
+                  config.font_family = value;
+                  window.elementSdk.setConfig({ font_family: value });
+                }
+              },
+              fontSizeable: {
+                get: () => config.font_size || this.defaultConfig.font_size,
+                set: (value) => {
+                  config.font_size = value;
+                  window.elementSdk.setConfig({ font_size: value });
+                }
+              }
+            }),
+            mapToEditPanelValues: (config) => new Map([
+              ["company_name", config.company_name || this.defaultConfig.company_name],
+              ["dashboard_title", config.dashboard_title || this.defaultConfig.dashboard_title],
+              ["period_label", config.period_label || this.defaultConfig.period_label]
+            ])
+          });
+        }
+      }
+    }).mount('#app');
+  </script>
+</body>
+</html>

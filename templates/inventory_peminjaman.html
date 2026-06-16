@@ -1,0 +1,925 @@
+<!doctype html>
+<html lang="id" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Peminjaman &amp; Pengembalian Barang Inventaris</title>
+  <script src="/_sdk/data_sdk.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  <style>
+    [v-cloak] { display: none !important; }
+    body {
+      box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
+    }
+    
+    * {
+      box-sizing: border-box;
+    }
+    
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 8px;
+    }
+    
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #1e293b;
+    }
+    
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #475569;
+      border-radius: 4px;
+    }
+    
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #64748b;
+    }
+    
+    .image-preview {
+      position: relative;
+      width: 100%;
+      max-width: 200px;
+      height: 150px;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #1e293b;
+      border: 2px dashed #475569;
+    }
+    
+    .image-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    
+    .status-tersedia {
+      background: #065f4620;
+      color: #10b981;
+      border: 1px solid #10b98130;
+    }
+    
+    .status-dipinjam {
+      background: #ea580c20;
+      color: #f97316;
+      border: 1px solid #f9731630;
+    }
+    
+    .status-dikembalikan {
+      background: #2563eb20;
+      color: #3b82f6;
+      border: 1px solid #3b82f630;
+    }
+    
+    .status-terlambat {
+      background: #dc262620;
+      color: #ef4444;
+      border: 1px solid #ef444430;
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+ </head>
+ <body class="h-full" :style="{ backgroundColor: config.background_color || '#020617' }">
+  <div id="app" v-cloak class="w-full h-full overflow-auto custom-scrollbar" :style="{ backgroundColor: config.background_color || '#020617', color: config.text_color || '#e2e8f0' }">
+   <!-- Header -->
+   <header class="w-full border-b sticky top-0 z-50" :style="{ backgroundColor: config.surface_color || '#0f172a', borderColor: 'rgba(59,130,246,0.2)' }">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+     <div class="flex items-center space-x-3">
+      <svg class="w-8 h-8" :style="{ color: config.primary_action_color || '#2563eb' }" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+      </svg>
+      <h1 id="header-title" class="text-xl font-bold text-white">{{ config.form_title || 'Peminjaman & Pengembalian Barang' }}</h1>
+     </div>
+     <div class="flex items-center space-x-4">
+      <div class="flex items-center space-x-3">
+       <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-sm" :style="{ backgroundColor: config.primary_action_color || '#2563eb' }">
+         <span>{{ getUserInitials }}</span>
+       </div>
+       <span id="user-display-name" class="text-white font-medium hidden sm:block">{{ config.user_name || 'Admin User' }}</span>
+      </div>
+      <button id="logout-btn" @click="handleLogout" class="px-4 py-2 rounded-lg text-sm font-medium transition-colors" :style="{ backgroundColor: config.secondary_action_color || '#1e293b', color: '#ffffff' }">
+        Logout
+      </button>
+     </div>
+    </div>
+   </header>
+
+   <!-- Main Content -->
+   <main class="w-full max-w-7xl mx-auto px-6 py-8">
+    <!-- Mode Toggle -->
+    <div class="mb-6 flex items-center justify-between">
+     <div class="flex items-center space-x-4">
+      <button id="mode-peminjaman" @click="switchMode('peminjaman')" class="px-6 py-2.5 rounded-lg font-medium transition-colors"
+              :class="currentMode === 'peminjaman' ? 'text-white' : 'text-slate-300'"
+              :style="{ backgroundColor: currentMode === 'peminjaman' ? (config.primary_action_color || '#2563eb') : (config.secondary_action_color || '#1e293b') }">
+        Peminjaman
+      </button>
+      <button id="mode-pengembalian" @click="switchMode('pengembalian')" class="px-6 py-2.5 rounded-lg font-medium transition-colors"
+              :class="currentMode === 'pengembalian' ? 'text-white' : 'text-slate-300'"
+              :style="{ backgroundColor: currentMode === 'pengembalian' ? (config.primary_action_color || '#2563eb') : (config.secondary_action_color || '#1e293b') }">
+        Pengembalian
+      </button>
+     </div>
+     <button id="view-records-btn" @click="showRecords = true" class="px-4 py-2 rounded-lg text-sm font-medium transition-colors" :style="{ backgroundColor: config.secondary_action_color || '#1e293b', color: '#ffffff' }">
+       Lihat Riwayat
+     </button>
+    </div>
+
+    <!-- Form Card -->
+    <div v-show="!showRecords" class="rounded-xl border shadow-2xl p-8" :style="{ backgroundColor: config.surface_color || '#0f172a', borderColor: 'rgba(59,130,246,0.2)' }">
+     <form id="loan-form" @submit.prevent="submitForm">
+      <!-- Section 0: Pilih Data Peminjaman (Only for Pengembalian Mode) -->
+      <div v-if="currentMode === 'pengembalian'" class="mb-8">
+       <h2 class="text-lg font-bold text-white mb-6 flex items-center">
+        <svg class="w-5 h-5 mr-2" :style="{ color: config.primary_action_color || '#2563eb' }" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+        </svg>
+        Pilih Data Peminjaman
+       </h2>
+       <div class="grid grid-cols-1 gap-6">
+        <div>
+         <label for="peminjaman-select" class="block text-sm font-semibold text-slate-300 mb-2">Pilih Peminjaman yang Akan Dikembalikan *</label>
+         <select id="peminjaman-select" v-model="selectedLoanId" @change="handleLoanSelect" class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <option value="">-- Pilih Peminjaman --</option>
+          <option v-for="loan in activeLoans" :key="loan.id" :value="loan.id">
+            {{ loan.barang_id }} - {{ loan.barang_nama }} (Peminjam: {{ loan.nama_peminjam }}, Tgl: {{ formatDate(loan.tanggal_pinjam) }})
+          </option>
+         </select>
+         <p class="text-xs text-slate-500 mt-2">Pilih data peminjaman yang masih aktif untuk diproses pengembaliannya</p>
+        </div>
+
+        <div v-if="selectedLoanRecord" class="bg-slate-800 rounded-lg border border-slate-700 p-4">
+         <h3 class="text-sm font-semibold text-slate-300 mb-3">Detail Peminjaman</h3>
+         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+          <div>
+           <p class="text-slate-500">Barang</p>
+           <p class="text-white font-medium">{{ selectedLoanRecord.barang_id }} - {{ selectedLoanRecord.barang_nama }}</p>
+          </div>
+          <div>
+           <p class="text-slate-500">Peminjam</p>
+           <p class="text-white font-medium">{{ selectedLoanRecord.nama_peminjam }}</p>
+          </div>
+          <div>
+           <p class="text-slate-500">Tanggal Pinjam</p>
+           <p class="text-white font-medium">{{ formatDate(selectedLoanRecord.tanggal_pinjam) }}</p>
+          </div>
+          <div>
+           <p class="text-slate-500">Estimasi Kembali</p>
+           <p class="text-white font-medium">{{ formatDate(selectedLoanRecord.estimasi_kembali) }}</p>
+          </div>
+          <div class="md:col-span-2">
+           <p class="text-slate-500">Tujuan</p>
+           <p class="text-white">{{ selectedLoanRecord.tujuan }}</p>
+          </div>
+          <div class="md:col-span-2">
+           <p class="text-slate-500">Kondisi Saat Dipinjam</p>
+           <p class="text-white">{{ selectedLoanRecord.kondisi_awal }}</p>
+          </div>
+         </div>
+        </div>
+       </div>
+      </div>
+
+      <!-- Section 1: Informasi Barang -->
+      <div class="mb-8">
+       <h2 class="text-lg font-bold text-white mb-6 flex items-center">
+        <svg class="w-5 h-5 mr-2" :style="{ color: config.primary_action_color || '#2563eb' }" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+        </svg>
+        Informasi Barang
+       </h2>
+       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div v-show="currentMode === 'peminjaman'" id="barang-select-wrapper">
+         <label for="barang-select" class="block text-sm font-semibold text-slate-300 mb-2">Pilih Barang *</label>
+         <select id="barang-select" v-model="form.barang_id" @change="handleBarangChange" :required="currentMode === 'peminjaman'" class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <option value="">-- Pilih Barang --</option>
+          <option value="LT001">LT001 - Laptop Dell XPS 15</option>
+          <option value="PR001">PR001 - Proyektor Epson EB-X41</option>
+          <option value="DR001">DR001 - Drone DJI Mavic Air 2</option>
+          <option value="CM001">CM001 - Kamera Canon EOS R6</option>
+          <option value="TB001">TB001 - Tablet iPad Pro 12.9"</option>
+         </select>
+        </div>
+        <div v-if="currentMode === 'pengembalian'">
+         <label class="block text-sm font-semibold text-slate-300 mb-2">Barang</label>
+         <input type="text" readonly :value="form.barang_id ? form.barang_id + ' - ' + selectedItem.nama : '-'" class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-400 cursor-not-allowed">
+        </div>
+        <div>
+         <label for="kategori" class="block text-sm font-semibold text-slate-300 mb-2">Kategori Barang</label>
+         <input type="text" id="kategori" readonly :value="selectedItem ? selectedItem.kategori : '-'" class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-400 cursor-not-allowed">
+        </div>
+        <div>
+         <label for="tipe-barang" class="block text-sm font-semibold text-slate-300 mb-2">Tipe Barang</label>
+         <input type="text" id="tipe-barang" readonly :value="selectedItem ? selectedItem.tipe : '-'" class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-400 cursor-not-allowed">
+        </div>
+        <div>
+         <label for="lokasi" class="block text-sm font-semibold text-slate-300 mb-2">Lokasi Barang</label>
+         <input type="text" id="lokasi" readonly :value="selectedItem ? selectedItem.lokasi : '-'" class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-400 cursor-not-allowed">
+        </div>
+        <div class="md:col-span-2">
+         <label class="block text-sm font-semibold text-slate-300 mb-2">Status Barang Saat Ini</label>
+         <div class="status-badge" :class="selectedItem && selectedItem.status === 'Tersedia' ? 'status-tersedia' : 'status-dipinjam'">
+          <svg class="w-4 h-4 mr-2" fill="currentColor" viewbox="0 0 20 20">
+            <path v-if="selectedItem && selectedItem.status === 'Tersedia'" fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+            <path v-else fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
+          </svg>
+          {{ selectedItem ? selectedItem.status : 'Tersedia' }}
+         </div>
+        </div>
+       </div>
+      </div>
+
+      <!-- Section 2: Informasi Peminjaman -->
+      <div class="mb-8">
+       <h2 class="text-lg font-bold text-white mb-6 flex items-center">
+        <svg class="w-5 h-5 mr-2" :style="{ color: config.primary_action_color || '#2563eb' }" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+        </svg>
+        Informasi Peminjaman
+       </h2>
+       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+         <label for="peminjam" class="block text-sm font-semibold text-slate-300 mb-2">Nama Peminjam *</label>
+         <select id="peminjam" v-model="form.nama_peminjam" :disabled="currentMode === 'pengembalian'" required class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
+          <option value="">-- Pilih Peminjam --</option>
+          <option value="Ahmad Fauzi">Ahmad Fauzi - IT Support</option>
+          <option value="Siti Nurhaliza">Siti Nurhaliza - Marketing</option>
+          <option value="Budi Santoso">Budi Santoso - Field Engineer</option>
+          <option value="Dewi Lestari">Dewi Lestari - Admin</option>
+         </select>
+        </div>
+        <div>
+         <label for="tanggal-pinjam" class="block text-sm font-semibold text-slate-300 mb-2">Tanggal Peminjaman *</label>
+         <input type="date" id="tanggal-pinjam" v-model="form.tanggal_pinjam" :disabled="currentMode === 'pengembalian'" required class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
+        </div>
+        <div>
+         <label for="estimasi-kembali" class="block text-sm font-semibold text-slate-300 mb-2">Estimasi Tanggal Pengembalian *</label>
+         <input type="date" id="estimasi-kembali" v-model="form.estimasi_kembali" :disabled="currentMode === 'pengembalian'" required class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
+        </div>
+        <div class="md:col-span-2">
+         <label for="tujuan" class="block text-sm font-semibold text-slate-300 mb-2">Tujuan Peminjaman *</label>
+         <textarea id="tujuan" v-model="form.tujuan" :disabled="currentMode === 'pengembalian'" required rows="3" placeholder="Contoh: Maintenance site area 5, Kalibrasi peralatan, Inspeksi rutin" class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"></textarea>
+        </div>
+       </div>
+      </div>
+
+      <!-- Section 3: Kondisi Barang Saat Dipinjam -->
+      <div class="mb-8">
+       <h2 class="text-lg font-bold text-white mb-6 flex items-center">
+        <svg class="w-5 h-5 mr-2" :style="{ color: config.primary_action_color || '#2563eb' }" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        Kondisi Barang Saat Dipinjam
+       </h2>
+       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+         <label for="kondisi-awal" class="block text-sm font-semibold text-slate-300 mb-2">Kondisi Awal Barang *</label>
+         <select id="kondisi-awal" v-model="form.kondisi_awal" :disabled="currentMode === 'pengembalian'" required class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
+          <option value="">-- Pilih Kondisi --</option>
+          <option value="Baik">Baik</option>
+          <option value="Cukup">Cukup</option>
+          <option value="Rusak">Rusak</option>
+         </select>
+        </div>
+        <div class="md:col-span-2">
+         <label for="catatan-awal" class="block text-sm font-semibold text-slate-300 mb-2">Catatan Kondisi Awal</label>
+         <textarea id="catatan-awal" v-model="form.catatan_awal" :disabled="currentMode === 'pengembalian'" rows="3" placeholder="Catat kondisi fisik, kelengkapan, atau keterangan lainnya" class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"></textarea>
+        </div>
+        <div class="md:col-span-2">
+         <label class="block text-sm font-semibold text-slate-300 mb-2">Unggah Foto Kondisi Awal Barang</label>
+         <div class="flex items-start space-x-4">
+          <div class="image-preview">
+           <div v-if="!fotoAwalData" class="w-full h-full flex flex-col items-center justify-center text-slate-500">
+            <svg class="w-12 h-12 mb-2" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <span class="text-xs">Belum ada foto</span>
+           </div>
+           <img v-else :src="fotoAwalData" alt="Foto kondisi awal">
+          </div>
+          <div v-if="currentMode === 'peminjaman'">
+           <input type="file" id="foto-awal" @change="onFileChange($event, 'awal')" accept="image/*" class="hidden">
+           <button type="button" @click="triggerUpload('awal')" class="px-4 py-2 text-white rounded-lg text-sm font-medium transition-colors" :style="{ backgroundColor: config.primary_action_color || '#2563eb' }">
+             Pilih Foto
+           </button>
+           <button v-if="fotoAwalData" type="button" @click="removePhoto('awal')" class="ml-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors">
+             Hapus
+           </button>
+           <p class="text-xs text-slate-500 mt-2">Format: JPG, PNG (Max 5MB)</p>
+          </div>
+         </div>
+        </div>
+       </div>
+      </div>
+
+      <!-- Section 4: Pengembalian Barang (Only for Pengembalian Mode) -->
+      <div v-if="currentMode === 'pengembalian'" class="mb-8">
+       <h2 class="text-lg font-bold text-white mb-6 flex items-center">
+        <svg class="w-5 h-5 mr-2" :style="{ color: config.primary_action_color || '#2563eb' }" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+        </svg>
+        Pengembalian Barang
+       </h2>
+       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+         <label for="tanggal-kembali" class="block text-sm font-semibold text-slate-300 mb-2">Tanggal Pengembalian Aktual *</label>
+         <input type="date" id="tanggal-kembali" v-model="form.tanggal_kembali" required class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div>
+         <label for="kondisi-akhir" class="block text-sm font-semibold text-slate-300 mb-2">Kondisi Barang Saat Dikembalikan *</label>
+         <select id="kondisi-akhir" v-model="form.kondisi_akhir" required class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <option value="">-- Pilih Kondisi --</option>
+          <option value="Baik">Baik</option>
+          <option value="Rusak Ringan">Rusak Ringan</option>
+          <option value="Rusak Berat">Rusak Berat</option>
+         </select>
+        </div>
+        <div class="md:col-span-2">
+         <label for="catatan-kembali" class="block text-sm font-semibold text-slate-300 mb-2">Catatan Pengembalian / Kerusakan</label>
+         <textarea id="catatan-kembali" v-model="form.catatan_kembali" rows="3" placeholder="Catat kondisi barang saat dikembalikan atau kerusakan yang terjadi" class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+        </div>
+        <div class="md:col-span-2">
+         <label class="block text-sm font-semibold text-slate-300 mb-2">Unggah Foto Kondisi Akhir Barang</label>
+         <div class="flex items-start space-x-4">
+          <div class="image-preview">
+           <div v-if="!fotoAkhirData" class="w-full h-full flex flex-col items-center justify-center text-slate-500">
+            <svg class="w-12 h-12 mb-2" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <span class="text-xs">Belum ada foto</span>
+           </div>
+           <img v-else :src="fotoAkhirData" alt="Foto kondisi akhir">
+          </div>
+          <div>
+           <input type="file" id="foto-akhir" @change="onFileChange($event, 'akhir')" accept="image/*" class="hidden">
+           <button type="button" @click="triggerUpload('akhir')" class="px-4 py-2 text-white rounded-lg text-sm font-medium transition-colors" :style="{ backgroundColor: config.primary_action_color || '#2563eb' }">
+             Pilih Foto
+           </button>
+           <button v-if="fotoAkhirData" type="button" @click="removePhoto('akhir')" class="ml-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors">
+             Hapus
+           </button>
+           <p class="text-xs text-slate-500 mt-2">Format: JPG, PNG (Max 5MB)</p>
+          </div>
+         </div>
+        </div>
+       </div>
+      </div>
+
+      <!-- Section 5: Status & Verifikasi -->
+      <div class="mb-8">
+       <h2 class="text-lg font-bold text-white mb-6 flex items-center">
+        <svg class="w-5 h-5 mr-2" :style="{ color: config.primary_action_color || '#2563eb' }" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+        </svg>
+        Status &amp; Verifikasi
+       </h2>
+       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+         <label class="block text-sm font-semibold text-slate-300 mb-2">Status Peminjaman</label>
+         <div class="status-badge" :class="currentMode === 'peminjaman' ? 'status-dipinjam' : 'status-dikembalikan'">
+          <svg class="w-4 h-4 mr-2" fill="currentColor" viewbox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
+          </svg>
+          {{ currentMode === 'peminjaman' ? 'Akan Dipinjam' : 'Akan Dikembalikan' }}
+         </div>
+        </div>
+        <div v-show="currentMode === 'pengembalian' && isOverdue">
+         <div class="bg-red-500 bg-opacity-10 border border-red-500 border-opacity-30 rounded-lg p-4">
+          <div class="flex items-start">
+           <svg class="w-5 h-5 text-red-500 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewbox="0 0 20 20">
+             <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+           </svg>
+           <div>
+            <p class="text-red-400 font-semibold text-sm">⚠️ Terlambat Dikembalikan</p>
+            <p class="text-red-300 text-xs mt-1">Barang melewati estimasi tanggal pengembalian</p>
+           </div>
+          </div>
+         </div>
+        </div>
+        <div class="md:col-span-2">
+         <label for="catatan-verifikasi" class="block text-sm font-semibold text-slate-300 mb-2">Catatan Verifikasi Admin/Supervisor</label>
+         <textarea id="catatan-verifikasi" v-model="form.catatan_verifikasi" rows="3" placeholder="Catatan khusus dari admin atau supervisor (opsional)" class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+        </div>
+       </div>
+      </div>
+
+      <!-- Validation Message -->
+      <div v-show="validationError" class="mb-6 bg-red-500 bg-opacity-10 border border-red-500 border-opacity-30 rounded-lg p-4">
+       <div class="flex items-start">
+        <svg class="w-5 h-5 text-red-500 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewbox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+        </svg>
+        <div>
+         <p class="text-red-400 font-semibold text-sm">Data Belum Lengkap</p>
+         <p class="text-red-300 text-xs mt-1">{{ validationError }}</p>
+        </div>
+       </div>
+      </div>
+
+      <!-- Submit & Cancel buttons -->
+      <div class="flex items-center space-x-4">
+       <button type="submit" id="submit-btn" class="flex-1 px-6 py-3 text-white rounded-lg font-semibold transition-colors flex items-center justify-center" :style="{ backgroundColor: config.primary_action_color || '#2563eb' }">
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+        </svg>
+        <span>{{ currentMode === 'peminjaman' ? (config.submit_button_text || 'Ajukan Peminjaman') : 'Proses Pengembalian' }}</span>
+       </button>
+       <button type="button" id="cancel-btn" @click="resetForm" class="px-6 py-3 rounded-lg font-semibold transition-colors" :style="{ backgroundColor: config.secondary_action_color || '#1e293b', color: '#cbd5e1' }">
+        <span>{{ config.cancel_button_text || 'Batal' }}</span>
+       </button>
+      </div>
+     </form>
+    </div>
+
+    <!-- Records View -->
+    <div v-show="showRecords" id="records-view" class="mt-8">
+     <div class="rounded-xl border shadow-2xl p-8" :style="{ backgroundColor: config.surface_color || '#0f172a', borderColor: 'rgba(59,130,246,0.2)' }">
+      <div class="flex items-center justify-between mb-6">
+       <h2 class="text-xl font-bold text-white">Riwayat Peminjaman &amp; Pengembalian</h2>
+       <button id="close-records-btn" @click="showRecords = false" class="px-4 py-2 rounded-lg text-sm font-medium transition-colors" :style="{ backgroundColor: config.secondary_action_color || '#1e293b', color: '#ffffff' }">
+         Kembali ke Form
+       </button>
+      </div>
+      
+      <div v-if="currentRecords.length > 0" class="space-y-4">
+       <div v-for="record in currentRecords" :key="record.id" class="bg-slate-800 rounded-lg border border-slate-700 p-6">
+        <div class="flex items-start justify-between mb-4">
+          <div>
+            <h3 class="text-lg font-bold text-white mb-1">{{ record.barang_nama }}</h3>
+            <p class="text-sm text-slate-400">ID: {{ record.barang_id }}</p>
+          </div>
+          <span class="status-badge" :class="record.status === 'Dipinjam' ? 'status-dipinjam' : 'status-dikembalikan'">
+            {{ record.status }}
+          </span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          <div>
+            <p class="text-slate-500">Peminjam</p>
+            <p class="text-white font-medium">{{ record.nama_peminjam }}</p>
+          </div>
+          <div>
+            <p class="text-slate-500">Tanggal Pinjam</p>
+            <p class="text-white font-medium">{{ formatDate(record.tanggal_pinjam) }}</p>
+          </div>
+          <div>
+            <p class="text-slate-500">Estimasi Kembali</p>
+            <p class="text-white font-medium">{{ formatDate(record.estimasi_kembali) }}</p>
+          </div>
+          <div v-if="record.tanggal_kembali">
+            <p class="text-slate-500">Tanggal Kembali</p>
+            <p class="text-white font-medium">{{ formatDate(record.tanggal_kembali) }}</p>
+          </div>
+          <div class="md:col-span-2">
+            <p class="text-slate-500">Tujuan</p>
+            <p class="text-white">{{ record.tujuan }}</p>
+          </div>
+        </div>
+       </div>
+      </div>
+      <div v-else class="text-center py-12">
+       <svg class="w-16 h-16 mx-auto text-slate-700 mb-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+       </svg>
+       <p class="text-slate-400 text-lg">Belum ada riwayat peminjaman</p>
+      </div>
+     </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div v-show="showConfirmationModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
+     <div class="bg-slate-900 rounded-xl border border-slate-800 shadow-2xl max-w-md w-full p-6">
+      <div class="flex items-start mb-4">
+       <svg class="w-6 h-6 text-blue-500 mr-3 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+       </svg>
+       <div>
+        <h3 class="text-lg font-bold text-white">Konfirmasi Penyimpanan</h3>
+        <p class="text-slate-300 text-sm mt-2">
+          {{ currentMode === 'peminjaman' ? 'Apakah Anda yakin ingin mengajukan peminjaman barang ini?' : 'Apakah Anda yakin ingin memproses pengembalian barang ini?' }}
+        </p>
+       </div>
+      </div>
+      <div class="flex items-center space-x-3 mt-6">
+       <button @click="confirmSave" :disabled="isSubmitting" class="flex-1 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors flex items-center justify-center gap-2">
+         <span>Ya, Simpan</span>
+         <div v-show="isSubmitting" class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+       </button>
+       <button @click="showConfirmationModal = false" class="flex-1 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg font-semibold transition-colors">
+         Batal
+       </button>
+      </div>
+     </div>
+    </div>
+
+    <!-- Success Toast -->
+    <div v-show="showSuccessToast" class="fixed top-4 right-4 bg-green-600 text-white px-6 py-4 rounded-lg shadow-xl z-50 flex items-center">
+     <svg class="w-5 h-5 mr-3" fill="currentColor" viewbox="0 0 20 20">
+       <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+     </svg>
+     <span>{{ toastMessage }}</span>
+    </div>
+   </main>
+  </div>
+
+  <script>
+    const defaultConfig = {
+      form_title: "Peminjaman & Pengembalian Barang",
+      user_name: "Admin User",
+      submit_button_text: "Ajukan Peminjaman",
+      cancel_button_text: "Batal",
+      background_color: "#020617",
+      surface_color: "#0f172a",
+      text_color: "#e2e8f0",
+      primary_action_color: "#2563eb",
+      secondary_action_color: "#1e293b"
+    };
+
+    const itemDatabase = {
+      'LT001': { nama: 'Laptop Dell XPS 15', kategori: 'Elektronik', tipe: 'Aset', lokasi: 'Kantor', status: 'Tersedia' },
+      'PR001': { nama: 'Proyektor Epson EB-X41', kategori: 'Elektronik', tipe: 'Peminjaman', lokasi: 'Gudang', status: 'Tersedia' },
+      'DR001': { nama: 'Drone DJI Mavic Air 2', kategori: 'Elektronik', tipe: 'Peminjaman', lokasi: 'Gudang', status: 'Dipinjam' },
+      'CM001': { nama: 'Kamera Canon EOS R6', kategori: 'Elektronik', tipe: 'Aset', lokasi: 'Kantor', status: 'Tersedia' },
+      'TB001': { nama: 'Tablet iPad Pro 12.9"', kategori: 'Elektronik', tipe: 'Peminjaman', lokasi: 'Kantor', status: 'Tersedia' }
+    };
+
+    const { createApp, ref, computed, onMounted } = Vue;
+
+    createApp({
+      setup() {
+        const config = ref({ ...defaultConfig });
+        const currentMode = ref('peminjaman');
+        const currentRecords = ref([]);
+        const showRecords = ref(false);
+
+        const isSubmitting = ref(false);
+        const selectedLoanId = ref('');
+        const selectedLoanRecord = ref(null);
+
+        // Foto preview base64
+        const fotoAwalData = ref(null);
+        const fotoAkhirData = ref(null);
+
+        // Modal/Toast
+        const showConfirmationModal = ref(false);
+        const showSuccessToast = ref(false);
+        const toastMessage = ref('');
+        const validationError = ref('');
+
+        const today = new Date().toISOString().split('T')[0];
+
+        const form = ref({
+          barang_id: '',
+          nama_peminjam: '',
+          tanggal_pinjam: today,
+          estimasi_kembali: today,
+          tujuan: '',
+          kondisi_awal: '',
+          catatan_awal: '',
+          tanggal_kembali: today,
+          kondisi_akhir: '',
+          catatan_kembali: '',
+          catatan_verifikasi: ''
+        });
+
+        const getUserInitials = computed(() => {
+          const name = config.value.user_name || defaultConfig.user_name;
+          return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+        });
+
+        const selectedItem = computed(() => {
+          if (!form.value.barang_id) return null;
+          return itemDatabase[form.value.barang_id] || null;
+        });
+
+        const activeLoans = computed(() => {
+          return currentRecords.value.filter(record => record.status === 'Dipinjam');
+        });
+
+        const isOverdue = computed(() => {
+          if (!selectedLoanRecord.value) return false;
+          const now = new Date();
+          const est = new Date(selectedLoanRecord.value.estimasi_kembali);
+          return now > est;
+        });
+
+        const switchMode = (mode) => {
+          currentMode.value = mode;
+          selectedLoanId.value = '';
+          selectedLoanRecord.value = null;
+          resetForm();
+        };
+
+        const handleBarangChange = () => {
+          // values auto-bound in computed 'selectedItem'
+        };
+
+        const handleLoanSelect = () => {
+          if (selectedLoanId.value) {
+            const record = activeLoans.value.find(r => r.id === selectedLoanId.value);
+            if (record) {
+              selectedLoanRecord.value = record;
+              
+              form.value.barang_id = record.barang_id;
+              form.value.nama_peminjam = record.nama_peminjam;
+              form.value.tanggal_pinjam = record.tanggal_pinjam;
+              form.value.estimasi_kembali = record.estimasi_kembali;
+              form.value.tujuan = record.tujuan;
+              form.value.kondisi_awal = record.kondisi_awal;
+              form.value.catatan_awal = record.catatan_awal || '';
+              
+              // clear photo states
+              fotoAwalData.value = null;
+              fotoAkhirData.value = null;
+            }
+          } else {
+            selectedLoanRecord.value = null;
+            resetForm();
+          }
+        };
+
+        const triggerUpload = (type) => {
+          const input = document.getElementById(type === 'awal' ? 'foto-awal' : 'foto-akhir');
+          if (input) input.click();
+        };
+
+        const onFileChange = (e, type) => {
+          const file = e.target.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+              if (type === 'awal') {
+                fotoAwalData.value = event.target.result;
+              } else {
+                fotoAkhirData.value = event.target.result;
+              }
+            };
+            reader.readAsDataURL(file);
+          }
+        };
+
+        const removePhoto = (type) => {
+          if (type === 'awal') {
+            fotoAwalData.value = null;
+            const input = document.getElementById('foto-awal');
+            if (input) input.value = '';
+          } else {
+            fotoAkhirData.value = null;
+            const input = document.getElementById('foto-akhir');
+            if (input) input.value = '';
+          }
+        };
+
+        const validateForm = () => {
+          validationError.value = '';
+
+          if (currentMode.value === 'pengembalian') {
+            if (!selectedLoanRecord.value) {
+              validationError.value = 'Mohon pilih data peminjaman yang akan dikembalikan';
+              return false;
+            }
+            if (!form.value.tanggal_kembali) {
+              validationError.value = 'Mohon isi tanggal pengembalian aktual';
+              return false;
+            }
+            if (!form.value.kondisi_akhir) {
+              validationError.value = 'Mohon pilih kondisi barang saat dikembalikan';
+              return false;
+            }
+          } else {
+            if (!form.value.barang_id) {
+              validationError.value = 'Mohon pilih barang yang akan dipinjam';
+              return false;
+            }
+            if (!form.value.nama_peminjam) {
+              validationError.value = 'Mohon pilih nama peminjam';
+              return false;
+            }
+            if (!form.value.tanggal_pinjam) {
+              validationError.value = 'Mohon isi tanggal peminjaman';
+              return false;
+            }
+            if (!form.value.estimasi_kembali) {
+              validationError.value = 'Mohon isi estimasi tanggal pengembalian';
+              return false;
+            }
+            if (!form.value.tujuan) {
+              validationError.value = 'Mohon isi tujuan peminjaman';
+              return false;
+            }
+            if (!form.value.kondisi_awal) {
+              validationError.value = 'Mohon pilih kondisi awal barang';
+              return false;
+            }
+          }
+          return true;
+        };
+
+        const submitForm = () => {
+          if (!validateForm()) return;
+          showConfirmationModal.value = true;
+        };
+
+        const showToast = (msg) => {
+          toastMessage.value = msg;
+          showSuccessToast.value = true;
+          setTimeout(() => {
+            showSuccessToast.value = false;
+          }, 3000);
+        };
+
+        const confirmSave = async () => {
+          if (isSubmitting.value) return;
+
+          isSubmitting.value = true;
+
+          try {
+            if (currentMode.value === 'pengembalian') {
+              const updated = {
+                ...selectedLoanRecord.value,
+                tanggal_kembali: form.value.tanggal_kembali,
+                kondisi_akhir: form.value.kondisi_akhir,
+                catatan_kembali: form.value.catatan_kembali,
+                catatan_verifikasi: form.value.catatan_verifikasi,
+                status: 'Dikembalikan'
+              };
+
+              const res = await window.dataSdk.update(updated);
+              if (res.isOk) {
+                showToast('Pengembalian berhasil diproses!');
+                resetForm();
+                switchMode('peminjaman');
+              } else {
+                validationError.value = 'Terjadi kesalahan saat memproses data.';
+              }
+            } else {
+              const item = selectedItem.value;
+              const payload = {
+                id: Date.now().toString(),
+                barang_id: form.value.barang_id,
+                barang_nama: item.nama,
+                kategori: item.kategori,
+                tipe_barang: item.tipe,
+                lokasi: item.lokasi,
+                nama_peminjam: form.value.nama_peminjam,
+                tanggal_pinjam: form.value.tanggal_pinjam,
+                estimasi_kembali: form.value.estimasi_kembali,
+                tujuan: form.value.tujuan,
+                kondisi_awal: form.value.kondisi_awal,
+                catatan_awal: form.value.catatan_awal,
+                tanggal_kembali: '',
+                kondisi_akhir: '',
+                catatan_kembali: '',
+                catatan_verifikasi: form.value.catatan_verifikasi,
+                status: 'Dipinjam',
+                created_at: new Date().toISOString()
+              };
+
+              if (currentRecords.value.length >= 999) {
+                validationError.value = 'Batas maksimum 999 data telah tercapai. Mohon hapus data lama terlebih dahulu.';
+                isSubmitting.value = false;
+                showConfirmationModal.value = false;
+                return;
+              }
+
+              const res = await window.dataSdk.create(payload);
+              if (res.isOk) {
+                showToast('Peminjaman berhasil diajukan!');
+                resetForm();
+              } else {
+                validationError.value = 'Terjadi kesalahan saat menyimpan data.';
+              }
+            }
+          } catch (e) {
+            validationError.value = 'Koneksi error, gagal menyimpan data.';
+          } finally {
+            isSubmitting.value = false;
+            showConfirmationModal.value = false;
+          }
+        };
+
+        const resetForm = () => {
+          form.value = {
+            barang_id: '',
+            nama_peminjam: '',
+            tanggal_pinjam: today,
+            estimasi_kembali: today,
+            tujuan: '',
+            kondisi_awal: '',
+            catatan_awal: '',
+            tanggal_kembali: today,
+            kondisi_akhir: '',
+            catatan_kembali: '',
+            catatan_verifikasi: ''
+          };
+          fotoAwalData.value = null;
+          fotoAkhirData.value = null;
+          validationError.value = '';
+          selectedLoanId.value = '';
+          selectedLoanRecord.value = null;
+        };
+
+        const formatDate = (dateStr) => {
+          if (!dateStr) return '-';
+          try {
+            return new Date(dateStr).toLocaleDateString('id-ID');
+          } catch (e) {
+            return dateStr;
+          }
+        };
+
+        const handleLogout = () => {
+          showToast('Logout berhasil');
+        };
+
+        onMounted(() => {
+          if (window.dataSdk) {
+            window.dataSdk.init({
+              onDataChanged(data) {
+                currentRecords.value = data || [];
+              }
+            }).then(res => {
+              if (!res.isOk) console.error('Data SDK init failed');
+            });
+          }
+
+          if (window.elementSdk) {
+            window.elementSdk.init({
+              defaultConfig,
+              onConfigChange: (newConfig) => {
+                config.value = { ...defaultConfig, ...newConfig };
+              },
+              mapToCapabilities: (cfg) => {
+                const c = { ...defaultConfig, ...cfg };
+                return {
+                  recolorables: [
+                    { get: () => c.background_color, set: (v) => window.elementSdk.setConfig({ background_color: v }) },
+                    { get: () => c.surface_color, set: (v) => window.elementSdk.setConfig({ surface_color: v }) },
+                    { get: () => c.text_color, set: (v) => window.elementSdk.setConfig({ text_color: v }) },
+                    { get: () => c.primary_action_color, set: (v) => window.elementSdk.setConfig({ primary_action_color: v }) },
+                    { get: () => c.secondary_action_color, set: (v) => window.elementSdk.setConfig({ secondary_action_color: v }) }
+                  ],
+                  borderables: [],
+                  fontEditable: undefined,
+                  fontSizeable: undefined
+                };
+              },
+              mapToEditPanelValues: (cfg) => {
+                const c = { ...defaultConfig, ...cfg };
+                return new Map([
+                  ['form_title', c.form_title],
+                  ['user_name', c.user_name],
+                  ['submit_button_text', c.submit_button_text],
+                  ['cancel_button_text', c.cancel_button_text]
+                ]);
+              }
+            });
+          }
+        });
+
+        return {
+          config,
+          currentMode,
+          currentRecords,
+          showRecords,
+          isSubmitting,
+          selectedLoanId,
+          selectedLoanRecord,
+          fotoAwalData,
+          fotoAkhirData,
+          showConfirmationModal,
+          showSuccessToast,
+          toastMessage,
+          validationError,
+          form,
+          getUserInitials,
+          selectedItem,
+          activeLoans,
+          isOverdue,
+          switchMode,
+          handleBarangChange,
+          handleLoanSelect,
+          triggerUpload,
+          onFileChange,
+          removePhoto,
+          submitForm,
+          confirmSave,
+          resetForm,
+          formatDate,
+          handleLogout
+        };
+      }
+    }).mount('#app');
+  </script>
+  
+ </body>
+</html>

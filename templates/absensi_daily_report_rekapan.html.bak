@@ -1,0 +1,728 @@
+<!doctype html>
+<html lang="id" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>History Report Pekerjaan Harian</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet">
+  <script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: { jakarta: ['Plus Jakarta Sans', 'sans-serif'] }
+    }
+  }
+}
+</script>
+  <style>
+html, body { height: 100%; margin: 0; }
+* { box-sizing: border-box; }
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #0a1628; }
+::-webkit-scrollbar-thumb { background: #1e3a5f; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #2a5080; }
+.expand-content { max-height: 0; overflow: hidden; transition: max-height 0.4s ease, opacity 0.3s ease; opacity: 0; }
+.expand-content.open { max-height: 4000px; opacity: 1; }
+.progress-fill { transition: width 0.6s ease; }
+.row-hover:hover { background: rgba(30, 58, 95, 0.3) !important; }
+.fade-in { animation: fadeIn 0.3s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+.toast-slide { animation: toastIn 0.3s ease, toastOut 0.3s ease 2.7s forwards; }
+@keyframes toastIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes toastOut { from { opacity: 1; } to { opacity: 0; } }
+</style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full bg-[#060e1a] font-jakarta text-gray-200 overflow-auto">
+  <div id="app" class="w-full min-h-full flex flex-col">
+   <!-- HEADER -->
+   <header id="main-header" class="w-full bg-[#0a1628] border-b border-[#1a2d4a] px-8 py-4 flex items-center justify-between flex-shrink-0">
+    <div>
+     <h1 id="page-title" class="text-xl font-bold text-white tracking-tight">History Report Pekerjaan Harian</h1>
+     <p id="page-subtitle" class="text-sm text-[#6b8cba] mt-0.5">Monitoring aktivitas kerja harian karyawan</p>
+    </div>
+    <div class="flex items-center gap-4"><button id="back-button" class="px-4 py-2 rounded-lg bg-[#1a2d4a] hover:bg-cyan-600 transition text-cyan-400 hover:text-white font-medium text-sm" title="Kembali">Kembali</button>
+    </div>
+   </header><!-- FILTER BAR -->
+   <div class="w-full bg-[#0d1a2d] border-b border-[#1a2d4a] px-8 py-5 flex-shrink-0">
+    <div class="flex flex-wrap items-end gap-4">
+     <div class="flex flex-col gap-1.5"><label class="text-xs font-medium text-[#5a7da8] uppercase tracking-wider">📅 Tanggal Mulai</label> <input type="date" id="f-start" class="bg-[#0a1628] border border-[#1a2d4a] rounded-lg px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-cyan-500 transition">
+     </div>
+     <div class="flex flex-col gap-1.5"><label class="text-xs font-medium text-[#5a7da8] uppercase tracking-wider">📅 Tanggal Akhir</label> <input type="date" id="f-end" class="bg-[#0a1628] border border-[#1a2d4a] rounded-lg px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-cyan-500 transition">
+     </div>
+     <div class="flex flex-col gap-1.5"><label class="text-xs font-medium text-[#5a7da8] uppercase tracking-wider">👤 Nama Karyawan</label> <input type="text" id="f-name" placeholder="Cari nama..." class="bg-[#0a1628] border border-[#1a2d4a] rounded-lg px-3 py-2 text-sm text-gray-200 placeholder-[#3a5a7a] focus:outline-none focus:border-cyan-500 transition w-48">
+     </div>
+     <div class="flex flex-col gap-1.5"><label class="text-xs font-medium text-[#5a7da8] uppercase tracking-wider">📍 Lokasi Kerja</label> <select id="f-location" class="bg-[#0a1628] border border-[#1a2d4a] rounded-lg px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-cyan-500 transition"> <option value="">Semua Lokasi</option> <option>KIP</option> <option>TKI</option> <option>WFH</option> </select>
+     </div>
+     <div class="flex flex-col gap-1.5"><label class="text-xs font-medium text-[#5a7da8] uppercase tracking-wider">🎯 Project</label> <input type="text" id="f-project" placeholder="Cari project..." class="bg-[#0a1628] border border-[#1a2d4a] rounded-lg px-3 py-2 text-sm text-gray-200 placeholder-[#3a5a7a] focus:outline-none focus:border-cyan-500 transition w-48">
+     </div>
+     <div class="flex flex-col gap-1.5"><label class="text-xs font-medium text-[#5a7da8] uppercase tracking-wider">💼 Jenis Pekerjaan</label> <input type="text" id="f-job-type" placeholder="Development, Testing, dll..." class="bg-[#0a1628] border border-[#1a2d4a] rounded-lg px-3 py-2 text-sm text-gray-200 placeholder-[#3a5a7a] focus:outline-none focus:border-cyan-500 transition w-48" list="job-type-list"> <datalist id="job-type-list"> <option>Development</option> <option>Documentation</option> <option>Testing</option> <option>Design</option> </datalist>
+     </div>
+     <div class="flex flex-col gap-1.5"><label class="text-xs font-medium text-[#5a7da8] uppercase tracking-wider">📝 Judul Pekerjaan</label> <input type="text" id="f-job-title" placeholder="Cari judul..." class="bg-[#0a1628] border border-[#1a2d4a] rounded-lg px-3 py-2 text-sm text-gray-200 placeholder-[#3a5a7a] focus:outline-none focus:border-cyan-500 transition w-48">
+     </div>
+     <div class="flex items-end gap-2 ml-auto"><button onclick="applyFilter()" class="bg-cyan-600 hover:bg-cyan-500 text-white text-sm font-semibold px-5 py-2 rounded-lg transition flex items-center gap-2"> <i data-lucide="search" style="width:15px;height:15px;"></i> Cari Data </button> <button onclick="resetFilter()" class="bg-[#1a2d4a] hover:bg-[#243d5c] text-gray-300 text-sm font-medium px-4 py-2 rounded-lg transition flex items-center gap-2"> <i data-lucide="refresh-cw" style="width:15px;height:15px;"></i> Reset </button> <button onclick="exportXLS()" class="bg-emerald-700 hover:bg-emerald-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition flex items-center gap-2"> <i data-lucide="file-spreadsheet" style="width:15px;height:15px;"></i> Export XLS </button> <button onclick="exportPDF()" class="bg-red-700 hover:bg-red-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition flex items-center gap-2"> <i data-lucide="file-text" style="width:15px;height:15px;"></i> Export PDF </button>
+     </div>
+    </div>
+   </div><!-- SUMMARY BAR -->
+   <div class="w-full px-8 py-3 flex items-center justify-between flex-shrink-0 bg-[#080f1e]">
+    <p id="total-indicator" class="text-sm text-[#5a7da8]">Menampilkan <span class="text-cyan-400 font-semibold">0</span> dari <span class="text-cyan-400 font-semibold">0</span> data</p>
+    <div class="flex items-center gap-2 text-sm"><span class="text-[#5a7da8]">Per halaman:</span> <select id="per-page" onchange="changePerPage()" class="bg-[#0a1628] border border-[#1a2d4a] rounded px-2 py-1 text-gray-300 text-sm focus:outline-none"> <option value="20">20</option> <option value="50">50</option> </select>
+    </div>
+   </div><!-- TABLE -->
+   <div class="flex-1 w-full px-8 py-4 overflow-auto">
+    <div class="w-full bg-[#0a1628] rounded-xl border border-[#1a2d4a] overflow-hidden">
+     <table class="w-full text-sm">
+      <thead>
+       <tr class="bg-[#0d1f38] text-[#6b8cba] text-xs uppercase tracking-wider">
+        <th class="px-4 py-3.5 text-left font-semibold w-14">No</th>
+        <th class="px-4 py-3.5 text-left font-semibold">Nama</th>
+        <th class="px-4 py-3.5 text-left font-semibold">Lokasi</th>
+        <th class="px-4 py-3.5 text-left font-semibold">Tanggal</th>
+        <th class="px-4 py-3.5 text-left font-semibold">Jam Mulai</th>
+        <th class="px-4 py-3.5 text-left font-semibold">Jam Selesai</th>
+        <th class="px-4 py-3.5 text-center font-semibold">Jumlah Pekerjaan</th>
+        <th class="px-4 py-3.5 text-center font-semibold w-48">Action</th>
+       </tr>
+      </thead>
+      <tbody id="table-body"></tbody>
+     </table>
+    </div>
+   </div><!-- PAGINATION -->
+   <div class="w-full px-8 py-4 flex items-center justify-center gap-2 flex-shrink-0 border-t border-[#1a2d4a] bg-[#080f1e]" id="pagination-bar"></div><!-- DELETE CONFIRMATION MODAL -->
+   <div id="delete-modal" class="fixed inset-0 bg-black/60 z-50 hidden items-center justify-center" style="display:none;">
+    <div class="bg-[#0d1a2d] border border-[#1a2d4a] rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl">
+     <div class="flex items-center gap-3 mb-4">
+      <div class="w-10 h-10 rounded-full bg-red-900/40 flex items-center justify-center">
+       <i data-lucide="alert-triangle" style="width:20px;height:20px;color:#f87171;"></i>
+      </div>
+      <h3 class="text-lg font-bold text-white">Konfirmasi Hapus</h3>
+     </div>
+     <p class="text-[#8baac8] mb-6">Yakin ingin menghapus report ini? Data yang dihapus tidak dapat dikembalikan.</p>
+     <div class="flex justify-end gap-3">
+      <button onclick="closeDeleteModal()" class="px-5 py-2.5 rounded-lg bg-[#1a2d4a] hover:bg-[#243d5c] text-gray-300 font-medium text-sm transition">Batal</button> <button onclick="confirmDelete()" class="px-5 py-2.5 rounded-lg bg-red-600 hover:bg-red-500 text-white font-semibold text-sm transition">Hapus</button>
+     </div>
+    </div>
+   </div><!-- TOAST -->
+   <div id="toast-container" class="fixed top-6 right-6 z-50 flex flex-col gap-2"></div>
+  </div>
+  <script>
+
+const authToken = getCookie("authToken");
+const namaKaryawan = getCookieName("nama_karyawan");
+const roleKaryawan = getCookieName("role");
+
+if (!authToken) {
+  throw new Error('Authentication token not found');
+}
+if (!namaKaryawan) {
+  throw new Error('Nama Karyawan not found');
+}
+
+let currentPage = 1;
+let perPage = 20;
+let expandedRows = new Set();
+let deleteTargetId = null;
+
+
+// API Configuration
+// const API_BASE_URL = '/auth/absensi/daily-report?nama=' + namaKaryawan + '&page=1&per_page=20'; // Backend endpoint for employee attendance
+const API_BASE_URL = '/auth/absensi/daily-report'; // Backend endpoint for employee attendance
+let isLoading = false;
+
+/**
+ * ============================================================================
+ * API RESPONSE FORMAT DOCUMENTATION
+ * ============================================================================
+ * 
+ * ENDPOINT: GET /api/reports
+ * 
+ * QUERY PARAMETERS (optional):
+ * - startDate: ISO date string (2026-04-10)
+ * - endDate: ISO date string (2026-04-15)
+ * - nama: string (search by employee name)
+ * - lokasi: string (filter by location)
+ * - page: number (default: 1)
+ * - limit: number (default: 10, max: 50)
+ * 
+ * EXPECTED RESPONSE FORMAT (JSON):
+ * {
+ *   "data": [
+ *     {
+ *       "id": 1,
+ *       "nama": "Ahmad Fauzi",
+ *       "lokasi": "KIP Surabaya",
+ *       "tanggal": "2026-04-15",
+ *       "jam_mulai": "08:00",
+ *       "jam_selesai": "17:00",
+ *       "pekerjaan_list": [
+ *         {
+ *           "id": 0,
+ *           "project_name": "Proyek Alpha",
+ *           "job_type": "Development",
+ *           "job_title": "Backend API Module",
+ *           "description": "Membuat endpoint REST API\nIntegrasi database PostgreSQL\nUnit testing module auth",
+ *           "progress": 75,
+ *           "kendala": "Server staging down 2 jam\nDependency library outdated",
+ *           "solusi": "Gunakan server backup\nUpdate library ke versi terbaru"
+ *         },
+ *         {
+ *           "id": 1,
+ *           "project_name": "Proyek Beta",
+ *           "job_type": "Documentation",
+ *           "job_title": "Technical Documentation",
+ *           "description": "Menulis dokumentasi API\nMembuat diagram arsitektur",
+ *           "progress": 40,
+ *           "kendala": "Spesifikasi belum final\nTemplate belum disetujui",
+ *           "solusi": "Koordinasi dengan PM\nGunakan template sementara"
+ *         }
+ *       ],
+ *       "rencana_besok": "Melanjutkan integrasi database\nReview code dari tim frontend\nMeeting dengan klien pukul 10:00"
+ *     }
+ *   ],
+ *   "total": 45,
+ *   "page": 1,
+ *   "limit": 10
+ * }
+ * 
+ * FIELD DESCRIPTIONS:
+ * 
+ * Top Level (Report):
+ * - id (number, required): Unique identifier for the report
+ * - nama (string, required): Employee name (max 100 chars)
+ * - lokasi (string, required): Work location (max 100 chars)
+ * - tanggal (string, required): Date in YYYY-MM-DD format
+ * - jam (string, required): Work hours (e.g., "08:00 - 17:00")
+ * - pekerjaan (array, required): List of work items (0-unlimited items)
+ * - rencana_besok (string, optional): Tomorrow's plan (multiline text)
+ * 
+ * Work Item (pekerjaan array):
+ * - id (number, required): Work item identifier (0, 1, 2, etc.)
+ * - nama (string, required): Project name (max 100 chars)
+ * - tipe (string, required): Work type (e.g., "Development", "Documentation", "Testing", "Design")
+ * - judul (string, required): Work title/task name (max 200 chars)
+ * - description (string, required): Detailed description (multiline text with \n for line breaks)
+ * - progress (number, required): Progress percentage (0-100)
+ * - kendala (string, required): Obstacles/challenges faced (multiline text with \n for line breaks)
+ * - solusi (string, required): Solutions/actions taken (multiline text with \n for line breaks)
+ * 
+ * Response Meta (optional):
+ * - total (number): Total number of records matching filter
+ * - page (number): Current page number
+ * - limit (number): Records per page
+ * 
+ * EXAMPLE BACKEND RESPONSE:
+ * 
+ */
+
+// Sample fallback data (in case API is unavailable)
+const fallbackData = [
+  { id:1, nama:"Ahmad Fauzi", lokasi:"KIP Surabaya", tanggal:"2026-04-15", jam_mulai:"08:00", jam_selesai:"17:00",
+    pekerjaan_list:[
+      {id:0,project_name:"Proyek Alpha",job_type:"Development",job_title:"Backend API Module",description:"Membuat endpoint REST API\nIntegrasi database PostgreSQL\nUnit testing module auth",progress:75,kendala:"Server staging down 2 jam\nDependency library outdated",solusi:"Gunakan server backup\nUpdate library ke versi terbaru"},
+      {id:1,project_name:"Proyek Beta",job_type:"Documentation",job_title:"Technical Documentation",description:"Menulis dokumentasi API\nMembuat diagram arsitektur",progress:40,kendala:"Spesifikasi belum final\nTemplate belum disetujui",solusi:"Koordinasi dengan PM\nGunakan template sementara"}
+    ],
+    rencana_besok:"Melanjutkan integrasi database\nReview code dari tim frontend\nMeeting dengan klien pukul 10:00"
+  }
+];
+
+let allData = [];
+let filteredData = [];
+
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(";").shift();
+  return null;
+}
+
+function getCookieName(name) {
+  const cookies = document.cookie.split('; ');
+  for (let c of cookies) {
+    const [key, value] = c.split('=');
+    if (key === name) {
+      // penting: + → spasi → decode
+      return decodeURIComponent(value.replace(/\+/g, ' '));
+    }
+  }
+  return null;
+}    
+
+// Fetch reports from backend
+async function loadReports() {
+  isLoading = true;
+  try {
+    const response = await fetch(`${API_BASE_URL}?page=${currentPage}&per_page=${perPage}&nama=${namaKaryawan}&role=${roleKaryawan}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${authToken}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    const data = await response.json();
+    allData = data.data || data || [];
+    filteredData = [...allData];
+    renderTable();
+    showToast('Data berhasil dimuat dari server', 'success');
+  } catch (error) {
+    console.error('Failed to fetch reports:', error);
+    showToast('Gagal memuat data dari server. Menggunakan data lokal.', 'error');
+    allData = [...fallbackData];
+    filteredData = [...allData];
+    renderTable();
+  } finally {
+    isLoading = false;
+  }
+}
+
+// Fetch reports with filters
+async function loadReportsWithFilters(filters) {
+  isLoading = true;
+  try {
+    const params = new URLSearchParams();
+    if (filters.nama) params.append('nama', filters.nama);
+    if (filters.startDate) params.append('startDate', filters.startDate);
+    if (filters.endDate) params.append('endDate', filters.endDate);
+    if (filters.lokasi) params.append('lokasi', filters.lokasi);
+    if (filters.page) params.append('page', filters.page);
+    if (filters.limit) params.append('limit', filters.limit);
+
+    const response = await fetch(`${API_BASE_URL}?${params.toString()}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${authToken}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    // const response = await fetch(`${API_BASE_URL}?${params.toString()}`);
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    const data = await response.json();
+    
+    // Handle paginated response
+    allData = data.data || data || [];
+    filteredData = [...allData];
+    renderTable();
+  } catch (error) {
+    console.error('Failed to fetch filtered reports:', error);
+    showToast('Gagal memuat data filter. Menggunakan data lokal.', 'error');
+  } finally {
+    isLoading = false;
+  }
+}
+
+function nl2br(str) {
+  if (!str) return '-';
+  return str.replace(/\n/g, '<br>');
+}
+
+function getProgressColor(p) {
+  if (p >= 80) return { bar: 'bg-emerald-500', text: 'text-emerald-400' };
+  if (p >= 50) return { bar: 'bg-cyan-500', text: 'text-cyan-400' };
+  if (p >= 25) return { bar: 'bg-yellow-500', text: 'text-yellow-400' };
+  return { bar: 'bg-red-500', text: 'text-red-400' };
+}
+
+function renderTable() {
+  const start = (currentPage - 1) * perPage;
+  const pageData = filteredData.slice(start, start + perPage);
+  const tbody = document.getElementById('table-body');
+  tbody.innerHTML = '';
+
+  if (pageData.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" class="text-center py-16 text-[#4a6a8a]"><div class="flex flex-col items-center gap-2"><i data-lucide="inbox" style="width:40px;height:40px;"></i><p class="text-base">Tidak ada data ditemukan</p></div></td></tr>`;
+    lucide.createIcons();
+    updatePagination();
+    updateTotal();
+    return;
+  }
+
+  pageData.forEach((r, idx) => {
+
+    let pekerjaanHTML = '';
+    let pekerjaanList = [];
+    try {
+      pekerjaanList = JSON.parse(r.pekerjaan_list);
+    } catch (e) {
+      console.error('Invalid JSON pekerjaan_list:', e);
+      return '';
+    }
+
+    const globalIdx = start + idx + 1;
+    const isOpen = expandedRows.has(r.id);
+    const tr = document.createElement('tr');
+    tr.className = 'row-hover border-b border-[#1a2d4a]/50 transition cursor-default';
+    tr.innerHTML = `
+      <td class="px-4 py-3.5 text-[#6b8cba] font-medium">${globalIdx}</td>
+      <td class="px-4 py-3.5 text-white font-semibold">${r.nama}</td>
+      <td class="px-4 py-3.5 text-gray-300">${r.lokasi_kerja}</td>
+      <td class="px-4 py-3.5 text-gray-300">${r.tanggal}</td>
+      <td class="px-4 py-3.5 text-gray-300">${r.jam_mulai}</td>
+      <td class="px-4 py-3.5 text-gray-300">${r.jam_selesai}</td>
+      <td class="px-4 py-3.5 text-center"><span class="bg-cyan-900/40 text-cyan-400 px-3 py-1 rounded-full text-xs font-bold">${pekerjaanList.length}</span></td>
+      <td class="px-4 py-3.5 text-center">
+        <div class="flex items-center justify-center gap-1.5">
+          <button onclick="toggleExpand(${r.id})" class="p-1.5 rounded-lg ${isOpen?'bg-cyan-600 text-white':'bg-[#1a2d4a] text-cyan-400 hover:bg-cyan-700 hover:text-white'} transition" title="Detail">
+            <i data-lucide="${isOpen?'eye-off':'eye'}" style="width:15px;height:15px;"></i>
+          </button>
+          <button onclick="editReport(${r.id})" class="p-1.5 rounded-lg bg-[#1a2d4a] text-yellow-400 hover:bg-yellow-700 hover:text-white transition" title="Edit">
+            <i data-lucide="pencil" style="width:15px;height:15px;"></i>
+          </button>
+          <button onclick="openDeleteModal(${r.id})" class="p-1.5 rounded-lg bg-[#1a2d4a] text-red-400 hover:bg-red-700 hover:text-white transition" title="Delete">
+            <i data-lucide="trash-2" style="width:15px;height:15px;"></i>
+          </button>
+        </div>
+      </td>`;
+    tbody.appendChild(tr);
+
+    // Expand row
+    const detailTr = document.createElement('tr');
+    detailTr.innerHTML = `<td colspan="7" class="p-0"><div class="expand-content ${isOpen?'open':''}" id="detail-${r.id}">${renderDetail(r)}</div></td>`;
+    tbody.appendChild(detailTr);
+  });
+
+  lucide.createIcons();
+  updatePagination();
+  updateTotal();
+}
+
+function renderDetail(r) {
+  let pekerjaanHTML = '';
+
+  let pekerjaanList = [];
+
+  try {
+    pekerjaanList = JSON.parse(r.pekerjaan_list);
+  } catch (e) {
+    console.error('Invalid JSON pekerjaan_list:', e);
+    return '';
+  }
+
+  pekerjaanList.forEach((p, i) => {
+    const pc = getProgressColor(p.progress);
+    pekerjaanHTML += `
+    <div class="bg-[#0a1628] rounded-xl p-5 border border-[#1a2d4a] ${i>0?'mt-4':''}">
+      <div class="flex items-center gap-2 mb-4">
+        <span class="w-7 h-7 rounded-lg bg-cyan-600 text-white flex items-center justify-center text-xs font-bold">${i+1}</span>
+        <h4 class="text-base font-bold text-white">🔧 Pekerjaan ${i+1}</h4>
+      </div>
+      <div class="grid grid-cols-3 gap-3 mb-4">
+        <div><span class="text-[#5a7da8] text-xs uppercase tracking-wider">Project</span><p class="text-white font-medium text-sm mt-0.5">${p.project_name||'-'}</p></div>
+        <div><span class="text-[#5a7da8] text-xs uppercase tracking-wider">Tipe</span><p class="text-white font-medium text-sm mt-0.5">${p.job_type||'-'}</p></div>
+        <div><span class="text-[#5a7da8] text-xs uppercase tracking-wider">Judul</span><p class="text-white font-medium text-sm mt-0.5">${p.job_title||'-'}</p></div>
+      </div>
+      <div class="mb-4">
+        <span class="text-[#5a7da8] text-xs uppercase tracking-wider">Deskripsi</span>
+        <p class="text-gray-300 text-sm mt-1 leading-relaxed">${nl2br(p.description)}</p>
+      </div>
+      <div class="mb-4">
+        <span class="text-[#5a7da8] text-xs uppercase tracking-wider">Progress</span>
+        <div class="flex items-center gap-3 mt-1.5">
+          <div class="flex-1 bg-[#0d1f38] rounded-full h-3 overflow-hidden">
+            <div class="progress-fill ${pc.bar} h-full rounded-full" style="width:${p.progress}%"></div>
+          </div>
+          <span class="${pc.text} font-bold text-sm min-w-[40px] text-right">${p.progress}%</span>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div class="bg-red-900/10 border border-red-900/30 rounded-lg p-3">
+          <span class="text-red-400 text-xs uppercase tracking-wider font-semibold">⚠ Kendala</span>
+          <p class="text-gray-300 text-sm mt-1 leading-relaxed">${nl2br(p.kendala)}</p>
+        </div>
+        <div class="bg-emerald-900/10 border border-emerald-900/30 rounded-lg p-3">
+          <span class="text-emerald-400 text-xs uppercase tracking-wider font-semibold">✅ Solusi</span>
+          <p class="text-gray-300 text-sm mt-1 leading-relaxed">${nl2br(p.solusi)}</p>
+        </div>
+      </div>
+    </div>`;
+  });
+
+  return `
+  <div class="bg-[#0d1a2d] m-2 rounded-xl border border-[#1a2d4a] p-6 fade-in">
+    <div class="flex items-center gap-6 mb-5 pb-4 border-b border-[#1a2d4a]">
+      <div class="w-12 h-12 rounded-xl bg-[#1a3a5c] flex items-center justify-center text-cyan-400 font-bold text-lg">${r.nama.charAt(0)}</div>
+      <div class="grid grid-cols-5 gap-6 flex-1">
+        <div><span class="text-[#5a7da8] text-xs">👤 Nama</span><p class="text-white font-semibold text-sm">${r.nama}</p></div>
+        <div><span class="text-[#5a7da8] text-xs">📍 Lokasi</span><p class="text-white font-semibold text-sm">${r.lokasi_kerja}</p></div>
+        <div><span class="text-[#5a7da8] text-xs">📅 Tanggal</span><p class="text-white font-semibold text-sm">${r.tanggal}</p></div>
+        <div><span class="text-[#5a7da8] text-xs">⏰ Mulai</span><p class="text-white font-semibold text-sm">${r.jam_mulai}</p></div>
+        <div><span class="text-[#5a7da8] text-xs">⏰ Selesai</span><p class="text-white font-semibold text-sm">${r.jam_selesai}</p></div>
+      </div>
+    </div>
+    <h3 class="text-sm font-bold text-[#6b8cba] uppercase tracking-wider mb-3">🔧 Daftar Pekerjaan (${r.pekerjaan_list.length})</h3>
+    ${pekerjaanHTML}
+    <div class="mt-5 pt-4 border-t border-[#1a2d4a]">
+      <div class="bg-[#0a1628] rounded-xl p-4 border border-cyan-900/30">
+        <span class="text-cyan-400 text-xs uppercase tracking-wider font-semibold">📅 Rencana Besok</span>
+        <p class="text-gray-300 text-sm mt-2 leading-relaxed">${nl2br(r.rencana_besok)}</p>
+      </div>
+    </div>
+  </div>`;
+}
+
+function toggleExpand(id) {
+  if (expandedRows.has(id)) {
+    expandedRows.delete(id);
+  } else {
+    expandedRows.clear();
+    expandedRows.add(id);
+  }
+  renderTable();
+}
+
+function updateTotal() {
+  const start = (currentPage - 1) * perPage;
+  const showing = Math.min(perPage, filteredData.length - start);
+  document.getElementById('total-indicator').innerHTML = `Menampilkan <span class="text-cyan-400 font-semibold">${showing > 0 ? showing : 0}</span> dari <span class="text-cyan-400 font-semibold">${filteredData.length}</span> data`;
+}
+
+function updatePagination() {
+  const totalPages = Math.ceil(filteredData.length / perPage) || 1;
+  const bar = document.getElementById('pagination-bar');
+  let html = '';
+  html += `<button onclick="goPage(${currentPage-1})" class="px-3 py-1.5 rounded-lg text-sm ${currentPage<=1?'bg-[#0a1628] text-[#3a5a7a] cursor-not-allowed':'bg-[#1a2d4a] text-gray-300 hover:bg-cyan-700 hover:text-white'} transition" ${currentPage<=1?'disabled':''}>← Prev</button>`;
+  for (let i = 1; i <= totalPages; i++) {
+    if (totalPages > 7 && i > 3 && i < totalPages - 1 && Math.abs(i - currentPage) > 1) {
+      if (i === 4 || i === totalPages - 2) html += `<span class="px-2 text-[#4a6a8a]">...</span>`;
+      continue;
+    }
+    html += `<button onclick="goPage(${i})" class="w-9 h-9 rounded-lg text-sm font-medium ${i===currentPage?'bg-cyan-600 text-white':'bg-[#1a2d4a] text-gray-300 hover:bg-cyan-700 hover:text-white'} transition">${i}</button>`;
+  }
+  html += `<button onclick="goPage(${currentPage+1})" class="px-3 py-1.5 rounded-lg text-sm ${currentPage>=totalPages?'bg-[#0a1628] text-[#3a5a7a] cursor-not-allowed':'bg-[#1a2d4a] text-gray-300 hover:bg-cyan-700 hover:text-white'} transition" ${currentPage>=totalPages?'disabled':''}>Next →</button>`;
+  bar.innerHTML = html;
+}
+
+function goPage(p) {
+  const totalPages = Math.ceil(filteredData.length / perPage) || 1;
+  if (p < 1 || p > totalPages) return;
+  currentPage = p;
+  renderTable();
+}
+
+function changePerPage() {
+  perPage = parseInt(document.getElementById('per-page').value);
+  currentPage = 1;
+  renderTable();
+}
+
+function applyFilter() {
+  const s = document.getElementById('f-start').value;
+  const e = document.getElementById('f-end').value;
+  const n = document.getElementById('f-name').value;
+  const l = document.getElementById('f-location').value;
+  const p = document.getElementById('f-project').value;
+  const jt = document.getElementById('f-job-type').value;
+  const jp = document.getElementById('f-job-title').value;
+
+  console.log('Applying filter with values:', { s, e, n, l, p, jt, jp });
+
+  // Filter data on client side
+  filteredData = allData.filter(r => {
+    let pekerjaanHTML = '';
+
+    let pekerjaanList = [];
+
+    try {
+      pekerjaanList = JSON.parse(r.pekerjaan_list);
+    } catch (e) {
+      console.error('Invalid JSON pekerjaan_list:', e);
+      return '';
+    }
+
+    // Basic filters
+    if (s && r.tanggal < s) return false;
+    if (e && r.tanggal > e) return false;
+    // Alternative explicit check: if (s && new Date(r.tanggal) < new Date(s)) return false;
+    // if (e && new Date(r.tanggal) > new Date(e)) return false;
+    if (n && !r.nama.toLowerCase().includes(n.toLowerCase())) return false;
+    if (l && r.lokasi_kerja !== l) return false;
+    
+    // Work item filters - if any pekerjaan matches, include this report
+    if (p || jt || jp) {
+      const matchesWork = pekerjaanList.some(w => {
+        if (p && !w.project_name.toLowerCase().includes(p.toLowerCase())) return false;
+        if (jt && w.job_type !== jt) return false;
+        if (jp && !w.job_title.toLowerCase().includes(jp.toLowerCase())) return false;
+        return true;
+      });
+      if (!matchesWork) return false;
+    }
+    
+    return true;
+  });
+
+  currentPage = 1;
+  expandedRows.clear();
+  renderTable();
+  showToast('Filter diterapkan', 'info');
+}
+
+function resetFilter() {
+  document.getElementById('f-start').value = '';
+  document.getElementById('f-end').value = '';
+  document.getElementById('f-name').value = '';
+  document.getElementById('f-location').value = '';
+  document.getElementById('f-project').value = '';
+  document.getElementById('f-job-type').value = '';
+  document.getElementById('f-job-title').value = '';
+  filteredData = [...allData];
+  currentPage = 1;
+  expandedRows.clear();
+  renderTable();
+  showToast('Filter direset', 'info');
+}
+
+function openDeleteModal(id) {
+  deleteTargetId = id;
+  const modal = document.getElementById('delete-modal');
+  modal.style.display = 'flex';
+  modal.classList.remove('hidden');
+}
+
+function closeDeleteModal() {
+  const modal = document.getElementById('delete-modal');
+  modal.style.display = 'none';
+  deleteTargetId = null;
+}
+
+function confirmDelete() {
+  if (deleteTargetId !== null) {
+    allData = allData.filter(r => r.id !== deleteTargetId);
+    filteredData = filteredData.filter(r => r.id !== deleteTargetId);
+    expandedRows.delete(deleteTargetId);
+    renderTable();
+    showToast('Report berhasil dihapus', 'success');
+  }
+  closeDeleteModal();
+}
+
+function editReport(id) {
+  // showToast('Membuka form edit report #' + id, 'info');
+  document.cookie = `id_report=${id}; path=/;`;  
+  window.location.href = `/absensi_daily_report`;
+}
+
+function exportXLS() {
+  showToast('Mengexport data ke format XLS...', 'success');
+  // Generate CSV as XLS substitute
+  let csv = 'No,Nama,Lokasi,Tanggal,Jam Mulai,Jam Selesai,Jumlah Pekerjaan\n';
+  filteredData.forEach((r, i) => {
+    csv += `${i+1},"${r.nama}","${r.lokasi_kerja}","${r.tanggal}","${r.jam_mulai}","${r.jam_selesai}",${r.pekerjaan_list.length}\n`;
+  });
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'report_pekerjaan_harian.csv';
+  a.click();
+}
+
+function exportPDF() {
+  showToast('Menyiapkan export PDF... (gunakan Print dialog)', 'info');
+  window.print();
+}
+
+function showToast(msg, type) {
+  const c = document.getElementById('toast-container');
+  const colors = { success: 'bg-emerald-600', info: 'bg-cyan-600', error: 'bg-red-600' };
+  const t = document.createElement('div');
+  t.className = `${colors[type]||colors.info} text-white px-5 py-3 rounded-xl shadow-lg text-sm font-medium toast-slide`;
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+
+// Element SDK
+const defaultConfig = {
+  page_title: 'History Report Pekerjaan Harian',
+  page_subtitle: 'Monitoring aktivitas kerja harian karyawan',
+  username: '',
+  background_color: '#060e1a',
+  surface_color: '#0a1628',
+  text_color: '#e2e8f0',
+  primary_action_color: '#0891b2',
+  secondary_action_color: '#1a2d4a',
+  font_family: 'Plus Jakarta Sans',
+  font_size: 14
+};
+
+function applyConfig(config) {
+  const t = config.page_title || defaultConfig.page_title;
+  const s = config.page_subtitle || defaultConfig.page_subtitle;
+  const u = config.username || defaultConfig.username;
+  const bg = config.background_color || defaultConfig.background_color;
+  const sf = config.surface_color || defaultConfig.surface_color;
+  const tc = config.text_color || defaultConfig.text_color;
+  const pa = config.primary_action_color || defaultConfig.primary_action_color;
+  const sa = config.secondary_action_color || defaultConfig.secondary_action_color;
+  const ff = config.font_family || defaultConfig.font_family;
+  const fs = config.font_size || defaultConfig.font_size;
+
+  document.getElementById('page-title').textContent = t;
+  document.getElementById('page-subtitle').textContent = s;
+  document.getElementById('header-username').textContent = u;
+
+  document.body.style.backgroundColor = bg;
+  document.body.style.color = tc;
+  document.body.style.fontFamily = `${ff}, sans-serif`;
+  document.body.style.fontSize = `${fs}px`;
+
+  const header = document.getElementById('main-header');
+  if (header) header.style.backgroundColor = sf;
+
+  // Apply primary action color to buttons
+  document.querySelectorAll('.bg-cyan-600').forEach(el => { el.style.backgroundColor = pa; });
+  document.querySelectorAll('.text-cyan-400').forEach(el => { el.style.color = pa; });
+}
+
+// Initialize SDK and load data when DOM is ready
+document.addEventListener('DOMContentLoaded', async () => {
+  // Set today's date as default for date filters
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('f-start').value = today;
+  document.getElementById('f-end').value = today;
+
+  // Back button functionality
+  const backButton = document.getElementById('back-button');
+  if (backButton) {
+    backButton.addEventListener('click', () => {
+      //end point
+      window.location.href = '/';
+    });
+  }
+
+  // Initialize Element SDK if available
+  if (window.elementSdk) {
+    window.elementSdk.init({
+      defaultConfig,
+      onConfigChange: async (config) => { applyConfig(config); },
+      mapToCapabilities: (config) => ({
+        recolorables: [
+          { get: () => config.background_color || defaultConfig.background_color, set: (v) => { config.background_color = v; window.elementSdk.setConfig({ background_color: v }); } },
+          { get: () => config.surface_color || defaultConfig.surface_color, set: (v) => { config.surface_color = v; window.elementSdk.setConfig({ surface_color: v }); } },
+          { get: () => config.text_color || defaultConfig.text_color, set: (v) => { config.text_color = v; window.elementSdk.setConfig({ text_color: v }); } },
+          { get: () => config.primary_action_color || defaultConfig.primary_action_color, set: (v) => { config.primary_action_color = v; window.elementSdk.setConfig({ primary_action_color: v }); } },
+          { get: () => config.secondary_action_color || defaultConfig.secondary_action_color, set: (v) => { config.secondary_action_color = v; window.elementSdk.setConfig({ secondary_action_color: v }); } }
+        ],
+        borderables: [],
+        fontEditable: { get: () => config.font_family || defaultConfig.font_family, set: (v) => { config.font_family = v; window.elementSdk.setConfig({ font_family: v }); } },
+        fontSizeable: { get: () => config.font_size || defaultConfig.font_size, set: (v) => { config.font_size = v; window.elementSdk.setConfig({ font_size: v }); } }
+      }),
+      mapToEditPanelValues: (config) => new Map([
+        ['page_title', config.page_title || defaultConfig.page_title],
+        ['page_subtitle', config.page_subtitle || defaultConfig.page_subtitle],
+        ['username', config.username || defaultConfig.username]
+      ])
+    });
+  }
+  
+  // Load reports and icons
+  loadReports();
+  lucide.createIcons();
+});
+</script>
+ </body>
+</html>

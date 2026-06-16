@@ -1,0 +1,1037 @@
+<!doctype html>
+<html lang="id" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Report Pekerjaan Harian</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="/_sdk/data_sdk.js"></script>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  <style>
+    [v-cloak] {
+      display: none !important;
+    }
+    * { font-family: 'Inter', sans-serif; }
+    input[type="date"]::-webkit-calendar-picker-indicator,
+    input[type="time"]::-webkit-calendar-picker-indicator {
+      filter: invert(1);
+      cursor: pointer;
+    }
+    /* Hide number input spinner */
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type="number"] {
+      -moz-appearance: textfield;
+    }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: #1e293b; border-radius: 3px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #64748b; }
+  </style>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              200: '#bfdbfe',
+              300: '#93c5fd',
+              400: '#60a5fa',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              800: '#1e40af',
+              900: '#1e3a8a',
+            },
+            dark: {
+              50: '#f8fafc',
+              100: '#f1f5f9',
+              200: '#e2e8f0',
+              300: '#cbd5e1',
+              400: '#94a3b8',
+              500: '#64748b',
+              600: '#475569',
+              700: '#334155',
+              800: '#1e293b',
+              900: '#0f172a',
+              950: '#020617',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full bg-dark-950 text-dark-100 overflow-auto custom-scrollbar">
+  <div id="app" v-cloak class="min-h-full w-full" :style="{ backgroundColor: config.background_color, fontFamily: config.font_family + ', Inter, sans-serif' }">
+   <!-- Header Bar -->
+   <header class="bg-dark-900 border-b border-dark-700 sticky top-0 z-10" :style="{ backgroundColor: config.surface_color }">
+    <div class="max-w-5xl mx-auto px-6 py-5">
+     <div class="flex items-center gap-4">
+      <div class="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center flex-shrink-0" :style="{ background: 'linear-gradient(to right, ' + config.primary_action_color + ', ' + config.secondary_action_color + ')' }">
+       <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+       </svg>
+      </div>
+      <div>
+       <h1 id="page-title" class="text-xl font-semibold text-white" :style="{ color: config.text_color, fontSize: config.font_size * 1.25 + 'px' }">{{ config.page_title }}</h1>
+       <p id="page-subtitle" class="text-sm text-dark-400 mt-0.5" :style="{ fontSize: config.font_size * 0.875 + 'px' }">{{ config.page_subtitle }}</p>
+      </div>
+     </div>
+    </div>
+   </header><!-- Main Content -->
+   <main class="max-w-5xl mx-auto px-6 py-8">
+    <!-- Form Card -->
+    <form id="report-form" class="bg-dark-900 rounded-xl border border-dark-700 shadow-2xl shadow-black/20" :style="{ backgroundColor: config.surface_color }">
+     <!-- Section 1: Informasi Dasar -->
+     <div class="p-6 border-b border-dark-700">
+      <div class="flex items-center justify-between gap-3 mb-6">
+       <div class="flex items-center gap-3">
+        <div class="w-8 h-8 bg-primary-600/20 rounded-lg flex items-center justify-center">
+         <svg class="w-4 h-4 text-primary-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+         </svg>
+        </div>
+        <h2 class="text-lg font-semibold text-white" :style="{ color: config.text_color }">Informasi Dasar</h2>
+       </div><button type="button" @click="viewReports" class="flex items-center gap-2 bg-primary-600/20 hover:bg-primary-600/30 border border-primary-600/50 hover:border-primary-500 text-primary-300 hover:text-primary-200 px-4 py-2 rounded-lg font-medium text-sm transition-all">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg> List Laporan Saya </button>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+       <!-- Nama -->
+       <div>
+        <label for="nama" class="block text-sm font-medium text-dark-300 mb-2"> <span class="flex items-center gap-2">
+          <svg class="w-4 h-4 text-dark-500" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg> Nama </span> </label> <input type="text" id="nama" name="nama" v-model="nama" readonly class="w-full bg-dark-700 border border-dark-600 rounded-lg px-4 py-3 text-dark-300 cursor-not-allowed opacity-75" placeholder="Nama pengguna">
+       </div><!-- Lokasi Kerja -->
+       <div>
+        <label for="lokasi-kerja" class="block text-sm font-medium text-dark-300 mb-2"> <span class="flex items-center gap-2">
+          <svg class="w-4 h-4 text-dark-500" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg> Lokasi Kerja </span> </label> <select id="lokasi-kerja" name="lokasi_kerja" v-model="lokasiKerja" class="w-full bg-dark-800 border border-dark-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all cursor-pointer"> <option value="">Pilih Lokasi Kerja</option> <option value="TKI">TKI</option> <option value="KIP">KIP</option> <option value="WFH">WFH</option> </select>
+       </div><!-- Tanggal -->
+       <div>
+        <label for="tanggal" class="block text-sm font-medium text-dark-300 mb-2"> <span class="flex items-center gap-2">
+          <svg class="w-4 h-4 text-dark-500" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg> Tanggal </span> </label> <input type="date" id="tanggal" name="tanggal" v-model="tanggal" class="w-full bg-dark-800 border border-dark-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all">
+        <p class="text-xs text-dark-500 mt-1.5">Tanggal otomatis mengikuti tanggal hari ini.</p>
+       </div><!-- Jam Mulai & Selesai -->
+       <div class="grid grid-cols-2 gap-4">
+        <div>
+         <label for="jam-mulai" class="block text-sm font-medium text-dark-300 mb-2"> <span class="flex items-center gap-2">
+           <svg class="w-4 h-4 text-dark-500" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+           </svg> Jam Mulai </span> </label> <input type="time" id="jam-mulai" name="jam_mulai" v-model="jamMulai" class="w-full bg-dark-800 border border-dark-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all">
+        </div>
+        <div>
+         <label for="jam-selesai" class="block text-sm font-medium text-dark-300 mb-2"> <span class="flex items-center gap-2">
+           <svg class="w-4 h-4 text-dark-500" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+           </svg> Jam Selesai </span> </label> <input type="time" id="jam-selesai" name="jam_selesai" v-model="jamSelesai" class="w-full bg-dark-800 border border-dark-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all">
+        </div>
+       </div>
+      </div>
+     </div><!-- Section 2: Pekerjaan Hari Ini -->
+     <div class="p-6 border-b border-dark-700">
+      <div class="flex items-center gap-3 mb-6">
+       <div class="w-8 h-8 bg-emerald-600/20 rounded-lg flex items-center justify-center">
+        <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+        </svg>
+       </div>
+       <h2 class="text-lg font-semibold text-white" :style="{ color: config.text_color }">Pekerjaan Hari Ini</h2>
+      </div>
+      <div id="work-list" class="space-y-4">
+       <!-- Dynamic Work Item List -->
+       <div v-for="(item, index) in workItems" :key="item.id" class="work-item bg-dark-800 border border-dark-600 rounded-lg p-5 relative" :style="{ backgroundColor: config.surface_color }">
+        <button type="button" @click="removeWorkItem(index)" class="remove-work absolute top-3 right-3 w-8 h-8 bg-dark-700 hover:bg-red-600/20 border border-dark-600 hover:border-red-500/50 rounded-lg flex items-center justify-center text-dark-400 hover:text-red-400 transition-all" title="Hapus pekerjaan">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+        
+        <div class="pr-10 mb-4">
+          <span class="inline-flex items-center gap-2 text-xs font-medium text-dark-400 bg-dark-700 px-3 py-1 rounded-full">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+            </svg>
+            Pekerjaan #{{ index + 1 }}
+          </span>
+        </div>
+        
+        <div class="space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-dark-300 mb-2">Project</label>
+              <input type="text" v-model="item.projectName" class="w-full bg-dark-900 border border-dark-600 rounded-lg px-4 py-3 text-white placeholder-dark-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all" placeholder="Contoh: Proyek AQMS Fase 2…">
+            </div>
+            <div class="relative">
+              <label class="block text-sm font-medium text-dark-300 mb-2">Jenis Pekerjaan</label>
+              <div class="relative">
+                <input type="text" v-model="item.jobType" @focus="item.showJobTypeDropdown = true" class="w-full bg-dark-900 border border-dark-600 rounded-lg px-4 py-3 text-white placeholder-dark-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all" placeholder="Pilih atau ketik jenis pekerjaan…" autocomplete="off">
+                <div v-show="item.showJobTypeDropdown" class="absolute top-full left-0 right-0 mt-1 bg-dark-800 border border-dark-600 rounded-lg shadow-lg max-h-48 overflow-y-auto z-10">
+                  <div v-for="type in filteredJobTypesList(item)" :key="type" @mousedown="selectJobType(item, type)" class="px-4 py-2.5 hover:bg-dark-700 cursor-pointer text-white text-sm">
+                    {{ type }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-dark-300 mb-2">Judul Pekerjaan</label>
+            <input type="text" v-model="item.jobTitle" class="w-full bg-dark-900 border border-dark-600 rounded-lg px-4 py-3 text-white placeholder-dark-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all" placeholder="Contoh: Kalibrasi Sensor PM2.5…">
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-dark-300 mb-2">Deskripsi Pekerjaan</label>
+            <textarea v-model="item.description" class="w-full bg-dark-900 border border-dark-600 rounded-lg px-4 py-3 text-white placeholder-dark-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all resize-none" rows="3" placeholder="Contoh: Maintenance sensor AQMS, pengecekan panel kontrol, penggantian sparepart…"></textarea>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-dark-300 mb-3">Progress</label>
+            <div class="flex items-center gap-4">
+              <div class="flex-1 relative cursor-pointer group">
+                <div @mousedown="startDragProgress($event, item)" @touchstart="startDragProgress($event, item)" class="h-2 bg-dark-700 rounded-lg overflow-hidden relative">
+                  <div class="h-full rounded-lg transition-all duration-300" :class="getProgressColorClass(item.progress)" :style="{ width: item.progress + '%' }"></div>
+                  <div class="absolute top-1/2 -translate-y-1/2 w-5 h-5 bg-white rounded-full shadow-lg border-2 border-dark-700 cursor-grab active:cursor-grabbing hover:shadow-xl hover:border-white transition-all" :style="{ left: item.progress + '%' }" title="Drag to adjust progress"></div>
+                </div>
+              </div>
+              <input type="number" v-model.number="item.progress" min="0" max="100" class="bg-dark-900 border border-dark-600 rounded-lg px-3 py-2 text-white font-semibold w-16 text-center focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all">
+              <span class="text-dark-400 w-14 text-center">%</span>
+            </div>
+          </div>
+
+          <div class="border-t border-dark-600 pt-4 mt-4">
+            <div>
+              <label class="block text-sm font-medium text-dark-300 mb-2">Kendala</label>
+              <textarea v-model="item.kendala" class="w-full bg-dark-900 border border-dark-600 rounded-lg px-4 py-3 text-white placeholder-dark-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all resize-none" rows="2" placeholder="Contoh: Sensor tidak responsif…"></textarea>
+              <p class="text-xs text-dark-500 mt-1.5">Opsional</p>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-dark-300 mb-2">Solusi</label>
+            <textarea v-model="item.solusi" class="w-full bg-dark-900 border border-dark-600 rounded-lg px-4 py-3 text-white placeholder-dark-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all resize-none" rows="2" placeholder="Contoh: Melakukan restart modul sensor…"></textarea>
+            <p class="text-xs text-dark-500 mt-1.5">Opsional</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-dark-300 mb-2">File Kendala</label>
+              <div class="flex gap-2">
+                <input type="file" @change="handleFileUpload($event, item, 'kendala_doc')" class="flex-1 bg-dark-900 border border-dark-600 rounded-lg px-4 py-2 text-dark-400 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                <button type="button" @click="capturePhoto(item, 'kendala_doc')" class="bg-primary-600 hover:bg-primary-500 text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors flex items-center gap-2" title="Ambil Foto">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  </svg>
+                </button>
+              </div>
+              <p class="text-xs text-dark-500 mt-1.5">Opsional • Max 5MB <span v-if="item.kendala_doc" class="text-emerald-400 font-medium">• {{ item.kendala_doc.name }}</span></p>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-dark-300 mb-2">File Solusi</label>
+              <div class="flex gap-2">
+                <input type="file" @change="handleFileUpload($event, item, 'solusi_doc')" class="flex-1 bg-dark-900 border border-dark-600 rounded-lg px-4 py-2 text-dark-400 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                <button type="button" @click="capturePhoto(item, 'solusi_doc')" class="bg-primary-600 hover:bg-primary-500 text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors flex items-center gap-2" title="Ambil Foto">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  </svg>
+                </button>
+              </div>
+              <p class="text-xs text-dark-500 mt-1.5">Opsional • Max 5MB <span v-if="item.solusi_doc" class="text-emerald-400 font-medium">• {{ item.solusi_doc.name }}</span></p>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-dark-300 mb-2">Save Document 1</label>
+            <div class="flex gap-2">
+              <input type="file" @change="handleFileUpload($event, item, 'save_document_1')" class="flex-1 bg-dark-900 border border-dark-600 rounded-lg px-4 py-2 text-dark-400 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+              <button type="button" @click="capturePhoto(item, 'save_document_1')" class="bg-primary-600 hover:bg-primary-500 text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors flex items-center gap-2" title="Ambil Foto">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+              </button>
+            </div>
+            <p class="text-xs text-dark-500 mt-1.5">Opsional • Max 5MB <span v-if="item.save_document_1" class="text-emerald-400 font-medium">• {{ item.save_document_1.name }}</span></p>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-dark-300 mb-2">Save Document 2</label>
+            <div class="flex gap-2">
+              <input type="file" @change="handleFileUpload($event, item, 'save_document_2')" class="flex-1 bg-dark-900 border border-dark-600 rounded-lg px-4 py-2 text-dark-400 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+              <button type="button" @click="capturePhoto(item, 'save_document_2')" class="bg-primary-600 hover:bg-primary-500 text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors flex items-center gap-2" title="Ambil Foto">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+              </button>
+            </div>
+            <p class="text-xs text-dark-500 mt-1.5">Opsional • Max 5MB <span v-if="item.save_document_2" class="text-emerald-400 font-medium">• {{ item.save_document_2.name }}</span></p>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-dark-300 mb-2">Save Document 3</label>
+            <div class="flex gap-2">
+              <input type="file" @change="handleFileUpload($event, item, 'save_document_3')" class="flex-1 bg-dark-900 border border-dark-600 rounded-lg px-4 py-2 text-dark-400 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+              <button type="button" @click="capturePhoto(item, 'save_document_3')" class="bg-primary-600 hover:bg-primary-500 text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors flex items-center gap-2" title="Ambil Foto">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+              </button>
+            </div>
+            <p class="text-xs text-dark-500 mt-1.5">Opsional • Max 5MB <span v-if="item.save_document_3" class="text-emerald-400 font-medium">• {{ item.save_document_3.name }}</span></p>
+          </div>
+        </div>
+       </div>
+      </div><button type="button" @click="addWorkItem" class="w-full mt-6 flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-500 text-white text-sm font-medium px-4 py-3 rounded-lg transition-colors" :style="{ background: 'linear-gradient(to right, ' + config.primary_action_color + ', ' + config.secondary_action_color + ')' }">
+       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+       </svg> Tambah Pekerjaan </button>
+     </div><!-- Section 3: Rencana Pekerjaan Besok -->
+     <div class="p-6 border-b border-dark-700">
+      <div class="flex items-center gap-3 mb-6">
+       <div class="w-8 h-8 bg-violet-600/20 rounded-lg flex items-center justify-center">
+        <svg class="w-4 h-4 text-violet-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+        </svg>
+       </div>
+       <h2 class="text-lg font-semibold text-white" :style="{ color: config.text_color }">Rencana Pekerjaan Besok</h2>
+      </div><textarea id="rencana-besok" name="rencana_besok" v-model="rencanaBesok" rows="4" class="w-full bg-dark-800 border border-dark-600 rounded-lg px-4 py-3 text-white placeholder-dark-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all resize-none" placeholder="Contoh: Melanjutkan kalibrasi alat dan pengecekan komunikasi data server…"></textarea>
+     </div><!-- Form Actions -->
+     <div class="p-6 bg-dark-800/50 rounded-b-xl" :style="{ backgroundColor: config.surface_color }">
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+       <button type="button" @click="goBack" class="w-full sm:w-auto flex items-center justify-center gap-2 bg-transparent border border-dark-600 hover:border-dark-500 text-dark-300 hover:text-white px-6 py-3 rounded-lg font-medium transition-all">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg> Kembali </button>
+       <div class="flex items-center gap-3 w-full sm:w-auto">
+        <button type="button" @click="showResetConfirm = true" class="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-dark-700 hover:bg-dark-600 text-dark-200 px-6 py-3 rounded-lg font-medium transition-colors">
+         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+         </svg> Reset Form </button> <button type="submit" @click.prevent="handleSubmit" :disabled="isSubmitting" class="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-500 to-primary-500 hover:from-cyan-400 hover:to-primary-400 text-white px-8 py-3 rounded-lg font-semibold shadow-lg shadow-primary-500/25 transition-all" :style="{ background: 'linear-gradient(to right, ' + config.primary_action_color + ', ' + config.secondary_action_color + ')' }">
+         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+         </svg><span id="submit-btn-text">{{ submitBtnText }}</span> </button>
+       </div>
+      </div>
+     </div>
+    </form><!-- Success Toast -->
+    <div id="success-toast" v-show="toast.show" class="fixed bottom-6 right-6 text-white px-6 py-4 rounded-lg shadow-xl flex items-center gap-3 z-50 transition-all duration-300" :class="toast.type === 'success' ? 'bg-emerald-600' : 'bg-red-600'">
+     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+     </svg><span>{{ toast.message }}</span>
+    </div><!-- Reset Confirmation -->
+    <div id="reset-confirm" v-show="showResetConfirm" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+     <div class="bg-dark-800 border border-dark-600 rounded-xl p-6 max-w-sm w-full shadow-2xl" :style="{ backgroundColor: config.surface_color }">
+      <div class="flex items-center gap-3 mb-4">
+       <div class="w-10 h-10 bg-amber-600/20 rounded-full flex items-center justify-center">
+        <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+       </div>
+       <h3 class="text-lg font-semibold text-white" :style="{ color: config.text_color }">Reset Form?</h3>
+      </div>
+      <p class="text-dark-300 mb-6">Semua data yang telah diisi akan dihapus. Tindakan ini tidak dapat dibatalkan.</p>
+      <div class="flex items-center gap-3">
+       <button type="button" @click="showResetConfirm = false" class="flex-1 bg-dark-700 hover:bg-dark-600 text-white py-2.5 rounded-lg font-medium transition-colors">Batal</button> <button type="button" @click="resetForm" class="flex-1 bg-red-600 hover:bg-red-500 text-white py-2.5 rounded-lg font-medium transition-colors">Ya, Reset</button>
+      </div>
+     </div>
+    </div>
+   </main><!-- Footer -->
+    <footer class="max-w-5xl mx-auto px-6 py-6 text-center text-dark-500 text-sm">
+     <p>© 2024 • Report Pekerjaan Harian • Internal System</p>
+    </footer>
+   </div> </div>
+   <script>
+     const { createApp, ref, reactive, computed, onMounted } = Vue;
+
+    const defaultConfig = {
+      page_title: 'Report Pekerjaan Harian',
+      page_subtitle: 'Form pelaporan aktivitas kerja harian karyawan',
+      submit_button_text: 'Simpan dan Kirim Report',
+      job_types_list: 'Visit, Correspondence, Development, Installation, Documentation, Maintenance, Troubleshooting, Training',
+      background_color: '#020617',
+      surface_color: '#0f172a',
+      text_color: '#f1f5f9',
+      primary_action_color: '#0ea5e9',
+      secondary_action_color: '#3b82f6',
+      font_family: 'Inter',
+      font_size: 16
+    };
+
+    createApp({
+      setup() {
+        const config = ref({ ...defaultConfig });
+        const nama = ref('');
+        const lokasiKerja = ref('');
+        const tanggal = ref('');
+        const jamMulai = ref('08:00');
+        const jamSelesai = ref('17:00');
+        const rencanaBesok = ref('');
+        const workItems = ref([]);
+        const workIdCounter = ref(0);
+        const currentData = ref([]);
+        const isSubmitting = ref(false);
+        const showResetConfirm = ref(false);
+        const submitMode = ref('create');
+        const idReport = ref(null);
+
+        const authToken = ref('');
+        const namaKaryawan = ref('');
+
+        const toast = reactive({
+          show: false,
+          message: '',
+          type: 'success'
+        });
+
+        const getCookie = (name) => {
+          const value = `; ${document.cookie}`;
+          const parts = value.split(`; ${name}=`);
+          if (parts.length === 2) return decodeURIComponent(parts.pop().split(';').shift());
+          return null;
+        };
+
+        const getCookieName = (name) => {
+          const cookies = document.cookie.split('; ');
+          for (let c of cookies) {
+            const [key, value] = c.split('=');
+            if (key === name) {
+              return decodeURIComponent(value.replace(/\+/g, ' '));
+            }
+          }
+          return null;
+        };
+
+        const setTodayDate = () => {
+          tanggal.value = new Date().toISOString().split('T')[0];
+        };
+
+        const addWorkItem = () => {
+          const newId = ++workIdCounter.value;
+          workItems.value.push({
+            id: newId,
+            projectName: '',
+            jobType: '',
+            jobTitle: '',
+            description: '',
+            progress: 0,
+            kendala: '',
+            solusi: '',
+            showJobTypeDropdown: false,
+            kendala_doc: null,
+            solusi_doc: null,
+            save_document_1: null,
+            save_document_2: null,
+            save_document_3: null
+          });
+        };
+
+        const removeWorkItem = (index) => {
+          workItems.value.splice(index, 1);
+          if (workItems.value.length === 0) {
+            addWorkItem();
+          }
+        };
+
+        const filteredJobTypesList = (item) => {
+          const jobTypesString = config.value.job_types_list || defaultConfig.job_types_list;
+          const jobTypes = jobTypesString.split(',').map(type => type.trim()).filter(type => type);
+          if (!item.jobType) return jobTypes;
+          const search = item.jobType.toLowerCase();
+          return jobTypes.filter(type => type.toLowerCase().includes(search));
+        };
+
+        const selectJobType = (item, type) => {
+          item.jobType = type;
+          item.showJobTypeDropdown = false;
+        };
+
+        const closeJobTypeDropdown = (item) => {
+          setTimeout(() => {
+            item.showJobTypeDropdown = false;
+          }, 200);
+        };
+
+        const getProgressColorClass = (value) => {
+          if (value < 25) return 'bg-red-500';
+          if (value < 50) return 'bg-amber-500';
+          if (value < 75) return 'bg-cyan-500';
+          return 'bg-emerald-500';
+        };
+
+        const startDragProgress = (event, item) => {
+          const container = event.currentTarget;
+          const update = (e) => {
+            const rect = container.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const x = clientX - rect.left;
+            const percent = Math.max(0, Math.min(100, Math.round((x / rect.width) * 100)));
+            item.progress = percent;
+          };
+
+          update(event);
+
+          const moveHandler = (e) => {
+            update(e);
+          };
+
+          const stopHandler = () => {
+            window.removeEventListener('mousemove', moveHandler);
+            window.removeEventListener('mouseup', stopHandler);
+            window.removeEventListener('touchmove', moveHandler);
+            window.removeEventListener('touchend', stopHandler);
+          };
+
+          window.addEventListener('mousemove', moveHandler);
+          window.addEventListener('mouseup', stopHandler);
+          window.addEventListener('touchmove', moveHandler, { passive: true });
+          window.addEventListener('touchend', stopHandler);
+        };
+
+        const fileToBase64 = (file) => {
+          return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+          });
+        };
+
+        const handleFileUpload = async (event, item, docField) => {
+          const file = event.target.files[0];
+          if (!file) {
+            item[docField] = null;
+            return;
+          }
+
+          if (file.size > 5 * 1024 * 1024) {
+            showToastMessage('Ukuran file maksimal 5MB', 'error');
+            event.target.value = '';
+            item[docField] = null;
+            return;
+          }
+
+          try {
+            const base64Data = await fileToBase64(file);
+            item[docField] = {
+              name: file.name,
+              type: file.type,
+              size: file.size,
+              data: base64Data
+            };
+          } catch (error) {
+            console.error('File upload error:', error);
+            showToastMessage('Gagal membaca file', 'error');
+          }
+        };
+
+        const capturePhoto = (item, docField) => {
+          openCamera(async (blob) => {
+            const file = new File([blob], `photo_${Date.now()}.jpg`, { type: 'image/jpeg' });
+            try {
+              const base64Data = await fileToBase64(file);
+              item[docField] = {
+                name: file.name,
+                type: file.type,
+                size: file.size,
+                data: base64Data
+              };
+            } catch (err) {
+              console.error('Failed to convert captured photo:', err);
+            }
+          });
+        };
+
+        const openCamera = (callback) => {
+          const canvas = document.createElement('canvas');
+          navigator.mediaDevices.getUserMedia({ 
+            video: { 
+              facingMode: 'environment',
+              width: { ideal: 1280 },
+              height: { ideal: 720 }
+            } 
+          })
+            .then(stream => {
+              const modal = document.createElement('div');
+              modal.className = 'fixed inset-0 bg-black/80 z-[9999] flex items-center justify-center p-4';
+              modal.innerHTML = `
+                <div class="bg-dark-900 rounded-xl overflow-hidden max-w-2xl w-full border border-dark-700 shadow-2xl">
+                  <div class="relative bg-black w-full">
+                    <video id="camera-video" class="w-full h-auto" autoplay playsinline muted></video>
+                  </div>
+                  <div class="p-4 flex gap-2 bg-dark-800">
+                    <button id="camera-cancel" class="flex-1 bg-dark-700 hover:bg-dark-600 text-white py-3 rounded-lg font-medium transition-colors">Batal</button>
+                    <button id="camera-capture" class="flex-1 bg-primary-600 hover:bg-primary-500 text-white py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                      </svg>
+                      Ambil Foto
+                    </button>
+                  </div>
+                </div>
+              `;
+              
+              document.body.appendChild(modal);
+              const videoEl = modal.querySelector('#camera-video');
+              videoEl.srcObject = stream;
+              
+              videoEl.onloadedmetadata = () => {
+                videoEl.play().catch(err => console.error('Video play error:', err));
+              };
+              
+              const captureBtn = modal.querySelector('#camera-capture');
+              const cancelBtn = modal.querySelector('#camera-cancel');
+              
+              const capture = () => {
+                try {
+                  canvas.width = videoEl.videoWidth;
+                  canvas.height = videoEl.videoHeight;
+                  const ctx = canvas.getContext('2d');
+                  ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
+                  
+                  canvas.toBlob((blob) => {
+                    callback(blob);
+                    stream.getTracks().forEach(track => track.stop());
+                    modal.remove();
+                  }, 'image/jpeg', 0.95);
+                } catch (err) {
+                  console.error('Capture error:', err);
+                }
+              };
+              
+              captureBtn.addEventListener('click', capture);
+              cancelBtn.addEventListener('click', () => {
+                stream.getTracks().forEach(track => track.stop());
+                modal.remove();
+              });
+              
+              const escapeHandler = (e) => {
+                if (e.key === 'Escape') {
+                  stream.getTracks().forEach(track => track.stop());
+                  modal.remove();
+                  document.removeEventListener('keydown', escapeHandler);
+                }
+              };
+              document.addEventListener('keydown', escapeHandler);
+            })
+            .catch(err => {
+              console.error('Camera access error:', err);
+              showToastMessage('Tidak bisa mengakses kamera. Pastikan izin kamera sudah diberikan.', 'error');
+            });
+        };
+
+        const showToastMessage = (message, type = 'success') => {
+          toast.message = message;
+          toast.type = type;
+          toast.show = true;
+          setTimeout(() => {
+            toast.show = false;
+          }, 3000);
+        };
+
+        const showValidationError = (errors) => {
+          const errorContainer = document.createElement('div');
+          errorContainer.className = 'fixed bottom-6 right-6 bg-red-600 text-white rounded-lg shadow-xl z-50 max-w-sm w-full mx-4 transition-all duration-300';
+          let errorHTML = `
+            <div class="p-4">
+              <div class="flex items-start gap-3 mb-3">
+                <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <div>
+                  <p class="font-semibold">Validasi Gagal</p>
+                  <p class="text-sm text-red-100 mt-1">Silakan lengkapi field berikut:</p>
+                </div>
+              </div>
+              <ul class="text-sm text-red-100 space-y-1 ml-8">
+          `;
+          errors.forEach(error => {
+            errorHTML += `<li>• ${error}</li>`;
+          });
+          errorHTML += `
+              </ul>
+            </div>
+          `;
+          errorContainer.innerHTML = errorHTML;
+          document.body.appendChild(errorContainer);
+          setTimeout(() => {
+            errorContainer.remove();
+          }, 5000);
+        };
+
+        const validateForm = () => {
+          const errors = [];
+          if (!nama.value.trim()) {
+            errors.push('Nama harus diisi');
+          }
+          if (!lokasiKerja.value) {
+            errors.push('Lokasi Kerja harus dipilih');
+          }
+          if (!tanggal.value) {
+            errors.push('Tanggal harus diisi');
+          }
+          const hasValidWork = workItems.value.some(item => item.description && item.description.trim());
+          if (!hasValidWork) {
+            errors.push('Minimal satu pekerjaan harus ditambahkan');
+          }
+          if (!rencanaBesok.value.trim()) {
+            errors.push('Rencana Pekerjaan Besok harus diisi');
+          }
+          return { isValid: errors.length === 0, errors };
+        };
+
+        const resetForm = () => {
+          lokasiKerja.value = '';
+          setTodayDate();
+          jamMulai.value = '08:00';
+          jamSelesai.value = '17:00';
+          rencanaBesok.value = '';
+          workItems.value = [];
+          workIdCounter.value = 0;
+          addWorkItem();
+          submitMode.value = 'create';
+          idReport.value = null;
+          showResetConfirm.value = false;
+        };
+
+        const handleSubmit = async () => {
+          if (isSubmitting.value) return;
+
+          const validation = validateForm();
+          if (!validation.isValid) {
+            showValidationError(validation.errors);
+            return;
+          }
+
+          if (currentData.value.length >= 999) {
+            showToastMessage('Batas maksimal 999 report telah tercapai. Hapus beberapa report terlebih dahulu.', 'error');
+            return;
+          }
+
+          isSubmitting.value = true;
+
+          try {
+            const activeWorkItems = workItems.value
+              .filter(item => item.description && item.description.trim())
+              .map(item => ({
+                project_name: item.projectName || '',
+                job_type: item.jobType || '',
+                job_title: item.jobTitle || '',
+                description: item.description,
+                progress: parseInt(item.progress) || 0,
+                kendala: item.kendala || '',
+                solusi: item.solusi || '',
+                kendala_doc: item.kendala_doc,
+                solusi_doc: item.solusi_doc,
+                save_document_1: item.save_document_1,
+                save_document_2: item.save_document_2,
+                save_document_3: item.save_document_3
+              }));
+
+            const formData = {
+              nama: nama.value,
+              lokasi_kerja: lokasiKerja.value,
+              tanggal: tanggal.value,
+              jam_mulai: jamMulai.value,
+              jam_selesai: jamSelesai.value,
+              pekerjaan_list: JSON.stringify(activeWorkItems),
+              rencana_besok: rencanaBesok.value,
+              created_at: new Date().toISOString()
+            };
+
+            const response = await fetch('/auth/absensi/daily-report', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken.value}`
+              },
+              body: JSON.stringify(formData)
+            });
+
+            const responseData = await response.json();
+
+            if (response.ok && responseData.success) {
+              const kendalaDocNames = activeWorkItems
+                .filter(item => item.kendala_doc)
+                .map(item => item.kendala_doc.name)
+                .join(', ');
+
+              const solusiDocNames = activeWorkItems
+                .filter(item => item.solusi_doc)
+                .map(item => item.solusi_doc.name)
+                .join(', ');
+
+              const saveDoc1Names = activeWorkItems
+                .filter(item => item.save_document_1)
+                .map(item => item.save_document_1.name)
+                .join(', ');
+
+              const saveDoc2Names = activeWorkItems
+                .filter(item => item.save_document_2)
+                .map(item => item.save_document_2.name)
+                .join(', ');
+
+              const saveDoc3Names = activeWorkItems
+                .filter(item => item.save_document_3)
+                .map(item => item.save_document_3.name)
+                .join(', ');
+
+              const sdkFormData = {
+                nama: formData.nama,
+                lokasi_kerja: formData.lokasi_kerja,
+                tanggal: formData.tanggal,
+                jam_mulai: formData.jam_mulai,
+                jam_selesai: formData.jam_selesai,
+                pekerjaan_list: formData.pekerjaan_list,
+                kendala_doc_names: kendalaDocNames,
+                solusi_doc_names: solusiDocNames,
+                save_document_1_names: saveDoc1Names,
+                save_document_2_names: saveDoc2Names,
+                save_document_3_names: saveDoc3Names,
+                created_at: formData.created_at
+              };
+
+              if (window.dataSdk) {
+                await window.dataSdk.create(sdkFormData);
+              }
+              showToastMessage('Report berhasil disimpan');
+              resetForm();
+            } else {
+              throw new Error(responseData.message || 'Gagal menyimpan report');
+            }
+          } catch (error) {
+            console.error('Submission error:', error);
+            showToastMessage(error.message || 'Gagal menyimpan report. Silakan coba lagi.', 'error');
+          } finally {
+            isSubmitting.value = false;
+          }
+        };
+
+        const fetchReportData = async (idReportVal) => {
+          try {
+            const response = await fetch(`/auth/absensi/daily-report/${idReportVal}`, {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken.value}`
+              }
+            });
+
+            const responseData = await response.json();
+            if (responseData) {
+              const data = responseData;
+              nama.value = data.nama || '';
+              lokasiKerja.value = data.lokasi_kerja || '';
+              tanggal.value = data.tanggal || '';
+              jamMulai.value = data.jam_mulai || '08:00';
+              jamSelesai.value = data.jam_selesai || '17:00';
+              rencanaBesok.value = data.rencana_besok || '';
+
+              workItems.value = [];
+              workIdCounter.value = 0;
+
+              let pekerjaan_list = [];
+              try {
+                pekerjaan_list = JSON.parse(data.pekerjaan_list);
+              } catch (e) {
+                console.error('Invalid JSON pekerjaan_list:', e);
+              }
+
+              if (pekerjaan_list) {
+                const pekerjaanList = typeof pekerjaan_list === 'string'
+                  ? JSON.parse(pekerjaan_list)
+                  : pekerjaan_list;
+
+                if (Array.isArray(pekerjaanList)) {
+                  pekerjaanList.forEach(pekerjaan => {
+                    const newId = ++workIdCounter.value;
+                    workItems.value.push({
+                      id: newId,
+                      projectName: pekerjaan.project_name || '',
+                      jobType: pekerjaan.job_type || '',
+                      jobTitle: pekerjaan.job_title || '',
+                      description: pekerjaan.description || '',
+                      progress: pekerjaan.progress || 0,
+                      kendala: pekerjaan.kendala || '',
+                      solusi: pekerjaan.solusi || '',
+                      showJobTypeDropdown: false,
+                      kendala_doc: pekerjaan.kendala_doc || null,
+                      solusi_doc: pekerjaan.solusi_doc || null,
+                      save_document_1: pekerjaan.save_document_1 || null,
+                      save_document_2: pekerjaan.save_document_2 || null,
+                      save_document_3: pekerjaan.save_document_3 || null
+                    });
+                  });
+                }
+              }
+
+              if (workItems.value.length === 0) {
+                addWorkItem();
+              }
+
+              submitMode.value = 'update';
+              idReport.value = idReportVal;
+            } else {
+              throw new Error('Gagal mengambil data report');
+            }
+          } catch (error) {
+            console.error('Fetch report error:', error);
+            showToastMessage(error.message || 'Gagal mengambil data report', 'error');
+          }
+        };
+
+        const viewReports = () => {
+          window.open('/absensi_daily_report_rekapan');
+        };
+
+        const goBack = () => {
+          window.open('/');
+        };
+
+        const submitBtnText = computed(() => {
+          if (isSubmitting.value) return 'Menyimpan...';
+          return config.value.submit_button_text || defaultConfig.submit_button_text;
+        });
+
+        onMounted(() => {
+          authToken.value = getCookie('authToken') || '';
+          const rawName = getCookie('nama_karyawan');
+          namaKaryawan.value = rawName ? decodeURIComponent(rawName.replace(/\+/g, ' ')) : '';
+          nama.value = namaKaryawan.value;
+
+          if (!authToken.value) {
+            console.error('Authentication token not found');
+          }
+
+          setTodayDate();
+
+          if (workItems.value.length === 0) {
+            addWorkItem();
+          }
+
+          // Check if id_report cookie exists
+          const idReportFromCookie = getCookie('id_report');
+          if (idReportFromCookie) {
+            fetchReportData(idReportFromCookie);
+          }
+
+          // Initialize Element SDK
+          if (window.elementSdk) {
+            window.elementSdk.init({
+              defaultConfig,
+              onConfigChange: (newConfig) => {
+                config.value = { ...defaultConfig, ...newConfig };
+                document.body.style.backgroundColor = config.value.background_color;
+                document.body.style.fontFamily = `${config.value.font_family}, Inter, sans-serif`;
+              },
+              mapToCapabilities: (cfg) => {
+                const c = { ...defaultConfig, ...cfg };
+                return {
+                  recolorables: [
+                    {
+                      get: () => c.background_color,
+                      set: (value) => window.elementSdk.setConfig({ background_color: value })
+                    },
+                    {
+                      get: () => c.surface_color,
+                      set: (value) => window.elementSdk.setConfig({ surface_color: value })
+                    },
+                    {
+                      get: () => c.text_color,
+                      set: (value) => window.elementSdk.setConfig({ text_color: value })
+                    },
+                    {
+                      get: () => c.primary_action_color,
+                      set: (value) => window.elementSdk.setConfig({ primary_action_color: value })
+                    },
+                    {
+                      get: () => c.secondary_action_color,
+                      set: (value) => window.elementSdk.setConfig({ secondary_action_color: value })
+                    }
+                  ],
+                  borderables: [],
+                  fontEditable: {
+                    get: () => c.font_family,
+                    set: (value) => window.elementSdk.setConfig({ font_family: value })
+                  },
+                  fontSizeable: {
+                    get: () => c.font_size,
+                    set: (value) => window.elementSdk.setConfig({ font_size: value })
+                  }
+                };
+              },
+              mapToEditPanelValues: (cfg) => {
+                const c = { ...defaultConfig, ...cfg };
+                return new Map([
+                  ['page_title', c.page_title],
+                  ['page_subtitle', c.page_subtitle],
+                  ['submit_button_text', c.submit_button_text],
+                  ['job_types_list', c.job_types_list]
+                ]);
+              }
+            });
+          }
+
+          // Initialize Data SDK
+          if (window.dataSdk) {
+            window.dataSdk.init({
+              onDataChanged(data) {
+                currentData.value = data || [];
+              }
+            });
+          }
+        });
+
+        return {
+          config,
+          nama,
+          lokasiKerja,
+          tanggal,
+          jamMulai,
+          jamSelesai,
+          rencanaBesok,
+          workItems,
+          isSubmitting,
+          showResetConfirm,
+          submitMode,
+          idReport,
+          toast,
+          submitBtnText,
+          addWorkItem,
+          removeWorkItem,
+          filteredJobTypesList,
+          selectJobType,
+          closeJobTypeDropdown,
+          getProgressColorClass,
+          startDragProgress,
+          handleFileUpload,
+          capturePhoto,
+          resetForm,
+          handleSubmit,
+          viewReports,
+          goBack
+        };
+      }
+    }).mount('#app');
+  </script>
+ </body>
+</html>

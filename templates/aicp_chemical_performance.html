@@ -1,0 +1,614 @@
+<!doctype any>
+<html lang="id" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chemical Performance Monitoring System</title>
+  <script src="/_sdk/element_sdk.js"></script>
+  <style>
+    body {
+      box-sizing: border-box;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+    
+    @keyframes flow {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(20px); }
+    }
+    
+    .flow-animation {
+      animation: flow 2s linear infinite;
+    }
+    
+    .pulse-animation {
+      animation: pulse 2s ease-in-out infinite;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .fade-in {
+      animation: fadeIn 0.6s ease-out forwards;
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
+ </head>
+ <body class="h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-gray-100 p-8 overflow-auto">
+  <div class="w-full max-w-7xl mx-auto"><!-- Header -->
+   <div class="text-center mb-8 fade-in">
+    <h1 id="main-title" class="text-4xl font-bold text-white mb-2">Chemical Performance Monitoring &amp; Advisory System</h1>
+    <p id="subtitle" class="text-xl text-cyan-400">Evaluating Chemical Effectiveness Using SCADA Data</p>
+    <div class="mt-4 flex justify-center gap-6">
+     <div class="bg-cyan-600 text-white px-4 py-2 rounded-lg text-sm font-semibold">
+      Data-driven Chemical Performance Evaluation
+     </div>
+     <div class="bg-amber-600 text-white px-4 py-2 rounded-lg text-sm font-semibold">
+      Advisory System – No Direct Control
+     </div>
+    </div>
+   </div><!-- Main Architecture Diagram -->
+   <div class="bg-slate-800 rounded-xl shadow-2xl p-8 mb-6 fade-in" style="animation-delay: 0.2s"><!-- Layer 1: Field & Process -->
+    <div class="mb-8">
+     <div class="flex items-center mb-4">
+      <div class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-lg">
+       Layer 1: Field &amp; Process
+      </div>
+     </div>
+     <div class="bg-slate-700 rounded-lg p-6 relative"><!-- Crude Oil Pipeline -->
+      <div class="flex items-center justify-between mb-6">
+       <div class="text-sm text-gray-400 font-semibold">
+        Crude Oil Flow →
+       </div>
+       <div class="flex-1 mx-4 h-16 bg-gradient-to-r from-slate-600 to-slate-500 rounded-lg relative overflow-hidden border-2 border-slate-400"><!-- Flow animation -->
+        <div class="absolute inset-0 flex items-center">
+         <div class="flow-animation flex gap-4 ml-4">
+          <div class="w-3 h-3 bg-cyan-400 rounded-full pulse-animation"></div>
+          <div class="w-3 h-3 bg-cyan-400 rounded-full pulse-animation" style="animation-delay: 0.3s"></div>
+          <div class="w-3 h-3 bg-cyan-400 rounded-full pulse-animation" style="animation-delay: 0.6s"></div>
+         </div>
+        </div>
+        <div class="absolute inset-0 flex items-center justify-center"><span class="text-white font-bold text-sm">CRUDE OIL PIPELINE</span>
+        </div>
+       </div>
+      </div><!-- Instruments -->
+      <div class="grid grid-cols-3 gap-4"><!-- Flowmeter -->
+       <div class="bg-slate-800 border-2 border-green-500 rounded-lg p-4 text-center">
+        <svg class="w-12 h-12 mx-auto mb-2 text-green-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke-width="2" /> <path d="M12 6v12M8 12h8" stroke-width="2" stroke-linecap="round" />
+        </svg>
+        <div class="text-green-400 font-bold text-sm">
+         Flowmeter
+        </div>
+        <div class="text-gray-400 text-xs mt-1">
+         Measuring flow rate
+        </div>
+        <div class="text-white font-mono text-lg mt-2">
+         1250 bbl/hr
+        </div>
+       </div><!-- Temperature Transmitter -->
+       <div class="bg-slate-800 border-2 border-amber-500 rounded-lg p-4 text-center">
+        <svg class="w-12 h-12 mx-auto mb-2 text-amber-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><rect x="10" y="3" width="4" height="14" rx="2" stroke-width="2" /> <circle cx="12" cy="19" r="3" stroke-width="2" fill="currentColor" /> <line x1="12" y1="8" x2="12" y2="15" stroke-width="2" />
+        </svg>
+        <div class="text-amber-400 font-bold text-sm">
+         Temperature
+        </div>
+        <div class="text-gray-400 text-xs mt-1">
+         Process temperature
+        </div>
+        <div class="text-white font-mono text-lg mt-2">
+         75.2°C
+        </div>
+       </div><!-- Injection Pump -->
+       <div class="bg-slate-800 border-2 border-purple-500 rounded-lg p-4 text-center">
+        <svg class="w-12 h-12 mx-auto mb-2 text-purple-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><rect x="6" y="8" width="12" height="10" rx="1" stroke-width="2" /> <path d="M12 8V4M12 4L10 6M12 4L14 6" stroke-width="2" stroke-linecap="round" /> <circle cx="9" cy="13" r="1.5" fill="currentColor" /> <circle cx="15" cy="13" r="1.5" fill="currentColor" />
+        </svg>
+        <div class="text-purple-400 font-bold text-sm">
+         Injection Pump
+        </div>
+        <div class="text-gray-400 text-xs mt-1">
+         Chemical injection
+        </div>
+        <div class="text-white font-mono text-lg mt-2">
+         12.5 L/hr
+        </div>
+       </div>
+      </div>
+     </div>
+    </div><!-- Data Flow Arrow -->
+    <div class="flex justify-center my-4">
+     <svg class="w-8 h-8 text-cyan-400 pulse-animation" fill="currentColor" viewbox="0 0 24 24"><path d="M12 4v16m0 0l-6-6m6 6l6-6" />
+     </svg>
+    </div><!-- Layer 2: Control & SCADA -->
+    <div class="mb-8 fade-in" style="animation-delay: 0.4s">
+     <div class="flex items-center mb-4">
+      <div class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold text-lg">
+       Layer 2: Control &amp; SCADA
+      </div>
+      <div class="ml-4 bg-slate-700 text-gray-300 px-3 py-1 rounded text-sm">
+       📖 Read-Only Access
+      </div>
+     </div>
+     <div class="grid grid-cols-3 gap-4"><!-- PLC/RTU -->
+      <div class="bg-slate-700 rounded-lg p-4 border-l-4 border-indigo-500">
+       <div class="font-bold text-indigo-400 mb-2">
+        PLC / RTU
+       </div>
+       <div class="text-sm text-gray-300 mb-3">
+        Field data collection
+       </div>
+       <div class="space-y-1 text-xs">
+        <div class="flex justify-between text-gray-400"><span>• Flow signals</span> <span class="text-green-400">●</span>
+        </div>
+        <div class="flex justify-between text-gray-400"><span>• Temp signals</span> <span class="text-green-400">●</span>
+        </div>
+        <div class="flex justify-between text-gray-400"><span>• Injection data</span> <span class="text-green-400">●</span>
+        </div>
+       </div>
+      </div><!-- SCADA System -->
+      <div class="bg-slate-700 rounded-lg p-4 border-l-4 border-indigo-500">
+       <div class="font-bold text-indigo-400 mb-2">
+        SCADA System
+       </div>
+       <div class="text-sm text-gray-300 mb-3">
+        Real-time monitoring
+       </div>
+       <div class="space-y-1 text-xs">
+        <div class="text-gray-400">
+         • Live data display
+        </div>
+        <div class="text-gray-400">
+         • Alarm management
+        </div>
+        <div class="text-gray-400">
+         • Process visualization
+        </div>
+       </div>
+      </div><!-- Historian -->
+      <div class="bg-slate-700 rounded-lg p-4 border-l-4 border-indigo-500">
+       <div class="font-bold text-indigo-400 mb-2">
+        Historian
+       </div>
+       <div class="text-sm text-gray-300 mb-3">
+        Time-series database
+       </div>
+       <div class="space-y-1 text-xs">
+        <div class="text-gray-400">
+         • Historical data
+        </div>
+        <div class="text-gray-400">
+         • Trend analysis
+        </div>
+        <div class="text-gray-400">
+         • Data archiving
+        </div>
+       </div>
+      </div>
+     </div>
+    </div><!-- Data Flow Arrow -->
+    <div class="flex justify-center my-4">
+     <svg class="w-8 h-8 text-cyan-400 pulse-animation" fill="currentColor" viewbox="0 0 24 24"><path d="M12 4v16m0 0l-6-6m6 6l6-6" />
+     </svg>
+    </div><!-- Layer 3: Automation & Analytics -->
+    <div class="mb-8 fade-in" style="animation-delay: 0.6s">
+     <div class="flex items-center mb-4">
+      <div class="bg-cyan-600 text-white px-4 py-2 rounded-lg font-bold text-lg">
+       Layer 3: Automation &amp; Analytics
+      </div>
+     </div>
+     <div class="bg-slate-700 rounded-lg p-6">
+      <div class="grid grid-cols-2 gap-6"><!-- Automation System -->
+       <div class="bg-slate-800 rounded-lg p-4 border-2 border-cyan-500">
+        <div class="font-bold text-cyan-400 mb-3 text-center">
+         Automation System
+        </div>
+        <div class="text-sm text-gray-300 text-center mb-4">
+         Analytical Engine
+        </div>
+        <div class="space-y-3">
+         <div class="bg-slate-900 rounded p-3">
+          <div class="text-xs text-gray-400 mb-1">
+           Data Processing
+          </div>
+          <div class="flex items-center gap-2">
+           <div class="flex-1 h-2 bg-slate-700 rounded-full overflow-hidden">
+            <div class="h-full bg-cyan-500 rounded-full" style="width: 85%"></div>
+           </div><span class="text-xs text-cyan-400">85%</span>
+          </div>
+         </div>
+         <div class="bg-slate-900 rounded p-3">
+          <div class="text-xs text-gray-400 mb-1">
+           Analysis Active
+          </div>
+          <div class="flex items-center gap-2">
+           <div class="flex-1 h-2 bg-slate-700 rounded-full overflow-hidden">
+            <div class="h-full bg-green-500 rounded-full" style="width: 92%"></div>
+           </div><span class="text-xs text-green-400">92%</span>
+          </div>
+         </div>
+        </div>
+       </div><!-- Chemical Performance Evaluation -->
+       <div class="bg-slate-800 rounded-lg p-4 border-2 border-cyan-500">
+        <div class="font-bold text-cyan-400 mb-3 text-center">
+         Performance Evaluation
+        </div>
+        <div class="space-y-2 text-xs">
+         <div class="bg-slate-900 rounded p-2">
+          <div class="text-gray-400 mb-1">
+           📊 Flowrate Analysis
+          </div>
+          <div class="text-white font-mono">
+           Δ Flow = +2.3%
+          </div>
+         </div>
+         <div class="bg-slate-900 rounded p-2">
+          <div class="text-gray-400 mb-1">
+           🌡️ Temperature Profile
+          </div>
+          <div class="text-white font-mono">
+           ΔT = -1.8°C
+          </div>
+         </div>
+         <div class="bg-slate-900 rounded p-2">
+          <div class="text-gray-400 mb-1">
+           💉 Injection Rate
+          </div>
+          <div class="text-white font-mono">
+           Rate: 12.5 L/hr
+          </div>
+         </div>
+         <div class="bg-slate-900 rounded p-2">
+          <div class="text-gray-400 mb-1">
+           ⚡ Effectiveness Index
+          </div>
+          <div class="text-green-400 font-bold">
+           87.5% GOOD
+          </div>
+         </div>
+        </div>
+       </div>
+      </div><!-- Calculation Info -->
+      <div class="mt-4 bg-cyan-900 bg-opacity-30 border border-cyan-600 rounded-lg p-3">
+       <div class="text-cyan-300 font-semibold text-sm mb-2">
+        💡 Calculation Basis:
+       </div>
+       <div class="text-xs text-gray-300 leading-relaxed">
+        Chemical performance dievaluasi berdasarkan respon proses (perubahan flowrate, temperature stability, pressure drop) bukan dari konsumsi chemical semata. Sistem menganalisis korelasi antara injection rate dengan parameter proses.
+       </div>
+      </div>
+     </div>
+    </div><!-- Data Flow Arrow -->
+    <div class="flex justify-center my-4">
+     <svg class="w-8 h-8 text-cyan-400 pulse-animation" fill="currentColor" viewbox="0 0 24 24"><path d="M12 4v16m0 0l-6-6m6 6l6-6" />
+     </svg>
+    </div><!-- Layer 4: Output & Decision Support -->
+    <div class="fade-in" style="animation-delay: 0.8s">
+     <div class="flex items-center mb-4">
+      <div class="bg-emerald-600 text-white px-4 py-2 rounded-lg font-bold text-lg">
+       Layer 4: Output &amp; Decision Support
+      </div>
+     </div>
+     <div class="grid grid-cols-3 gap-4"><!-- Performance Status -->
+      <div class="bg-slate-700 rounded-lg p-4">
+       <div class="font-bold text-emerald-400 mb-3 text-center">
+        Performance Status
+       </div>
+       <div class="space-y-3">
+        <div class="bg-green-600 bg-opacity-20 border-2 border-green-500 rounded-lg p-3 text-center">
+         <div class="text-green-400 font-bold text-2xl">
+          GOOD
+         </div>
+         <div class="text-xs text-green-300 mt-1">
+          Chemical performing effectively
+         </div>
+        </div>
+        <div class="grid grid-cols-3 gap-2 text-xs">
+         <div class="bg-green-900 bg-opacity-40 rounded p-2 text-center">
+          <div class="text-green-400 font-bold">
+           ✓
+          </div>
+          <div class="text-gray-400 mt-1">
+           Flow
+          </div>
+         </div>
+         <div class="bg-green-900 bg-opacity-40 rounded p-2 text-center">
+          <div class="text-green-400 font-bold">
+           ✓
+          </div>
+          <div class="text-gray-400 mt-1">
+           Temp
+          </div>
+         </div>
+         <div class="bg-green-900 bg-opacity-40 rounded p-2 text-center">
+          <div class="text-green-400 font-bold">
+           ✓
+          </div>
+          <div class="text-gray-400 mt-1">
+           Inject
+          </div>
+         </div>
+        </div>
+       </div>
+      </div><!-- Trend Graphics -->
+      <div class="bg-slate-700 rounded-lg p-4">
+       <div class="font-bold text-emerald-400 mb-3 text-center">
+        Trend Analysis
+       </div>
+       <div class="space-y-3"><!-- Flowrate Trend -->
+        <div class="bg-slate-800 rounded p-2">
+         <div class="text-xs text-gray-400 mb-2">
+          Flowrate (24h)
+         </div>
+         <div class="h-12 flex items-end gap-1">
+          <div class="flex-1 bg-cyan-600 rounded-t" style="height: 60%"></div>
+          <div class="flex-1 bg-cyan-600 rounded-t" style="height: 65%"></div>
+          <div class="flex-1 bg-cyan-600 rounded-t" style="height: 70%"></div>
+          <div class="flex-1 bg-cyan-600 rounded-t" style="height: 75%"></div>
+          <div class="flex-1 bg-cyan-600 rounded-t" style="height: 80%"></div>
+          <div class="flex-1 bg-cyan-500 rounded-t" style="height: 85%"></div>
+          <div class="flex-1 bg-cyan-500 rounded-t" style="height: 88%"></div>
+          <div class="flex-1 bg-cyan-400 rounded-t" style="height: 90%"></div>
+         </div>
+         <div class="text-xs text-green-400 mt-1">
+          ↗ Trending up +2.3%
+         </div>
+        </div><!-- Temperature Trend -->
+        <div class="bg-slate-800 rounded p-2">
+         <div class="text-xs text-gray-400 mb-2">
+          Temperature (24h)
+         </div>
+         <div class="h-12 flex items-end gap-1">
+          <div class="flex-1 bg-amber-600 rounded-t" style="height: 85%"></div>
+          <div class="flex-1 bg-amber-600 rounded-t" style="height: 82%"></div>
+          <div class="flex-1 bg-amber-600 rounded-t" style="height: 80%"></div>
+          <div class="flex-1 bg-amber-600 rounded-t" style="height: 78%"></div>
+          <div class="flex-1 bg-amber-500 rounded-t" style="height: 75%"></div>
+          <div class="flex-1 bg-amber-500 rounded-t" style="height: 73%"></div>
+          <div class="flex-1 bg-amber-500 rounded-t" style="height: 72%"></div>
+          <div class="flex-1 bg-amber-400 rounded-t" style="height: 70%"></div>
+         </div>
+         <div class="text-xs text-green-400 mt-1">
+          ↘ Stable -1.8°C
+         </div>
+        </div>
+       </div>
+      </div><!-- Advisory Panel -->
+      <div class="bg-slate-700 rounded-lg p-4">
+       <div class="font-bold text-emerald-400 mb-3 text-center">
+        Advisory &amp; Recommendation
+       </div>
+       <div class="space-y-2 text-xs">
+        <div class="bg-green-900 bg-opacity-30 border border-green-600 rounded p-2">
+         <div class="text-green-400 font-semibold mb-1">
+          ✓ Current Strategy
+         </div>
+         <div class="text-gray-300">
+          Injection rate optimal. Maintain current dosage.
+         </div>
+        </div>
+        <div class="bg-blue-900 bg-opacity-30 border border-blue-600 rounded p-2">
+         <div class="text-blue-400 font-semibold mb-1">
+          ℹ️ Observation
+         </div>
+         <div class="text-gray-300">
+          Temperature trending down indicates improved flow characteristics.
+         </div>
+        </div>
+        <div class="bg-slate-800 border border-slate-600 rounded p-2">
+         <div class="text-gray-400 font-semibold mb-1">
+          📋 Next Review
+         </div>
+         <div class="text-gray-300">
+          Scheduled in 8 hours
+         </div>
+        </div>
+       </div>
+       <div class="mt-3 pt-3 border-t border-slate-600">
+        <div class="text-amber-400 text-xs font-semibold">
+         ⚠️ Advisory Only - No Control Action
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </div><!-- Legend & Status Indicators -->
+   <div class="grid grid-cols-3 gap-4 mb-6 fade-in" style="animation-delay: 1s">
+    <div class="bg-slate-800 rounded-lg p-4">
+     <div class="font-bold text-white mb-3">
+      Status Legend
+     </div>
+     <div class="space-y-2 text-sm">
+      <div class="flex items-center gap-2">
+       <div class="w-4 h-4 bg-green-500 rounded"></div><span class="text-gray-300">GOOD - Performance optimal</span>
+      </div>
+      <div class="flex items-center gap-2">
+       <div class="w-4 h-4 bg-yellow-500 rounded"></div><span class="text-gray-300">WARNING - Needs attention</span>
+      </div>
+      <div class="flex items-center gap-2">
+       <div class="w-4 h-4 bg-red-500 rounded"></div><span class="text-gray-300">POOR - Action required</span>
+      </div>
+     </div>
+    </div>
+    <div class="bg-slate-800 rounded-lg p-4">
+     <div class="font-bold text-white mb-3">
+      Key Features
+     </div>
+     <div class="space-y-1 text-sm text-gray-300">
+      <div>
+       ✓ Real-time monitoring
+      </div>
+      <div>
+       ✓ Data-driven analysis
+      </div>
+      <div>
+       ✓ Trend visualization
+      </div>
+      <div>
+       ✓ Performance advisory
+      </div>
+     </div>
+    </div>
+    <div class="bg-slate-800 rounded-lg p-4">
+     <div class="font-bold text-white mb-3">
+      System Status
+     </div>
+     <div class="space-y-2 text-sm">
+      <div class="flex justify-between text-gray-300"><span>Data Connection:</span> <span class="text-green-400 font-semibold">● ONLINE</span>
+      </div>
+      <div class="flex justify-between text-gray-300"><span>Analytics Engine:</span> <span class="text-green-400 font-semibold">● ACTIVE</span>
+      </div>
+      <div class="flex justify-between text-gray-300"><span>Last Update:</span> <span class="text-cyan-400 font-mono">2.5s ago</span>
+      </div>
+     </div>
+    </div>
+   </div><!-- Footer Note -->
+   <div class="bg-gradient-to-r from-slate-800 to-slate-700 rounded-lg p-4 text-center border-l-4 border-cyan-500 fade-in" style="animation-delay: 1.2s">
+    <p id="footer-text" class="text-gray-300 text-sm leading-relaxed"><span class="font-semibold text-cyan-400">System Architecture:</span> Monitoring system ini dirancang untuk evaluasi performa chemical secara non-intrusive, menggunakan data SCADA existing tanpa intervensi ke kontrol proses. Semua rekomendasi bersifat advisory untuk mendukung decision making engineer.</p>
+   </div>
+  </div>
+  <script>
+    const defaultConfig = {
+      main_title: "Chemical Performance Monitoring & Advisory System",
+      subtitle: "Evaluating Chemical Effectiveness Using SCADA Data",
+      footer_text: "System Architecture: Monitoring system ini dirancang untuk evaluasi performa chemical secara non-intrusive, menggunakan data SCADA existing tanpa intervensi ke kontrol proses. Semua rekomendasi bersifat advisory untuk mendukung decision making engineer.",
+      background_color: "#0f172a",
+      surface_color: "#1e293b",
+      text_color: "#f1f5f9",
+      primary_accent_color: "#06b6d4",
+      secondary_accent_color: "#10b981",
+      font_family: "system-ui",
+      font_size: 16
+    };
+
+    async function onConfigChange(config) {
+      const customFont = config.font_family || defaultConfig.font_family;
+      const baseFontStack = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      const baseSize = config.font_size || defaultConfig.font_size;
+      const bgColor = config.background_color || defaultConfig.background_color;
+      const surfaceColor = config.surface_color || defaultConfig.surface_color;
+      const textColor = config.text_color || defaultConfig.text_color;
+      const primaryColor = config.primary_accent_color || defaultConfig.primary_accent_color;
+      const secondaryColor = config.secondary_accent_color || defaultConfig.secondary_accent_color;
+
+      document.body.style.fontFamily = `${customFont}, ${baseFontStack}`;
+      document.body.style.background = `linear-gradient(to bottom right, ${bgColor}, #1e293b, ${bgColor})`;
+
+      document.getElementById('main-title').textContent = config.main_title || defaultConfig.main_title;
+      document.getElementById('main-title').style.fontSize = `${baseSize * 2}px`;
+      document.getElementById('main-title').style.color = textColor;
+
+      document.getElementById('subtitle').textContent = config.subtitle || defaultConfig.subtitle;
+      document.getElementById('subtitle').style.fontSize = `${baseSize * 1.25}px`;
+      document.getElementById('subtitle').style.color = primaryColor;
+
+      document.getElementById('footer-text').innerHTML = (config.footer_text || defaultConfig.footer_text).replace(
+        'System Architecture:',
+        `<span class="font-semibold" style="color: ${primaryColor}">System Architecture:</span>`
+      );
+      document.getElementById('footer-text').style.fontSize = `${baseSize * 0.875}px`;
+      document.getElementById('footer-text').style.color = textColor;
+
+      const allSurfaces = document.querySelectorAll('.bg-slate-800, .bg-slate-700');
+      allSurfaces.forEach(el => {
+        el.style.backgroundColor = surfaceColor;
+      });
+
+      document.querySelectorAll('.text-cyan-400, .text-cyan-300, .text-cyan-500').forEach(el => {
+        el.style.color = primaryColor;
+      });
+
+      document.querySelectorAll('.bg-cyan-600, .bg-cyan-500, .bg-cyan-400, .border-cyan-600, .border-cyan-500').forEach(el => {
+        if (el.classList.contains('bg-cyan-600') || el.classList.contains('bg-cyan-500') || el.classList.contains('bg-cyan-400')) {
+          el.style.backgroundColor = primaryColor;
+        }
+        if (el.classList.contains('border-cyan-600') || el.classList.contains('border-cyan-500')) {
+          el.style.borderColor = primaryColor;
+        }
+      });
+
+      document.querySelectorAll('.text-green-400, .text-green-300').forEach(el => {
+        el.style.color = secondaryColor;
+      });
+
+      document.querySelectorAll('.bg-green-600, .bg-green-500, .border-green-600, .border-green-500').forEach(el => {
+        if (el.classList.contains('bg-green-600') || el.classList.contains('bg-green-500')) {
+          el.style.backgroundColor = secondaryColor;
+        }
+        if (el.classList.contains('border-green-600') || el.classList.contains('border-green-500')) {
+          el.style.borderColor = secondaryColor;
+        }
+      });
+    }
+
+    window.elementSdk.init({
+      defaultConfig,
+      onConfigChange,
+      mapToCapabilities: (config) => ({
+        recolorables: [
+          {
+            get: () => config.background_color || defaultConfig.background_color,
+            set: (value) => {
+              config.background_color = value;
+              window.elementSdk.setConfig({ background_color: value });
+            }
+          },
+          {
+            get: () => config.surface_color || defaultConfig.surface_color,
+            set: (value) => {
+              config.surface_color = value;
+              window.elementSdk.setConfig({ surface_color: value });
+            }
+          },
+          {
+            get: () => config.text_color || defaultConfig.text_color,
+            set: (value) => {
+              config.text_color = value;
+              window.elementSdk.setConfig({ text_color: value });
+            }
+          },
+          {
+            get: () => config.primary_accent_color || defaultConfig.primary_accent_color,
+            set: (value) => {
+              config.primary_accent_color = value;
+              window.elementSdk.setConfig({ primary_accent_color: value });
+            }
+          },
+          {
+            get: () => config.secondary_accent_color || defaultConfig.secondary_accent_color,
+            set: (value) => {
+              config.secondary_accent_color = value;
+              window.elementSdk.setConfig({ secondary_accent_color: value });
+            }
+          }
+        ],
+        borderables: [],
+        fontEditable: {
+          get: () => config.font_family || defaultConfig.font_family,
+          set: (value) => {
+            config.font_family = value;
+            window.elementSdk.setConfig({ font_family: value });
+          }
+        },
+        fontSizeable: {
+          get: () => config.font_size || defaultConfig.font_size,
+          set: (value) => {
+            config.font_size = value;
+            window.elementSdk.setConfig({ font_size: value });
+          }
+        }
+      }),
+      mapToEditPanelValues: (config) => new Map([
+        ["main_title", config.main_title || defaultConfig.main_title],
+        ["subtitle", config.subtitle || defaultConfig.subtitle],
+        ["footer_text", config.footer_text || defaultConfig.footer_text]
+      ])
+    });
+  </script>
+ </body>
+</html>

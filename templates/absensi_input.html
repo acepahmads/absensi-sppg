@@ -1,0 +1,1692 @@
+<!doctype html>
+<html lang="id" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Enterprise Attendance System</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <style>[v-cloak] { display: none; }</style>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="/_sdk/data_sdk.js"></script>
+  <style>
+    body {
+      box-sizing: border-box;
+    }
+    
+    .glassmorphism {
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+    
+    .pill-button {
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .pill-button:hover:not(.active) {
+      background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+    
+    .pill-button.active {
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+    }
+    
+    .shift-button.active {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      border-color: #10b981 !important;
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+    }
+    
+    .shift-button:hover:not(.active) {
+      background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+    
+    .status-badge {
+      background: rgba(34, 197, 94, 0.15);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #22c55e;
+    }
+    
+    .status-badge.warning {
+      background: rgba(251, 146, 60, 0.15);
+      border: 1px solid rgba(251, 146, 60, 0.3);
+      color: #fb923c;
+    }
+    
+    .status-badge.error {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #ef4444;
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+ </head>
+ <body class="h-full bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 text-white overflow-auto">
+  <div id="app" v-cloak class="w-full min-h-full flex flex-col">
+   <!-- Header -->
+   <header class="w-full bg-slate-950 bg-opacity-80 border-b border-blue-900 border-opacity-30 px-4 sm:px-6 lg:px-8 py-4">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+     <h1 id="page-title" class="text-xl sm:text-2xl font-bold text-white">{{ configState.page_title }}</h1>
+     <div class="flex items-center gap-3 sm:gap-4">
+      <div class="text-right hidden sm:block">
+       <div id="user-name" class="text-sm font-medium text-white">{{ configState.user_name }}</div>
+       <div id="user-role" class="text-xs text-blue-300">{{ configState.user_role }}</div>
+      </div>
+      <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white font-bold">
+       {{ initials }}
+      </div>
+      <button @click="handleBack" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-blue-400 hover:text-blue-300 transition-colors font-medium text-sm" aria-label="Back">
+       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+       <span>Back</span>
+      </button>
+     </div>
+    </div>
+   </header>
+
+   <!-- Main Content -->
+   <main class="flex-1 w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+    <div class="max-w-4xl mx-auto">
+     <!-- Attendance Panel -->
+     <div class="glassmorphism rounded-2xl p-6 sm:p-8 shadow-2xl" :style="{ background: (configState.surface_color || '#0f172a') + 'dd', borderColor: (configState.primary_action_color || '#3b82f6') + '4d' }">
+      <!-- Attendance Type Selector -->
+      <div class="mb-8">
+       <label class="block text-sm font-medium text-blue-300 mb-3">Tipe Kehadiran</label>
+       <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
+         <button @click="selectAttendanceType('kantor')" class="pill-button px-4 py-3 rounded-lg text-white text-sm font-medium flex items-center justify-center gap-2" :class="{ 'active': attendanceType === 'kantor' }" :style="attendanceType !== 'kantor' ? { background: configState.surface_color, color: configState.text_color } : {}">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+          Kantor
+         </button>
+         
+         <button @click="selectAttendanceType('dinas_lapangan')" class="pill-button px-4 py-3 rounded-lg text-white text-sm font-medium flex items-center justify-center gap-2" :class="{ 'active': attendanceType === 'dinas_lapangan' }" :style="attendanceType !== 'dinas_lapangan' ? { background: configState.surface_color, color: configState.text_color } : {}">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+          Dinas Lap.
+         </button> 
+         
+         <button @click="selectAttendanceType('wfh')" class="pill-button px-4 py-3 rounded-lg text-white text-sm font-medium flex items-center justify-center gap-2" :class="{ 'active': attendanceType === 'wfh' }" :style="attendanceType !== 'wfh' ? { background: configState.surface_color, color: configState.text_color } : {}">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+          WFH
+         </button> 
+         
+         <button @click="selectAttendanceType('cuti')" class="pill-button px-4 py-3 rounded-lg text-white text-sm font-medium flex items-center justify-center gap-2" :class="{ 'active': attendanceType === 'cuti' }" :style="attendanceType !== 'cuti' ? { background: configState.surface_color, color: configState.text_color } : {}">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+          Cuti
+         </button>
+         
+         <button @click="selectAttendanceType('cuti_lapangan')" class="pill-button px-4 py-3 rounded-lg text-white text-sm font-medium flex items-center justify-center gap-2" :class="{ 'active': attendanceType === 'cuti_lapangan' }" :style="attendanceType !== 'cuti_lapangan' ? { background: configState.surface_color, color: configState.text_color } : {}">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          Cuti Lap.
+         </button>
+         
+         <button @click="selectAttendanceType('sakit')" class="pill-button px-4 py-3 rounded-lg text-white text-sm font-medium flex items-center justify-center gap-2" :class="{ 'active': attendanceType === 'sakit' }" :style="attendanceType !== 'sakit' ? { background: configState.surface_color, color: configState.text_color } : {}">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+          Sakit
+         </button>
+
+         <button @click="selectAttendanceType('cuti1/2')" class="pill-button px-4 py-3 rounded-lg text-white text-sm font-medium flex items-center justify-center gap-2" :class="{ 'active': attendanceType === 'cuti1/2' }" :style="attendanceType !== 'cuti1/2' ? { background: configState.surface_color, color: configState.text_color } : {}">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+          Cuti1/2
+         </button>
+
+         <button @click="selectAttendanceType('goto-dashboard')" class="pill-button px-4 py-3 rounded-lg text-white text-sm font-medium flex items-center justify-center gap-2" :style="{ background: configState.surface_color, color: configState.text_color }">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9.75L12 4.5l9 5.25V19a1.5 1.5 0 01-1.5 1.5h-15A1.5 1.5 0 013 19V9.75zM9 22V12h6v10" /></svg>
+          Dashboard
+         </button>
+       </div>
+      </div>
+
+      <!-- Shift Type Selector (for Kantor, Dinas Lapangan, WFH) -->
+      <div id="shift-section" class="mb-8" v-show="['kantor', 'dinas_lapangan', 'wfh'].includes(attendanceType)">
+       <label class="block text-sm font-medium text-blue-300 mb-3">Pilih Tipe Absensi</label>
+       <div class="grid grid-cols-2 gap-3">
+        <button @click="selectShiftType('masuk')" class="shift-button px-6 py-4 rounded-lg text-white text-sm font-medium flex flex-col items-center justify-center gap-2 border-2" :class="{ 'active': shiftType === 'masuk' }" :style="shiftType === 'masuk' ? {} : { background: configState.surface_color, color: configState.text_color, borderColor: 'transparent' }">
+         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
+         <span class="font-bold">Masuk</span> <span class="text-xs text-gray-400">Check-in Awal</span>
+        </button> 
+        <button @click="selectShiftType('pulang')" class="shift-button px-6 py-4 rounded-lg text-white text-sm font-medium flex flex-col items-center justify-center gap-2 border-2" :class="{ 'active': shiftType === 'pulang' }" :style="shiftType === 'pulang' ? {} : { background: configState.surface_color, color: configState.text_color, borderColor: 'transparent' }">
+         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+         <span class="font-bold">Pulang</span> <span class="text-xs text-gray-400">Check-out Akhir</span>
+        </button>
+       </div>
+      </div>
+
+      <!-- GPS Section -->
+      <div id="gps-section" class="mb-8" v-show="['kantor', 'dinas_lapangan', 'wfh'].includes(attendanceType)">
+       <div class="bg-slate-800 bg-opacity-50 rounded-xl p-6 border border-blue-900 border-opacity-30">
+        <div class="flex items-center justify-between mb-4">
+         <h3 class="text-lg font-semibold text-white">Validasi GPS</h3>
+         <div id="gps-status-badge" class="px-3 py-1 rounded-full text-xs font-medium" :class="gpsStatusClass">
+          {{ gpsStatusText }}
+         </div>
+        </div>
+        <div class="space-y-3">
+         <div class="flex items-center text-sm">
+          <span class="text-gray-400">Lokasi: </span>&nbsp;<span id="office-address" class="text-white font-medium">{{ locationName }}</span>
+         </div>
+         <div id="distance-info" class="flex items-center justify-between text-sm" v-show="attendanceType === 'kantor'">
+          <span class="text-gray-400">Jarak ke Kantor:</span> <span id="distance-value" class="text-white font-medium">{{ distanceText }}</span>
+         </div>
+         <div id="radius-info" class="flex items-center justify-between text-sm" v-show="attendanceType === 'kantor'">
+          <span class="text-gray-400">Radius yang Diizinkan:</span> <span class="text-blue-400 font-medium">50 meter</span>
+         </div>
+         <div class="flex items-center justify-between text-sm">
+          <span class="text-gray-400">Koordinat:</span> <span id="coordinates" class="text-white font-mono text-xs">{{ coordinatesText }}</span>
+         </div>
+        </div>
+        <!-- Map Preview -->
+        <div id="map-preview" class="mt-4 bg-slate-900 rounded-lg overflow-hidden border border-slate-700" v-show="gpsData">
+         <div id="map-container" style="height: 300px; width: 100%;"></div>
+        </div>
+       </div>
+      </div>
+
+      <!-- Date Range Section for Sakit, Cuti, Cuti Lapangan -->
+      <div id="date-range-section" class="mb-8" v-show="['sakit', 'cuti', 'cuti1/2', 'cuti_lapangan'].includes(attendanceType)">
+       <div class="bg-slate-800 bg-opacity-50 rounded-xl p-6 border border-blue-900 border-opacity-30">
+        <h3 class="text-lg font-semibold text-white mb-4">Periode Tanggal</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+         <div>
+          <label for="start-date" class="block text-sm font-medium text-blue-300 mb-2">Tanggal Mulai</label>
+          <input type="date" id="start-date" v-model="startDate" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+         </div>
+         <div>
+          <label for="end-date" class="block text-sm font-medium text-blue-300 mb-2">Tanggal Selesai</label>
+          <input type="date" id="end-date" v-model="endDate" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+         </div>
+        </div>
+        <div id="duration-display" class="mt-4 bg-blue-900 bg-opacity-30 rounded-lg p-3 border border-blue-700" v-show="startDate && endDate">
+         <div class="flex items-center justify-between">
+          <span class="text-blue-300 text-sm font-medium">Durasi:</span> <span id="duration-text" class="text-white text-sm font-bold">{{ durationDays }} hari</span>
+         </div>
+        </div>
+       </div>
+      </div>
+
+      <!-- GPS Section for Sakit -->
+      <div id="gps-section-sakit" class="mb-8" v-show="attendanceType === 'sakit'">
+       <div class="bg-slate-800 bg-opacity-50 rounded-xl p-6 border border-blue-900 border-opacity-30">
+        <div class="flex items-center justify-between mb-4">
+         <h3 class="text-lg font-semibold text-white">Lokasi GPS Saat Sakit</h3>
+         <div id="gps-status-badge-sakit" class="px-3 py-1 rounded-full text-xs font-medium" :class="gpsStatusClassSakit">
+          {{ gpsStatusTextSakit }}
+         </div>
+        </div>
+        <div class="space-y-3">
+         <div class="flex items-center justify-between text-sm">
+          <span class="text-gray-400">Koordinat:</span> <span id="coordinates-sakit" class="text-white font-mono text-xs">{{ coordinatesTextSakit }}</span>
+         </div>
+         <div class="flex items-center justify-between text-sm">
+          <span class="text-gray-400">Lokasi:</span> <span id="location-name-sakit" class="text-white text-xs">{{ locationNameSakit }}</span>
+         </div>
+        </div>
+        <!-- Map Preview for Sakit -->
+        <div id="map-preview-sakit" class="mt-4 bg-slate-900 rounded-lg overflow-hidden border border-slate-700" v-show="gpsDataSakit">
+         <div id="map-container-sakit" style="height: 300px; width: 100%;"></div>
+        </div>
+       </div>
+      </div>
+
+      <!-- Attachment Section for Sakit -->
+      <div id="attachment-section" class="mb-8" v-show="attendanceType === 'sakit'">
+       <div class="bg-slate-800 bg-opacity-50 rounded-xl p-6 border border-blue-900 border-opacity-30">
+        <h3 class="text-lg font-semibold text-white mb-4">Dokumen Pendukung</h3>
+        <div class="space-y-4">
+         <button @click="openDocumentCamera" class="w-full border-2 border-dashed border-blue-900 border-opacity-50 rounded-lg p-6 text-center hover:border-blue-700 hover:bg-slate-700 hover:bg-opacity-30 transition-all" v-show="!attachmentData">
+          <svg class="w-12 h-12 mx-auto mb-3 text-blue-500" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+          <p class="text-blue-400 font-medium mb-1">Ambil Foto Surat Keterangan Dokter</p>
+          <p class="text-gray-400 text-sm">Gunakan kamera belakang</p>
+         </button>
+         <div id="file-preview" class="bg-slate-900 rounded-lg p-4" v-show="attachmentData">
+          <div class="flex items-center justify-between mb-3">
+           <div class="flex items-center gap-3">
+            <svg class="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <div>
+             <p class="text-white text-sm font-medium">Foto Tersimpan</p>
+             <p class="text-gray-400 text-xs">Surat keterangan dokter</p>
+            </div>
+           </div>
+           <button @click="removeDocumentPhoto" class="text-red-400 hover:text-red-300">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+           </button>
+          </div>
+          <img id="document-preview-image" :src="attachmentData ? attachmentData.data : ''" class="w-full rounded-lg border border-slate-700" alt="Document preview">
+         </div>
+        </div>
+       </div>
+      </div>
+
+      <!-- Approval Section for Cuti -->
+      <div id="approval-section-cuti" class="mb-8" v-show="['cuti', 'cuti1/2', 'cuti_lapangan'].includes(attendanceType)">
+       <div class="bg-slate-800 bg-opacity-50 rounded-xl p-6 border border-blue-900 border-opacity-30">
+        <h3 class="text-lg font-semibold text-white mb-4">Bukti Approval Atasan</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" v-show="!approvalPhotoData">
+         <button @click="openApprovalCamera" class="border-2 border-dashed border-purple-900 border-opacity-50 rounded-lg p-6 text-center hover:border-purple-700 hover:bg-slate-700 hover:bg-opacity-30 transition-all">
+          <svg class="w-12 h-12 mx-auto mb-3 text-purple-500" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+          <p class="text-purple-400 font-medium mb-1">Ambil Foto</p>
+          <p class="text-gray-400 text-sm">Kamera belakang</p>
+         </button> 
+         <button @click="$refs.approvalFileInput.click()" class="border-2 border-dashed border-purple-900 border-opacity-50 rounded-lg p-6 text-center hover:border-purple-700 hover:bg-slate-700 hover:bg-opacity-30 transition-all">
+          <svg class="w-12 h-12 mx-auto mb-3 text-purple-500" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+          <p class="text-purple-400 font-medium mb-1">Upload File</p>
+          <p class="text-gray-400 text-sm">Pilih dari galeri</p>
+         </button>
+        </div>
+        <input type="file" ref="approvalFileInput" accept="image/*" @change="handleApprovalFileUpload" class="hidden">
+        <div id="approval-preview" class="bg-slate-900 rounded-lg p-4" v-show="approvalPhotoData">
+         <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-3">
+           <svg class="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+           <div>
+            <p class="text-white text-sm font-medium">Bukti Approval Tersimpan</p>
+            <p class="text-gray-400 text-xs">Chat dari atasan</p>
+           </div>
+          </div>
+          <button @click="removeApprovalPhoto" class="text-red-400 hover:text-red-300">
+           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+          </button>
+         </div>
+         <img id="approval-preview-image" :src="approvalPhotoData || ''" class="w-full rounded-lg border border-slate-700" alt="Approval preview">
+        </div>
+       </div>
+      </div>
+
+      <!-- Submit Button -->
+      <button id="submit-button" @click="handleSubmit" class="w-full text-white font-bold py-4 px-6 rounded-xl shadow-lg shadow-blue-900/50 disabled:opacity-50 disabled:cursor-not-allowed" :disabled="isSubmitDisabled" :style="{ background: 'linear-gradient(to right, ' + (configState.primary_action_color || defaultConfig.primary_action_color) + ', ' + (configState.primary_action_color || defaultConfig.primary_action_color) + 'dd)' }">
+       <span v-if="isSubmitting" class="inline-block animate-pulse">Menyimpan...</span>
+       <span v-else>{{ configState.submit_button_text || defaultConfig.submit_button_text }}</span>
+      </button>
+
+      <!-- Status Message -->
+      <div id="status-message" class="hidden mt-4 p-4 rounded-lg text-sm"></div>
+     </div>
+
+     <!-- Security & Verification Information -->
+     <div class="mt-6 glassmorphism rounded-xl p-4 sm:p-6" :style="{ background: (configState.surface_color || '#0f172a') + 'dd', borderColor: (configState.primary_action_color || '#3b82f6') + '4d' }">
+      <div class="flex items-center gap-3 mb-4">
+       <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+       <h3 class="text-lg font-bold text-white">Keamanan &amp; Verifikasi</h3>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+       <!-- Kantor -->
+       <div class="bg-slate-800 bg-opacity-50 rounded-lg p-3 border border-slate-700">
+        <div class="flex items-start gap-2 mb-2">
+         <svg class="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+         <div class="flex-1">
+          <p class="text-white font-semibold text-sm">Kantor</p>
+          <p class="text-gray-300 text-xs mt-1">GPS wajib dalam radius <span class="text-green-400 font-bold">50m</span> dari kantor</p>
+          <p class="text-gray-300 text-xs">Foto wajib</p>
+         </div>
+        </div>
+       </div>
+       <!-- Dinas Lapangan -->
+       <div class="bg-slate-800 bg-opacity-50 rounded-lg p-3 border border-slate-700">
+        <div class="flex items-start gap-2 mb-2">
+         <svg class="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+         <div class="flex-1">
+          <p class="text-white font-semibold text-sm">Dinas Lapangan</p>
+          <p class="text-gray-300 text-xs mt-1">GPS wajib <span class="text-blue-400 font-bold">(area fleksibel)</span></p>
+          <p class="text-gray-300 text-xs">Foto wajib</p>
+         </div>
+        </div>
+       </div>
+       <!-- WFH -->
+       <div class="bg-slate-800 bg-opacity-50 rounded-lg p-3 border border-slate-700">
+        <div class="flex items-start gap-2 mb-2">
+         <svg class="w-5 h-5 text-purple-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+         <div class="flex-1">
+          <p class="text-white font-semibold text-sm">WFH</p>
+          <p class="text-gray-300 text-xs mt-1">GPS <span class="text-purple-400 font-bold">informasional</span></p>
+          <p class="text-gray-300 text-xs">Foto wajib</p>
+         </div>
+        </div>
+       </div>
+       <!-- Cuti/Sakit -->
+       <div class="bg-slate-800 bg-opacity-50 rounded-lg p-3 border border-slate-700">
+        <div class="flex items-start gap-2 mb-2">
+         <svg class="w-5 h-5 text-orange-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+         <div class="flex-1">
+          <p class="text-white font-semibold text-sm">Cuti</p>
+          <p class="text-gray-300 text-xs mt-1"><span class="text-orange-400 font-bold">Tidak perlu</span> GPS atau foto</p>
+          <p class="text-gray-300 text-xs">Foto dokumen untuk Cuti</p>
+         </div>
+        </div>
+       </div>
+      </div>
+     </div>
+
+     <!-- Compliance Information -->
+     <div class="mt-4 glassmorphism rounded-xl p-4 sm:p-6" :style="{ background: (configState.surface_color || '#0f172a') + 'dd', borderColor: (configState.primary_action_color || '#3b82f6') + '4d' }">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+       <div class="flex items-center gap-3">
+        <svg class="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+        <div>
+         <p class="text-white font-medium text-sm">HR Compliance Verified</p>
+         <p class="text-gray-400 text-xs">Sistem terintegrasi dengan audit trail</p>
+        </div>
+       </div>
+       <div class="text-right">
+        <p class="text-blue-300 text-xs font-medium">Server Time</p>
+        <p id="server-time" class="text-white text-sm font-mono">{{ serverTime }}</p>
+       </div>
+      </div>
+     </div>
+    </div>
+   </main>
+
+   <!-- Document Camera Modal -->
+   <div id="document-camera-modal" class="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4" v-show="showDocumentCameraModal">
+    <div class="glassmorphism rounded-2xl p-6 max-w-2xl w-full" :style="{ background: (configState.surface_color || '#0f172a') + 'dd', borderColor: (configState.primary_action_color || '#3b82f6') + '4d' }">
+     <div class="flex items-center justify-between mb-4">
+      <h3 class="text-xl font-bold text-white">Foto Surat Keterangan Dokter</h3>
+      <button @click="closeDocumentCamera" class="text-gray-400 hover:text-white">
+       <svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+      </button>
+     </div>
+     <div class="relative bg-black rounded-lg overflow-hidden mb-4">
+      <div id="document-camera-view" v-show="!attachmentData">
+       <video id="document-camera-video" class="w-full" autoplay playsinline></video>
+       <canvas id="document-camera-canvas" class="hidden"></canvas>
+       <!-- Live Watermark Overlay on Document Camera -->
+       <div id="document-live-watermark" class="absolute bottom-4 left-4 bg-black bg-opacity-75 px-3 py-2 rounded text-xs pointer-events-none">
+        <p class="text-white font-mono text-xs leading-tight"><span>{{ liveDateTimeSakit }}</span><br><span>{{ liveLocationSakit }}</span><br><span>{{ liveLocationNameSakit }}</span><br><span class="text-orange-400 font-bold">SURAT KETERANGAN SAKIT</span></p>
+       </div>
+      </div>
+      <div id="document-photo-preview" class="relative" v-show="attachmentData">
+       <img id="captured-document-photo" class="w-full" :src="attachmentData ? attachmentData.data : ''" alt="Captured document">
+       <div class="absolute bottom-4 left-4 bg-black bg-opacity-75 px-3 py-2 rounded text-xs">
+        <p id="document-watermark-text" class="text-white font-mono text-xs leading-tight">{{ documentWatermarkText }}</p>
+       </div>
+      </div>
+     </div>
+     <div id="document-camera-controls" class="flex gap-3" v-show="!attachmentData">
+      <button @click="captureDocumentPhoto" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg">
+       <svg class="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+      </button>
+     </div>
+     <div id="document-photo-controls" class="flex gap-3" v-show="attachmentData">
+      <button @click="retakeDocumentPhoto" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-medium py-3 px-6 rounded-lg"> Ulangi </button> 
+      <button @click="confirmDocumentPhoto" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg"> Konfirmasi </button>
+     </div>
+    </div>
+   </div>
+
+   <!-- Approval Camera Modal -->
+   <div id="approval-camera-modal" class="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4" v-show="showApprovalCameraModal">
+    <div class="glassmorphism rounded-2xl p-6 max-w-2xl w-full" :style="{ background: (configState.surface_color || '#0f172a') + 'dd', borderColor: (configState.primary_action_color || '#3b82f6') + '4d' }">
+     <div class="flex items-center justify-between mb-4">
+      <h3 class="text-xl font-bold text-white">Foto Bukti Approval Atasan</h3>
+      <button @click="closeApprovalCamera" class="text-gray-400 hover:text-white">
+       <svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+      </button>
+     </div>
+     <div class="relative bg-black rounded-lg overflow-hidden mb-4">
+      <video id="approval-camera-video" class="w-full" autoplay playsinline v-show="!approvalPhotoDataLocal"></video>
+      <canvas id="approval-camera-canvas" class="hidden"></canvas>
+      <div id="approval-photo-result" v-show="approvalPhotoDataLocal">
+       <img id="captured-approval-photo" :src="approvalPhotoDataLocal || ''" class="w-full" alt="Captured approval photo">
+      </div>
+     </div>
+     <div id="approval-camera-controls" class="flex gap-3" v-show="!approvalPhotoDataLocal">
+      <button @click="captureApprovalPhoto" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg">
+       <svg class="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+      </button>
+     </div>
+     <div id="approval-photo-controls" class="flex gap-3" v-show="approvalPhotoDataLocal">
+      <button @click="retakeApprovalPhoto" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-medium py-3 px-6 rounded-lg"> Ulangi </button> 
+      <button @click="confirmApprovalPhoto" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg"> Konfirmasi </button>
+     </div>
+    </div>
+   </div>
+
+   <!-- Camera Modal -->
+   <div id="camera-modal" class="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4" v-show="showCameraModal">
+    <div class="glassmorphism rounded-2xl p-6 max-w-2xl w-full" :style="{ background: (configState.surface_color || '#0f172a') + 'dd', borderColor: (configState.primary_action_color || '#3b82f6') + '4d' }">
+     <div class="flex items-center justify-between mb-4">
+      <h3 class="text-xl font-bold text-white">Ambil Foto Kehadiran</h3>
+      <button @click="closeCamera" class="text-gray-400 hover:text-white">
+       <svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+      </button>
+     </div>
+     <div id="camera-view" class="relative bg-black rounded-lg overflow-hidden mb-4">
+      <video id="camera-video" class="w-full" autoplay playsinline v-show="!photoData"></video>
+      <canvas id="camera-canvas" class="hidden"></canvas>
+      <!-- Live Watermark Overlay on Camera -->
+      <div id="live-watermark" class="absolute bottom-4 left-4 bg-black bg-opacity-75 px-3 py-2 rounded text-xs pointer-events-none" v-show="!photoData">
+       <p class="text-white font-mono text-xs leading-tight"><span>{{ liveDateTime }}</span><br><span>{{ liveLocation }}</span><br><span>{{ liveLocationName }}</span><br><span>{{ liveAttendanceType }}</span></p>
+      </div>
+      <div id="photo-preview" class="relative" v-show="photoData">
+       <img id="captured-photo" class="w-full" :src="photoData || ''" alt="Captured photo">
+       <div class="absolute bottom-4 left-4 bg-black bg-opacity-75 px-3 py-2 rounded text-xs">
+        <p id="watermark-text" class="text-white font-mono text-xs leading-tight">{{ watermarkText }}</p>
+       </div>
+      </div>
+     </div>
+     <div id="camera-controls" class="flex gap-3" v-show="!photoData">
+      <button @click="capturePhoto" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg">
+       <svg class="w-6 h-6 mx-auto" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+      </button>
+     </div>
+     <div id="photo-controls" class="flex gap-3" v-show="photoData">
+      <button @click="retakePhoto" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-medium py-3 px-6 rounded-lg"> Ulangi </button> 
+      <button @click="confirmPhoto" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg"> Konfirmasi </button>
+     </div>
+    </div>
+   </div>
+  </div>
+  <script>
+    const defaultConfig = {
+      page_title: "Input Absensi",
+      user_name: getCookieName("nama_karyawan"),
+      user_role: getCookieName("jabatan"),
+      office_address: "PT Cakrawala Bima Instrument, Jelegong, Kec. Kutawaringin, Kabupaten Bandung, Jawa Barat",
+      submit_button_text: "Masuk / Submit Absensi",
+      background_color: "#020617",
+      surface_color: "#0f172a",
+      text_color: "#ffffff",
+      primary_action_color: "#3b82f6",
+      secondary_action_color: "#64748b",
+      font_family: "system-ui",
+      font_size: 16
+    };
+
+    const OFFICE_COORDS_2 = { lat: -6.9515912438129694, lng: 107.53338639496108 };
+    const OFFICE_COORDS = { lat: -6.966059539927656, lng: 107.54982040220243 };
+    const OFFICE_RADIUS = 50;
+
+    const { createApp, ref, computed, onMounted, watch, nextTick } = Vue;
+
+    createApp({
+      data() {
+        return {
+          configState: { ...defaultConfig },
+          attendanceType: null,
+          shiftType: null,
+          gpsData: null,
+          gpsDataSakit: null,
+          gpsStatus: 'none',
+          gpsStatusText: 'GPS Belum Diambil',
+          locationName: 'Mengambil lokasi...',
+          gpsStatusSakit: 'none',
+          gpsStatusTextSakit: 'GPS Belum Diambil',
+          locationNameSakit: 'Mengambil lokasi...',
+          startDate: new Date().toISOString().split('T')[0],
+          endDate: new Date().toISOString().split('T')[0],
+          durationDays: 1,
+          photoData: null,
+          attachmentData: null,
+          approvalPhotoData: null,
+          approvalPhotoDataLocal: null,
+          showCameraModal: false,
+          showDocumentCameraModal: false,
+          showApprovalCameraModal: false,
+          isSubmitting: false,
+          serverTime: '',
+          liveDateTime: '',
+          liveLocation: '',
+          liveLocationName: '',
+          liveAttendanceType: '',
+          watermarkText: '',
+          liveDateTimeSakit: '',
+          liveLocationSakit: '',
+          liveLocationNameSakit: '',
+          documentWatermarkText: '',
+          currentRecordCount: 0
+        };
+      },
+      computed: {
+        initials() {
+          const name = this.configState.user_name || '';
+          if (!name) return 'U';
+          const parts = name.split(/\s+/).filter(Boolean);
+          if (parts.length >= 2) {
+            return (parts[0][0] + parts[1][0]).toUpperCase();
+          }
+          return parts[0] ? parts[0][0].toUpperCase() : 'U';
+        },
+        gpsStatusClass() {
+          if (this.gpsStatus === 'loading') return 'status-badge warning';
+          if (this.gpsStatus === 'ok') return 'status-badge';
+          if (this.gpsStatus === 'bad') return 'status-badge error';
+          return 'status-badge warning';
+        },
+        gpsStatusClassSakit() {
+          if (this.gpsStatusSakit === 'loading') return 'status-badge warning';
+          if (this.gpsStatusSakit === 'ok') return 'status-badge';
+          if (this.gpsStatusSakit === 'bad') return 'status-badge error';
+          return 'status-badge warning';
+        },
+        coordinatesText() {
+          if (!this.gpsData) return 'Tidak ada koordinat';
+          return `${this.gpsData.latitude.toFixed(6)}, ${this.gpsData.longitude.toFixed(6)}`;
+        },
+        coordinatesTextSakit() {
+          if (!this.gpsDataSakit) return 'Tidak ada koordinat';
+          return `${this.gpsDataSakit.latitude.toFixed(6)}, ${this.gpsDataSakit.longitude.toFixed(6)}`;
+        },
+        distanceText() {
+          if (!this.gpsData) return '';
+          const dist1 = this.calculateDistance(this.gpsData.latitude, this.gpsData.longitude, OFFICE_COORDS.lat, OFFICE_COORDS.lng);
+          const dist2 = this.calculateDistance(this.gpsData.latitude, this.gpsData.longitude, OFFICE_COORDS_2.lat, OFFICE_COORDS_2.lng);
+          return `${Math.round(dist1)} dan ${Math.round(dist2)} meter`;
+        },
+        isSubmitDisabled() {
+          if (this.isSubmitting) return true;
+          if (!this.attendanceType) return true;
+          
+          if (['kantor', 'dinas_lapangan', 'wfh'].includes(this.attendanceType)) {
+            if (!this.shiftType) return true;
+            if (this.attendanceType === 'kantor') {
+              if (!this.gpsData) return true;
+              const dist1 = this.calculateDistance(this.gpsData.latitude, this.gpsData.longitude, OFFICE_COORDS.lat, OFFICE_COORDS.lng);
+              const dist2 = this.calculateDistance(this.gpsData.latitude, this.gpsData.longitude, OFFICE_COORDS_2.lat, OFFICE_COORDS_2.lng);
+              if (dist1 > OFFICE_RADIUS && dist2 > OFFICE_RADIUS) {
+                return true;
+              }
+            } else {
+              if (!this.gpsData) return true;
+            }
+            return false;
+          }
+          
+          if (this.attendanceType === 'sakit') {
+            if (!this.attachmentData) return true;
+            return false;
+          }
+          
+          if (['cuti', 'cuti1/2', 'cuti_lapangan'].includes(this.attendanceType)) {
+            if (!this.approvalPhotoData) return true;
+            return false;
+          }
+          
+          return false;
+        }
+      },
+      watch: {
+        startDate() {
+          this.calculateDuration();
+        },
+        endDate() {
+          this.calculateDuration();
+        },
+        attendanceType(newType) {
+          this.calculateDuration();
+        }
+      },
+      methods: {
+        selectAttendanceType(type) {
+          if (type === 'goto-dashboard') {
+            window.location.href = '/dashboard';
+            return;
+          }
+          this.attendanceType = type;
+          this.shiftType = null;
+          this.photoData = null;
+          this.attachmentData = null;
+          this.approvalPhotoData = null;
+          
+          if (type === 'kantor' || type === 'dinas_lapangan') {
+            this.requestGPS(type === 'kantor');
+          } else if (type === 'wfh') {
+            this.requestGPS(false);
+          } else if (type === 'sakit') {
+            this.requestGPSSakit();
+          }
+        },
+        async selectShiftType(shift) {
+          this.shiftType = shift;
+          const enforceRadius = this.attendanceType === 'kantor';
+          await this.requestGPS(enforceRadius);
+        },
+        calculateDistance(lat1, lon1, lat2, lon2) {
+          const R = 6371e3;
+          const φ1 = lat1 * Math.PI / 180;
+          const φ2 = lat2 * Math.PI / 180;
+          const Δφ = (lat2 - lat1) * Math.PI / 180;
+          const Δλ = (lon2 - lon1) * Math.PI / 180;
+          const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+                    Math.cos(φ1) * Math.cos(φ2) *
+                    Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+          return R * c;
+        },
+        calculateDuration() {
+          if (!this.startDate || !this.endDate) {
+            this.durationDays = 0;
+            return;
+          }
+          const start = new Date(this.startDate);
+          const end = new Date(this.endDate);
+          if (end < start) {
+            this.endDate = this.startDate;
+            this.showMessage('Tanggal selesai tidak boleh lebih awal dari tanggal mulai', 'error');
+            return;
+          }
+          const diffTime = Math.abs(end - start);
+          let diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+          
+          if (this.attendanceType === 'cuti1/2') {
+            diffDays = 0.5;
+          }
+          this.durationDays = diffDays;
+        },
+        requestGPS(enforceRadius) {
+          this.gpsStatus = 'loading';
+          this.gpsStatusText = 'Mengambil GPS...';
+          return new Promise((resolve) => {
+            if (navigator.geolocation) {
+              navigator.geolocation.getCurrentPosition(
+                (position) => {
+                  this.gpsData = {
+                    latitude: position.coords.latitude,
+                    longitude: position.coords.longitude
+                  };
+                  this.getLocationName(this.gpsData.latitude, this.gpsData.longitude);
+                  this.initializeMap(this.gpsData.latitude, this.gpsData.longitude, enforceRadius);
+                  
+                  if (enforceRadius) {
+                    const distance = this.calculateDistance(
+                      this.gpsData.latitude,
+                      this.gpsData.longitude,
+                      OFFICE_COORDS.lat,
+                      OFFICE_COORDS.lng
+                    );
+                    const distance2 = this.calculateDistance(
+                      this.gpsData.latitude,
+                      this.gpsData.longitude,
+                      OFFICE_COORDS_2.lat,
+                      OFFICE_COORDS_2.lng
+                    );
+                    if (distance <= OFFICE_RADIUS || distance2 <= OFFICE_RADIUS) {
+                      this.gpsStatus = 'ok';
+                      this.gpsStatusText = 'Inside Office Radius';
+                    } else {
+                      this.gpsStatus = 'bad';
+                      this.gpsStatusText = 'Outside Allowed Area';
+                      this.showMessage('Lokasi Anda berada di luar radius kantor yang diizinkan.', 'error');
+                    }
+                  } else {
+                    this.gpsStatus = 'ok';
+                    this.gpsStatusText = 'GPS Verified – Flexible Area';
+                  }
+                  resolve(true);
+                },
+                (error) => {
+                  this.gpsStatus = 'bad';
+                  this.gpsStatusText = 'GPS Error';
+                  this.showMessage('Tidak dapat mengakses GPS. Pastikan izin lokasi diaktifkan.', 'error');
+                  resolve(false);
+                }
+              );
+            } else {
+              this.gpsStatus = 'bad';
+              this.gpsStatusText = 'GPS Tidak Didukung';
+              resolve(false);
+            }
+          });
+        },
+        requestGPSSakit() {
+          this.gpsStatusSakit = 'loading';
+          this.gpsStatusTextSakit = 'Mengambil GPS...';
+          if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+              (position) => {
+                this.gpsDataSakit = {
+                  latitude: position.coords.latitude,
+                  longitude: position.coords.longitude
+                };
+                this.getLocationNameSakit(this.gpsDataSakit.latitude, this.gpsDataSakit.longitude);
+                this.initializeMapSakit(this.gpsDataSakit.latitude, this.gpsDataSakit.longitude);
+                this.gpsStatusSakit = 'ok';
+                this.gpsStatusTextSakit = 'GPS Terverifikasi';
+              },
+              (error) => {
+                this.gpsStatusSakit = 'bad';
+                this.gpsStatusTextSakit = 'GPS Error';
+                this.showMessage('Tidak dapat mengakses GPS. Pastikan izin lokasi diaktifkan.', 'error');
+              }
+            );
+          }
+        },
+        initializeMap(userLat, userLng, showOfficeRadius) {
+          nextTick(() => {
+            setTimeout(() => {
+              if (!this.map) {
+                this.map = L.map('map-container').setView([userLat, userLng], 15);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                  attribution: '© OpenStreetMap contributors',
+                  maxZoom: 19
+                }).addTo(this.map);
+              } else {
+                this.map.setView([userLat, userLng], 15);
+              }
+              
+              if (this.userMarker) this.map.removeLayer(this.userMarker);
+              if (this.officeMarker) this.map.removeLayer(this.officeMarker);
+              if (this.officeMarker2) this.map.removeLayer(this.officeMarker2);
+              if (this.radiusCircle) this.map.removeLayer(this.radiusCircle);
+              
+              this.userMarker = L.marker([userLat, userLng], {
+                icon: L.divIcon({
+                  className: 'custom-marker',
+                  html: '<div style="background-color: #3b82f6; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 10px rgba(59, 130, 246, 0.8);"></div>',
+                  iconSize: [20, 20]
+                })
+              }).addTo(this.map);
+              this.userMarker.bindPopup('<b>Lokasi Anda</b>');
+              
+              if (showOfficeRadius) {
+                this.officeMarker = L.marker([OFFICE_COORDS.lat, OFFICE_COORDS.lng], {
+                  icon: L.divIcon({
+                    className: 'custom-marker',
+                    html: '<div style="background-color: #22c55e; width: 24px; height: 24px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 10px rgba(34, 197, 94, 0.8);"></div>',
+                    iconSize: [24, 24]
+                  })
+                }).addTo(this.map);
+                this.officeMarker.bindPopup('<b>Kantor</b>');
+
+                this.officeMarker2 = L.marker([OFFICE_COORDS_2.lat, OFFICE_COORDS_2.lng], {
+                  icon: L.divIcon({
+                    className: 'custom-marker',
+                    html: '<div style="background-color: #22c55e; width: 24px; height: 24px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 10px rgba(34, 197, 94, 0.8);"></div>',
+                    iconSize: [24, 24]
+                  })
+                }).addTo(this.map);
+                this.officeMarker2.bindPopup('<b>Kantor</b>');
+                
+                this.radiusCircle = L.circle([OFFICE_COORDS.lat, OFFICE_COORDS.lng], {
+                  color: '#22c55e',
+                  fillColor: '#22c55e',
+                  fillOpacity: 0.15,
+                  radius: OFFICE_RADIUS
+                }).addTo(this.map);
+                
+                const bounds = L.latLngBounds([
+                  [userLat, userLng],
+                  [OFFICE_COORDS.lat, OFFICE_COORDS.lng]
+                ]);
+                this.map.fitBounds(bounds, { padding: [50, 50] });
+              }
+              
+              this.map.invalidateSize();
+            }, 150);
+          });
+        },
+        initializeMapSakit(userLat, userLng) {
+          nextTick(() => {
+            setTimeout(() => {
+              if (!this.mapSakit) {
+                this.mapSakit = L.map('map-container-sakit').setView([userLat, userLng], 15);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                  attribution: '© OpenStreetMap contributors',
+                  maxZoom: 19
+                }).addTo(this.mapSakit);
+              } else {
+                this.mapSakit.setView([userLat, userLng], 15);
+              }
+              
+              if (this.userMarkerSakit) this.mapSakit.removeLayer(this.userMarkerSakit);
+              
+              this.userMarkerSakit = L.marker([userLat, userLng], {
+                icon: L.divIcon({
+                  className: 'custom-marker',
+                  html: '<div style="background-color: #f97316; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 10px rgba(249, 115, 22, 0.8);"></div>',
+                  iconSize: [20, 20]
+                })
+              }).addTo(this.mapSakit);
+              this.userMarkerSakit.bindPopup('<b>Lokasi Saat Sakit</b>');
+              
+              this.mapSakit.invalidateSize();
+            }, 150);
+          });
+        },
+        async getLocationName(lat, lng) {
+          try {
+            const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`);
+            const data = await response.json();
+            if (data && data.address) {
+              const parts = [];
+              if (data.address.house_number && data.address.road) {
+                parts.push(`${data.address.road} No. ${data.address.house_number}`);
+              } else if (data.address.road) {
+                parts.push(data.address.road);
+              }
+              if (data.address.neighbourhood) parts.push(data.address.neighbourhood);
+              else if (data.address.suburb) parts.push(data.address.suburb);
+              else if (data.address.village) parts.push(data.address.village);
+              if (data.address.city_district || data.address.municipality) {
+                parts.push(data.address.city_district || data.address.municipality);
+              }
+              if (data.address.city) parts.push(data.address.city);
+              else if (data.address.town) parts.push(data.address.town);
+              else if (data.address.county) parts.push(data.address.county);
+              if (data.address.state) parts.push(data.address.state);
+              if (data.address.postcode) parts.push(data.address.postcode);
+              
+              this.locationName = parts.length > 0 ? parts.join(', ') : data.display_name;
+            } else {
+              this.locationName = 'Lokasi tidak diketahui';
+            }
+          } catch (error) {
+            this.locationName = 'Lokasi tidak diketahui';
+          }
+        },
+        async getLocationNameSakit(lat, lng) {
+          try {
+            const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`);
+            const data = await response.json();
+            if (data && data.address) {
+              const parts = [];
+              if (data.address.house_number && data.address.road) {
+                parts.push(`${data.address.road} No. ${data.address.house_number}`);
+              } else if (data.address.road) {
+                parts.push(data.address.road);
+              }
+              if (data.address.neighbourhood) parts.push(data.address.neighbourhood);
+              else if (data.address.suburb) parts.push(data.address.suburb);
+              else if (data.address.village) parts.push(data.address.village);
+              if (data.address.city_district || data.address.municipality) {
+                parts.push(data.address.city_district || data.address.municipality);
+              }
+              if (data.address.city) parts.push(data.address.city);
+              else if (data.address.town) parts.push(data.address.town);
+              else if (data.address.county) parts.push(data.address.county);
+              if (data.address.state) parts.push(data.address.state);
+              if (data.address.postcode) parts.push(data.address.postcode);
+              
+              this.locationNameSakit = parts.length > 0 ? parts.join(', ') : data.display_name;
+            } else {
+              this.locationNameSakit = 'Lokasi tidak diketahui';
+            }
+          } catch (error) {
+            this.locationNameSakit = 'Lokasi tidak diketahui';
+          }
+        },
+        async openCamera() {
+          try {
+            this.cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+            const videoEl = document.getElementById('camera-video');
+            if (videoEl) videoEl.srcObject = this.cameraStream;
+            
+            this.showCameraModal = true;
+            this.photoData = null;
+            this.updateLiveWatermark();
+            this.watermarkInterval = setInterval(this.updateLiveWatermark, 1000);
+          } catch (error) {
+            this.showMessage('Tidak dapat mengakses kamera. Pastikan izin kamera diaktifkan.', 'error');
+          }
+        },
+        updateLiveWatermark() {
+          const now = new Date();
+          this.liveDateTime = now.toLocaleString('id-ID', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+          });
+          this.liveLocation = this.gpsData 
+            ? `${this.gpsData.latitude.toFixed(6)}, ${this.gpsData.longitude.toFixed(6)}`
+            : 'GPS tidak tersedia';
+          this.liveLocationName = this.locationName;
+          
+          const typeStr = this.attendanceType ? this.attendanceType.toUpperCase().replace(/_/g, ' ') : '';
+          const shiftStr = this.shiftType ? ` - ${this.shiftType.toUpperCase()}` : '';
+          this.liveAttendanceType = typeStr + shiftStr;
+        },
+        closeCamera() {
+          if (this.cameraStream) {
+            this.cameraStream.getTracks().forEach(track => track.stop());
+            this.cameraStream = null;
+          }
+          if (this.watermarkInterval) {
+            clearInterval(this.watermarkInterval);
+            this.watermarkInterval = null;
+          }
+          this.showCameraModal = false;
+        },
+        capturePhoto() {
+          const video = document.getElementById('camera-video');
+          const canvas = document.getElementById('camera-canvas');
+          if (!video || !canvas) return;
+          const context = canvas.getContext('2d');
+          
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          context.drawImage(video, 0, 0);
+          
+          const now = new Date();
+          const dateTimeStr = now.toLocaleString('id-ID', {
+            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+            hour: '2-digit', minute: '2-digit', second: '2-digit'
+          });
+          const locationStr = this.gpsData 
+            ? `${this.gpsData.latitude.toFixed(6)}, ${this.gpsData.longitude.toFixed(6)}`
+            : 'GPS tidak tersedia';
+          
+          const typeStr = this.attendanceType.toUpperCase().replace(/_/g, ' ');
+          const shiftStr = this.shiftType ? ` - ${this.shiftType.toUpperCase()}` : '';
+          
+          context.fillStyle = 'rgba(0, 0, 0, 0.75)';
+          context.fillRect(10, canvas.height - 100, 500, 90);
+          context.fillStyle = 'white';
+          context.font = '12px monospace';
+          context.fillText(dateTimeStr, 20, canvas.height - 75);
+          context.fillText(locationStr, 20, canvas.height - 55);
+          context.fillText(this.locationName, 20, canvas.height - 35);
+          context.fillText(typeStr + shiftStr, 20, canvas.height - 15);
+          
+          this.photoData = canvas.toDataURL('image/jpeg');
+          this.watermarkText = `${typeStr}${shiftStr}\n${dateTimeStr}\n${locationStr}\n${this.locationName}`;
+          
+          if (this.watermarkInterval) {
+            clearInterval(this.watermarkInterval);
+            this.watermarkInterval = null;
+          }
+        },
+        retakePhoto() {
+          this.photoData = null;
+          this.updateLiveWatermark();
+          this.watermarkInterval = setInterval(this.updateLiveWatermark, 1000);
+        },
+        async confirmPhoto() {
+          this.closeCamera();
+          await this.submitAttendance();
+        },
+        async openDocumentCamera() {
+          if (!this.gpsDataSakit) {
+            this.showMessage('Menunggu data GPS. Silakan tunggu sebentar.', 'error');
+            return;
+          }
+          try {
+            this.documentCameraStream = await navigator.mediaDevices.getUserMedia({ 
+              video: { facingMode: 'environment' }
+            });
+            const videoEl = document.getElementById('document-camera-video');
+            if (videoEl) videoEl.srcObject = this.documentCameraStream;
+            
+            this.showDocumentCameraModal = true;
+            this.attachmentData = null;
+            this.updateDocumentLiveWatermark();
+            this.documentWatermarkInterval = setInterval(this.updateDocumentLiveWatermark, 1000);
+          } catch (error) {
+            this.showMessage('Tidak dapat mengakses kamera. Pastikan izin kamera diaktifkan.', 'error');
+          }
+        },
+        updateDocumentLiveWatermark() {
+          const now = new Date();
+          this.liveDateTimeSakit = now.toLocaleString('id-ID', {
+            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+            hour: '2-digit', minute: '2-digit', second: '2-digit'
+          });
+          this.liveLocationSakit = this.gpsDataSakit 
+            ? `${this.gpsDataSakit.latitude.toFixed(6)}, ${this.gpsDataSakit.longitude.toFixed(6)}`
+            : 'GPS tidak tersedia';
+          this.liveLocationNameSakit = this.locationNameSakit;
+        },
+        closeDocumentCamera() {
+          if (this.documentCameraStream) {
+            this.documentCameraStream.getTracks().forEach(track => track.stop());
+            this.documentCameraStream = null;
+          }
+          if (this.documentWatermarkInterval) {
+            clearInterval(this.documentWatermarkInterval);
+            this.documentWatermarkInterval = null;
+          }
+          this.showDocumentCameraModal = false;
+        },
+        captureDocumentPhoto() {
+          const video = document.getElementById('document-camera-video');
+          const canvas = document.getElementById('document-camera-canvas');
+          if (!video || !canvas) return;
+          const context = canvas.getContext('2d');
+          
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          context.drawImage(video, 0, 0);
+          
+          const now = new Date();
+          const dateTimeStr = now.toLocaleString('id-ID', {
+            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+            hour: '2-digit', minute: '2-digit', second: '2-digit'
+          });
+          const locationStr = this.gpsDataSakit 
+            ? `${this.gpsDataSakit.latitude.toFixed(6)}, ${this.gpsDataSakit.longitude.toFixed(6)}`
+            : 'GPS tidak tersedia';
+          
+          context.fillStyle = 'rgba(0, 0, 0, 0.75)';
+          context.fillRect(10, canvas.height - 100, 500, 90);
+          context.fillStyle = 'white';
+          context.font = '12px monospace';
+          context.fillText(dateTimeStr, 20, canvas.height - 75);
+          context.fillText(locationStr, 20, canvas.height - 55);
+          context.fillText(this.locationNameSakit, 20, canvas.height - 35);
+          
+          context.fillStyle = '#fb923c';
+          context.font = 'bold 12px monospace';
+          context.fillText('SURAT KETERANGAN SAKIT', 20, canvas.height - 15);
+          
+          const documentPhotoData = canvas.toDataURL('image/jpeg');
+          this.attachmentData = {
+            name: 'surat-keterangan-dokter.jpg',
+            data: documentPhotoData
+          };
+          this.documentWatermarkText = `SURAT KETERANGAN SAKIT\n${dateTimeStr}\n${locationStr}\n${this.locationNameSakit}`;
+          
+          if (this.documentWatermarkInterval) {
+            clearInterval(this.documentWatermarkInterval);
+            this.documentWatermarkInterval = null;
+          }
+        },
+        retakeDocumentPhoto() {
+          this.attachmentData = null;
+          this.updateDocumentLiveWatermark();
+          this.documentWatermarkInterval = setInterval(this.updateDocumentLiveWatermark, 1000);
+        },
+        confirmDocumentPhoto() {
+          this.closeDocumentCamera();
+        },
+        removeDocumentPhoto() {
+          this.attachmentData = null;
+        },
+        async openApprovalCamera() {
+          try {
+            this.approvalCameraStream = await navigator.mediaDevices.getUserMedia({ 
+              video: { facingMode: 'environment' }
+            });
+            const videoEl = document.getElementById('approval-camera-video');
+            if (videoEl) videoEl.srcObject = this.approvalCameraStream;
+            
+            this.showApprovalCameraModal = true;
+            this.approvalPhotoDataLocal = null;
+          } catch (error) {
+            this.showMessage('Tidak dapat mengakses kamera. Pastikan izin kamera diaktifkan.', 'error');
+          }
+        },
+        closeApprovalCamera() {
+          if (this.approvalCameraStream) {
+            this.approvalCameraStream.getTracks().forEach(track => track.stop());
+            this.approvalCameraStream = null;
+          }
+          this.showApprovalCameraModal = false;
+        },
+        captureApprovalPhoto() {
+          const video = document.getElementById('approval-camera-video');
+          const canvas = document.getElementById('approval-camera-canvas');
+          if (!video || !canvas) return;
+          const context = canvas.getContext('2d');
+          
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          context.drawImage(video, 0, 0);
+          
+          this.approvalPhotoDataLocal = canvas.toDataURL('image/jpeg');
+        },
+        retakeApprovalPhoto() {
+          this.approvalPhotoDataLocal = null;
+        },
+        confirmApprovalPhoto() {
+          if (this.approvalPhotoDataLocal) {
+            this.approvalPhotoData = this.approvalPhotoDataLocal;
+            this.closeApprovalCamera();
+          }
+        },
+        removeApprovalPhoto() {
+          this.approvalPhotoData = null;
+          const fileInput = this.$refs.approvalFileInput;
+          if (fileInput) fileInput.value = '';
+        },
+        handleApprovalFileUpload(event) {
+          const file = event.target.files[0];
+          if (!file) return;
+          if (!file.type.startsWith('image/')) {
+            this.showMessage('Harap pilih file gambar yang valid', 'error');
+            return;
+          }
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            this.approvalPhotoData = e.target.result;
+          };
+          reader.readAsDataURL(file);
+        },
+        async handleSubmit() {
+          if (!this.attendanceType) {
+            this.showMessage('Pilih tipe kehadiran terlebih dahulu', 'error');
+            return;
+          }
+          if (this.currentRecordCount >= 999) {
+            this.showMessage('Maksimum 999 data kehadiran tercapai. Hubungi administrator.', 'error');
+            return;
+          }
+          
+          this.calculateDuration();
+          
+          if (['sakit', 'cuti', 'cuti1/2', 'cuti_lapangan'].includes(this.attendanceType)) {
+            if (!this.startDate || !this.endDate) {
+              this.showMessage('Pilih tanggal mulai dan selesai terlebih dahulu', 'error');
+              return;
+            }
+          }
+          
+          if (['cuti', 'cuti1/2', 'cuti_lapangan'].includes(this.attendanceType)) {
+            if (!this.approvalPhotoData) {
+              this.showMessage('Upload bukti approval atasan terlebih dahulu', 'error');
+              return;
+            }
+            await this.submitAttendance();
+            return;
+          }
+          
+          if (['kantor', 'dinas_lapangan', 'wfh'].includes(this.attendanceType)) {
+            this.openCamera();
+          } else if (this.attendanceType === 'sakit') {
+            if (!this.attachmentData) {
+              this.showMessage('Ambil foto surat keterangan dokter terlebih dahulu', 'error');
+              return;
+            }
+            await this.submitAttendance();
+          } else {
+            await this.submitAttendance();
+          }
+        },
+        async submitAttendance() {
+          this.isSubmitting = true;
+          const authToken = getCookie("authToken");
+          const namaKaryawan = getCookieName("nama_karyawan");
+          if (!authToken) {
+            window.location.href = '/';
+            throw new Error('Authentication token not found');
+          }
+          
+          let status_attd = 'Hadir';
+          const record = {
+            id: Date.now().toString(),
+            attendance_type: this.attendanceType,
+            shift_type: this.shiftType || '',
+            timestamp: new Date().toISOString(),
+            gps_latitude: this.gpsData?.latitude || 0,
+            gps_longitude: this.gpsData?.longitude || 0,
+            distance_to_office: this.gpsData ? this.calculateDistance(this.gpsData.latitude, this.gpsData.longitude, OFFICE_COORDS.lat, OFFICE_COORDS.lng) : 0,
+            photo_data: this.photoData || '',
+            attachment_name: this.attachmentData?.name || '',
+            approval_photo: this.approvalPhotoData || '',
+            status: status_attd,
+            start_date: this.startDate || '',
+            end_date: this.endDate || '',
+            duration_days: this.durationDays || 0
+          };
+          
+          if (['kantor', 'dinas_lapangan', 'wfh', 'sakit', 'cuti', 'cuti1/2', 'cuti_lapangan'].includes(this.attendanceType)) {
+            try {
+              let apiPayload;
+              if (this.attendanceType === 'kantor') {
+                status_attd = 'Hadir';
+                apiPayload = {
+                  name: namaKaryawan,
+                  attendance_type: this.attendanceType,
+                  shift_type: this.shiftType || '',
+                  timestamp: new Date().toISOString(),
+                  gps_latitude: this.gpsData?.latitude || 0,
+                  gps_longitude: this.gpsData?.longitude || 0,
+                  location_name: this.locationName || '',
+                  distance_to_office: this.gpsData ? this.calculateDistance(this.gpsData.latitude, this.gpsData.longitude, OFFICE_COORDS.lat, OFFICE_COORDS.lng) : 0,
+                  status: status_attd
+                };
+                if (this.shiftType === 'masuk') {
+                  apiPayload.document_photo_masuk = this.photoData || '';
+                } else if (this.shiftType === 'pulang') {
+                  apiPayload.document_photo_pulang = this.photoData || '';
+                }            
+              } else if (this.attendanceType === 'dinas_lapangan') {
+                status_attd = 'Dinas Lapangan';
+                apiPayload = {
+                  name: namaKaryawan,
+                  attendance_type: this.attendanceType,
+                  shift_type: this.shiftType || '',
+                  timestamp: new Date().toISOString(),
+                  gps_latitude: this.gpsData?.latitude || 0,
+                  gps_longitude: this.gpsData?.longitude || 0,
+                  location_name: this.locationName || '',
+                  status: status_attd
+                };
+                if (this.shiftType === 'masuk') {
+                  apiPayload.document_photo_masuk = this.photoData || '';
+                } else if (this.shiftType === 'pulang') {
+                  apiPayload.document_photo_pulang = this.photoData || '';
+                }
+              } else if (this.attendanceType === 'wfh') {
+                status_attd = 'WFH';
+                apiPayload = {
+                  name: namaKaryawan,
+                  attendance_type: this.attendanceType,
+                  shift_type: this.shiftType || '',
+                  timestamp: new Date().toISOString(),
+                  gps_latitude: this.gpsData?.latitude || 0,
+                  gps_longitude: this.gpsData?.longitude || 0,
+                  location_name: this.locationName || '',
+                  status: status_attd
+                };
+                if (this.shiftType === 'masuk') {
+                  apiPayload.document_photo_masuk = this.photoData || '';
+                } else if (this.shiftType === 'pulang') {
+                  apiPayload.document_photo_pulang = this.photoData || '';
+                }
+              } else if (this.attendanceType === 'sakit') {
+                status_attd = 'Sakit';
+                apiPayload = {
+                  name: namaKaryawan,
+                  attendance_type: this.attendanceType,
+                  shift_type: 'masuk',
+                  timestamp: new Date().toISOString(),
+                  gps_latitude: this.gpsDataSakit?.latitude || 0,
+                  gps_longitude: this.gpsDataSakit?.longitude || 0,
+                  location_name: this.locationNameSakit || '',
+                  start_date: this.startDate || '',
+                  end_date: this.endDate || '',
+                  duration_days: this.durationDays || 0,
+                  document_photo_bukti1: this.attachmentData?.data || '',
+                  status: status_attd
+                };
+              } else if (['cuti', 'cuti1/2', 'cuti_lapangan'].includes(this.attendanceType)) {
+                status_attd = 'Cuti';
+                if (this.attendanceType === 'cuti1/2') {
+                  status_attd = 'Cuti1/2';
+                }
+                if (this.attendanceType === 'cuti_lapangan') {
+                  status_attd += ' Lapangan';
+                }
+                apiPayload = {
+                  name: namaKaryawan,
+                  attendance_type: this.attendanceType,
+                  shift_type: 'masuk',
+                  timestamp: new Date().toISOString(),
+                  start_date: this.startDate || '',
+                  end_date: this.endDate || '',
+                  duration_days: this.durationDays || 0,
+                  document_photo_bukti1: this.approvalPhotoData || '',
+                  status: status_attd
+                };
+              }
+              
+              const response = await fetch('https://cais.cbinstrument.com/auth/input/absensi', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${authToken}`
+                },
+                body: JSON.stringify(apiPayload)
+              });
+              
+              if (!response.ok) {
+                const result = await response.json();
+                this.showMessage(result.error || 'Terjadi kesalahan.', 'error');
+                this.resetForm();
+                return;
+              }
+              
+              const result = await response.json();
+              const successMessage = this.attendanceType === 'kantor'
+                ? 'Anda berhasil melakukan absensi kantor.'
+                : this.attendanceType === 'dinas_lapangan'
+                ? 'Anda berhasil melakukan absensi dinas lapangan.'
+                : this.attendanceType === 'wfh'
+                ? 'Anda berhasil melakukan absensi WFH.'
+                : this.attendanceType === 'sakit' 
+                ? 'Anda berhasil mengirim bukti sakit' 
+                : this.attendanceType === 'cuti'
+                ? 'Anda berhasil mengajukan cuti.'
+                : 'Anda berhasil mengajukan cuti lapangan.';
+              
+              this.showMessage(successMessage, 'success');
+              
+              if (window.dataSdk) {
+                await window.dataSdk.create(record);
+              }
+              this.resetForm();
+            } catch (error) {
+              console.error('Error mengirim data ke backend:', error);
+              this.showMessage('Gagal menyimpan data. Silakan coba lagi.', 'error');
+              this.isSubmitting = false;
+            }
+          } else {
+            if (window.dataSdk) {
+              const result = await window.dataSdk.create(record);
+              if (result.isOk) {
+                this.showMessage('Kehadiran berhasil dicatat!', 'success');
+                this.resetForm();
+              } else {
+                this.showMessage('Gagal menyimpan data. Silakan coba lagi.', 'error');
+                this.isSubmitting = false;
+              }
+            } else {
+              this.showMessage('Kehadiran berhasil dicatat!', 'success');
+              this.resetForm();
+            }
+          }
+        },
+        resetForm() {
+          this.attendanceType = null;
+          this.shiftType = null;
+          this.gpsData = null;
+          this.gpsDataSakit = null;
+          this.photoData = null;
+          this.attachmentData = null;
+          this.approvalPhotoData = null;
+          this.approvalPhotoDataLocal = null;
+          this.gpsStatus = 'none';
+          this.gpsStatusText = 'GPS Belum Diambil';
+          this.gpsStatusSakit = 'none';
+          this.gpsStatusTextSakit = 'GPS Belum Diambil';
+          this.locationName = 'Mengambil lokasi...';
+          this.locationNameSakit = 'Mengambil lokasi...';
+          
+          const today = new Date().toISOString().split('T')[0];
+          this.startDate = today;
+          this.endDate = today;
+          this.durationDays = 1;
+          
+          if (this.map) {
+            this.map.remove();
+            this.map = null;
+            this.userMarker = null;
+            this.officeMarker = null;
+            this.officeMarker2 = null;
+            this.radiusCircle = null;
+          }
+          if (this.mapSakit) {
+            this.mapSakit.remove();
+            this.mapSakit = null;
+            this.userMarkerSakit = null;
+          }
+          
+          const fileInput = this.$refs.approvalFileInput;
+          if (fileInput) fileInput.value = '';
+          
+          this.isSubmitting = false;
+          
+          if (this.watermarkInterval) {
+            clearInterval(this.watermarkInterval);
+            this.watermarkInterval = null;
+          }
+          if (this.documentWatermarkInterval) {
+            clearInterval(this.documentWatermarkInterval);
+            this.documentWatermarkInterval = null;
+          }
+        },
+        showMessage(message, type = 'success', duration = 2000) {
+          const existing = document.getElementById('global-message-overlay');
+          if (existing) existing.remove();
+          
+          const overlay = document.createElement('div');
+          overlay.id = 'global-message-overlay';
+          
+          let bgColor = 'rgba(15, 23, 42, 0.95)';
+          if (type === 'success') {
+            bgColor = 'rgba(34, 211, 238, 0.95)';
+          } else if (type === 'error') {
+            bgColor = 'rgba(239, 68, 68, 0.95)';
+          }
+          
+          overlay.style.cssText = `
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+          `;
+          
+          const msgBox = document.createElement('div');
+          msgBox.style.cssText = `
+            background: ${bgColor};
+            color: white;
+            padding: 24px 40px;
+            border-radius: 16px;
+            font-weight: 700;
+            font-size: 18px;
+            box-shadow: 0 8px 32px rgba(34, 211, 238, 0.3);
+            border: 2px solid #22d3ee;
+            text-align: center;
+            animation: fadeIn .25s ease;
+          `;
+          msgBox.textContent = message;
+          overlay.appendChild(msgBox);
+          document.body.appendChild(overlay);
+          
+          setTimeout(() => {
+            overlay.style.opacity = '0';
+            overlay.style.transition = 'opacity .3s ease';
+            setTimeout(() => overlay.remove(), 300);
+          }, duration);
+        },
+        showLogoutMessage(message) {
+          const overlay = document.createElement('div');
+          overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            gap: 16px;
+          `;
+          
+          const icon = document.createElement('div');
+          icon.innerHTML = `
+            <svg width="64" height="64" fill="none" viewBox="0 0 24 24" stroke="#22d3ee" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5.636 5.636a9 9 0 1012.728 0M12 3v9" />
+            </svg>
+          `;
+          
+          const msgBox = document.createElement('div');
+          msgBox.style.cssText = `
+            background: linear-gradient(135deg, #1e3a8a 0%, #1e293b 100%);
+            color: white;
+            padding: 24px 40px;
+            border-radius: 16px;
+            font-weight: 700;
+            font-size: 18px;
+            box-shadow: 0 8px 32px rgba(34, 211, 238, 0.3);
+            border: 2px solid #22d3ee;
+            text-align: center;
+          `;
+          msgBox.textContent = message;
+          
+          overlay.appendChild(icon);
+          overlay.appendChild(msgBox);
+          document.body.appendChild(overlay);
+        },
+        handleBack() {
+          window.history.back();
+        },
+        async handleLogout() {
+          try {
+            await fetch('/auth/logout', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' }
+            });
+          } catch (error) {
+            console.error('Auto logout error:', error);
+          } finally {
+            this.showLogoutMessage('Sesi berakhir');
+            setTimeout(() => {
+              window.location.href = '/';
+            }, 2000);
+          }
+        },
+        confirmLogout() {
+          const confirmed = document.createElement('div');
+          confirmed.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+          confirmed.innerHTML = `
+            <div class="glassmorphism rounded-xl p-6 max-w-sm w-full">
+              <h3 class="text-lg font-bold text-white mb-4">Konfirmasi Logout</h3>
+              <p class="text-gray-300 mb-6">Apakah Anda yakin ingin keluar?</p>
+              <div class="flex gap-3">
+                <button class="btn-cancel flex-1 bg-slate-700 hover:bg-slate-600 text-white font-medium py-2 px-4 rounded-lg">
+                  Batal
+                </button>
+                <button class="btn-confirm flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg">
+                  Logout
+                </button>
+              </div>
+            </div>
+          `;
+          document.body.appendChild(confirmed);
+          
+          confirmed.querySelector('.btn-cancel').onclick = () => confirmed.remove();
+          confirmed.querySelector('.btn-confirm').onclick = () => {
+            window.open('https://cais.cbinstrument.com', '_blank');
+            confirmed.remove();
+          };
+        },
+        updateServerTime() {
+          const now = new Date();
+          this.serverTime = now.toLocaleString('id-ID', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+          });
+        },
+        async onConfigChange(config) {
+          const customFont = config.font_family || defaultConfig.font_family;
+          const baseFontStack = 'system-ui, -apple-system, sans-serif';
+          const baseSize = config.font_size || defaultConfig.font_size;
+          
+          document.body.style.fontFamily = `${customFont}, ${baseFontStack}`;
+          document.body.style.fontSize = `${baseSize}px`;
+          document.body.style.background = `linear-gradient(to bottom right, ${config.background_color || defaultConfig.background_color}, #0c4a6e)`;
+          
+          this.configState = {
+            ...defaultConfig,
+            ...config
+          };
+        }
+      },
+      async mounted() {
+        if (window.elementSdk) {
+          await window.elementSdk.init({
+            defaultConfig,
+            onConfigChange: this.onConfigChange,
+            mapToCapabilities: (config) => ({
+              recolorables: [
+                {
+                  get: () => config.background_color || defaultConfig.background_color,
+                  set: (value) => {
+                    window.elementSdk.config.background_color = value;
+                    window.elementSdk.setConfig({ background_color: value });
+                  }
+                },
+                {
+                  get: () => config.surface_color || defaultConfig.surface_color,
+                  set: (value) => {
+                    window.elementSdk.config.surface_color = value;
+                    window.elementSdk.setConfig({ surface_color: value });
+                  }
+                },
+                {
+                  get: () => config.text_color || defaultConfig.text_color,
+                  set: (value) => {
+                    window.elementSdk.config.text_color = value;
+                    window.elementSdk.setConfig({ text_color: value });
+                  }
+                },
+                {
+                  get: () => config.primary_action_color || defaultConfig.primary_action_color,
+                  set: (value) => {
+                    window.elementSdk.config.primary_action_color = value;
+                    window.elementSdk.setConfig({ primary_action_color: value });
+                  }
+                },
+                {
+                  get: () => config.secondary_action_color || defaultConfig.secondary_action_color,
+                  set: (value) => {
+                    window.elementSdk.config.secondary_action_color = value;
+                    window.elementSdk.setConfig({ secondary_action_color: value });
+                  }
+                }
+              ],
+              borderables: [],
+              fontEditable: {
+                get: () => window.elementSdk.config.font_family || defaultConfig.font_family,
+                set: (value) => {
+                  window.elementSdk.config.font_family = value;
+                  window.elementSdk.setConfig({ font_family: value });
+                }
+              },
+              fontSizeable: {
+                get: () => window.elementSdk.config.font_size || defaultConfig.font_size,
+                set: (value) => {
+                  window.elementSdk.config.font_size = value;
+                  window.elementSdk.setConfig({ font_size: value });
+                }
+              }
+            }),
+            mapToEditPanelValues: (config) => new Map([
+              ["page_title", config.page_title || defaultConfig.page_title],
+              ["user_name", config.user_name || defaultConfig.user_name],
+              ["user_role", config.user_role || defaultConfig.user_role],
+              ["office_address", config.office_address || defaultConfig.office_address],
+              ["submit_button_text", config.submit_button_text || defaultConfig.submit_button_text]
+            ])
+          });
+        }
+        
+        if (window.dataSdk) {
+          const initResult = await window.dataSdk.init({
+            onDataChanged: (data) => {
+              this.currentRecordCount = data.length;
+            }
+          });
+          if (!initResult.isOk) {
+            console.error("Failed to initialize data SDK");
+          }
+        }
+        
+        this.updateServerTime();
+        setInterval(this.updateServerTime, 1000);
+        
+        const today = new Date().toISOString().split('T')[0];
+        this.startDate = today;
+        this.endDate = today;
+      }
+    }).mount('#app');
+
+    function getCookie(name) {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop().split(";").shift();
+      return null;
+    }
+
+    function getCookieName(name) {
+      const cookies = document.cookie.split('; ');
+      for (let c of cookies) {
+        const [key, value] = c.split('=');
+        if (key === name) {
+          return decodeURIComponent(value.replace(/\+/g, ' '));
+        }
+      }
+      return null;
+    }
+  </script>
+ </body>
+</html>
