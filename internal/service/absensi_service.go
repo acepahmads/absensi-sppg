@@ -321,6 +321,10 @@ func (s *AbsensiService) GetDailyReportByID(id int64) (model.AbsensiDailyReport,
 	return s.repo.GetDailyReportByID(id)
 }
 
+func (s *AbsensiService) InputAbsenMesin(ctx context.Context, nama string, timestamp string, status string) error {
+	return s.repo.InputAbsenMesin(ctx, nama, timestamp, status)
+}
+
 func incrementSummary(s *model.SummaryAbsensi, status string) {
 	norm := strings.ToLower(strings.TrimSpace(status))
 	switch norm {

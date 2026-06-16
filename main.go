@@ -125,6 +125,7 @@ func main() {
 		api.GET("/user/registered", userHandler.Registered)
 		api.GET("/user/leaders", userHandler.GetLeaders)
 		api.GET("/indHolidays", absensiHandler.GetIndHolidays)
+		api.POST("/absen", absensiHandler.InputAbsenMesin)
 		api.POST("/verify-face", func(c *gin.Context) {
 			type VerifyRequest struct {
 				Image string `json:"image"`

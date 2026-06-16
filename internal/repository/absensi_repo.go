@@ -50,6 +50,7 @@ type AbsensiRepository interface {
 	InputDailyReport(ctx context.Context, req model.AbsensiDailyReport) error
 	GetDailyReports(page int, per_page int, nama string, fromDate string, toDate string, role string) ([]model.AbsensiDailyReport, error)
 	GetDailyReportByID(id int64) (model.AbsensiDailyReport, error)
+	InputAbsenMesin(ctx context.Context, nama string, timestamp string, status string) error
 }
 
 type EmployeeMaster struct {
@@ -894,6 +895,139 @@ cc Pak Sri Winardono, Pak Acep Ahmad S, Pak Djuhartono, Pak Dani Gumilar, Pak Al
 	fmt.Println("err", err)
 
 	return err
+}
+func (r *absensiRepository) InputAbsenMesin(ctx context.Context, nama string, timestamp string, status string) error {
+	type UserKaryawan struct {
+		ID         int     `db:"id"`
+		UangMakan  float64 `db:"uang_makan"`
+		UangHarian float64 `db:"uang_harian"`
+	}
+	var uk UserKaryawan
+	err := r.db.Get(&uk, "SELECT id, uang_makan, uang_harian FROM user_karyawan WHERE nama_mesin_absen = ?", nama)
+	if err != nil {
+		return fmt.Errorf("user_karyawan not found for name %s: %v", nama, err)
+	}
+
+	t, err := time.Parse("2006-01-02T15:04:05", timestamp)
+	if err != nil {
+		t, err = time.Parse("2006-01-02 15:04:05", timestamp)
+		if err != nil {
+			return fmt.Errorf("failed to parse timestamp %s: %v", timestamp, err)
+		}
+	}
+
+	mysqlTimeStr := t.Format("2006-01-02 15:04:05")
+
+	var jamMasuk *string
+	var jamKeluar *string
+	var lemburMasuk *string
+	var lemburPulang *string
+	var finalStatus string = "Kantor"
+	var flagMasuk int = 0
+	var keterlambatan int = 0
+	var potongan float64 = 0
+
+	switch status {
+	case "Masuk":
+		flagMasuk = 1
+		jamMasuk = &mysqlTimeStr
+
+		hour := t.Hour()
+		minute := t.Minute()
+		second := t.Second()
+
+		if hour > 8 || (hour == 8 && (minute > 0 || second > 0)) {
+			keterlambatan = (hour-8)*60 + minute
+			if keterlambatan <= 0 {
+				potongan = 0
+				finalStatus = "Kantor"
+			} else if keterlambatan > 1 && keterlambatan <= 10 {
+				potongan = 0
+				finalStatus = "T1"
+			} else if keterlambatan >= 11 && keterlambatan <= 15 {
+				potongan = uk.UangMakan / 2.0
+				finalStatus = "T2"
+			} else if keterlambatan >= 16 && keterlambatan <= 30 {
+				potongan = uk.UangHarian / 2.0
+				finalStatus = "T3"
+			} else if keterlambatan >= 31 {
+				potongan = uk.UangHarian / 2.0
+				finalStatus = "T4"
+			}
+		} else {
+			finalStatus = "Kantor"
+		}
+
+	case "Pulang":
+		flagMasuk = 2
+		jamKeluar = &mysqlTimeStr
+
+	case "Lembur-Masuk":
+		flagMasuk = 3
+		finalStatus = "Lembur"
+		lemburMasuk = &mysqlTimeStr
+
+	case "Lembur-Pulang":
+		flagMasuk = 4
+		lemburPulang = &mysqlTimeStr
+	}
+
+	if flagMasuk == 1 || flagMasuk == 3 {
+		query := `
+			INSERT INTO karyawan_absensi
+			(nama, jam_masuk, jam_pulang, lembur_masuk, lembur_pulang, status, keterlambatan, jumlah_potongan, keterangan, created_at, id_user_karyawan, attendance_type)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?)
+		`
+		var latenessStr string
+		if flagMasuk == 1 {
+			latenessStr = strconv.Itoa(keterlambatan)
+		} else {
+			latenessStr = "0"
+		}
+
+		_, err = r.db.ExecContext(ctx, query,
+			nama,
+			jamMasuk,
+			jamKeluar,
+			lemburMasuk,
+			lemburPulang,
+			finalStatus,
+			latenessStr,
+			potongan,
+			"",
+			uk.ID,
+			"kantor",
+		)
+		return err
+
+	} else if flagMasuk == 2 {
+		tanggal := t.Format("2006-01-02")
+		startDate := tanggal + " 00:00:00"
+		endDate := tanggal + " 23:59:59"
+
+		query := `
+			UPDATE karyawan_absensi
+			SET jam_pulang = ?
+			WHERE nama = ? AND jam_masuk >= ? AND jam_masuk < ?
+		`
+		_, err = r.db.ExecContext(ctx, query, mysqlTimeStr, nama, startDate, endDate)
+		return err
+
+	} else if flagMasuk == 4 {
+		tanggal := t.Format("2006-01-02")
+		startDate := tanggal + " 00:00:00"
+		endDate := tanggal + " 23:59:59"
+
+		query := `
+			UPDATE karyawan_absensi
+			SET lembur_pulang = ?
+			WHERE nama = ? AND lembur_masuk >= ? AND lembur_masuk < ?
+		`
+		_, err = r.db.ExecContext(ctx, query, mysqlTimeStr, nama, startDate, endDate)
+		return err
+	}
+
+	return nil
 }
 func (r *absensiRepository) GetLastAbsensi(id_karyawan int64, date string) (model.AbsensiKeterlambatan, error) {
 	var a model.AbsensiKeterlambatan

@@ -347,6 +347,47 @@ func (h *AbsensiHandler) InputAbsensi(c *gin.Context) {
 	})
 }
 
+func (h *AbsensiHandler) InputAbsenMesin(c *gin.Context) {
+	apiKey := c.GetHeader("X-API-Key")
+	if apiKey != "9847598r234jiwefkewjfniwf3490ur39804rtjrefh" {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"success": false,
+			"message": "Unauthorized API Key",
+		})
+		return
+	}
+
+	var req struct {
+		Nama      string `json:"nama" binding:"required"`
+		Timestamp string `json:"timestamp" binding:"required"`
+		Status    string `json:"status" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"message": "invalid request payload",
+			"error":   err.Error(),
+		})
+		return
+	}
+
+	err := h.AbsensiService.InputAbsenMesin(c.Request.Context(), req.Nama, req.Timestamp, req.Status)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"success": false,
+			"message": "failed to save attendance from machine",
+			"error":   err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "Absensi dari mesin berhasil disimpan",
+	})
+}
+
 func (h *AbsensiHandler) GetLast(c *gin.Context) {
 	idParam := c.Query("id_karyawan")
 	fmt.Println("id_karyawan", idParam)
