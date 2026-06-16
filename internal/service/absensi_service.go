@@ -613,3 +613,12 @@ func strToPtr(s string) *string {
 func (s *AbsensiService) GetDashboardStats(ctx context.Context) (model.DashboardStats, error) {
 	return s.repo.GetDashboardStats(ctx)
 }
+
+func (s *AbsensiService) GetAttendanceStats(ctx context.Context) (model.AbsensiStatistik, error) {
+	return s.repo.GetAttendanceStats(ctx)
+}
+
+func (s *AbsensiService) GetIndividualStats(ctx context.Context, idUserKaryawan int) (model.KaryawanKehadiranIndividu, error) {
+	return s.repo.GetIndividualStats(ctx, idUserKaryawan)
+}
+

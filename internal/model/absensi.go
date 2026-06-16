@@ -248,3 +248,38 @@ type DashboardStats struct {
 	AttendanceRateAverage float64  `json:"attendance_rate_average"`
 	RecentActivities      []string `json:"recent_activities"`
 }
+
+type AbsensiStatistik struct {
+	TotalHadirToday     int               `json:"total_hadir_today"`
+	TotalKaryawan       int               `json:"total_karyawan"`
+	AttendanceRateToday float64           `json:"attendance_rate_today"`
+	TepatWaktuRateToday float64           `json:"tepat_waktu_rate_today"`
+	GeofenceRateToday   float64           `json:"geofence_rate_today"`
+	TepatWaktuCount     int               `json:"tepat_waktu_count"`
+	TerlambatCount      int               `json:"terlambat_count"`
+	SafeGeofenceCount   int               `json:"safe_geofence_count"`
+	UnsafeGeofenceCount int               `json:"unsafe_geofence_count"`
+	Tren7Hari           []TrenHari        `json:"tren_7_hari"`
+	DistribusiPeran     []DistribusiPeran `json:"distribusi_peran"`
+}
+
+type TrenHari struct {
+	Label string `json:"label"`
+	Count int    `json:"count"`
+}
+
+type DistribusiPeran struct {
+	Peran      string  `json:"peran"`
+	HadirCount int     `json:"hadir_count"`
+	TotalCount int     `json:"total_count"`
+	Percentage float64 `json:"percentage"`
+}
+
+type KaryawanKehadiranIndividu struct {
+	Hadir int `json:"hadir"`
+	Sakit int `json:"sakit"`
+	Izin  int `json:"izin"`
+	Alpha int `json:"alpha"`
+	Libur int `json:"libur"`
+}
+

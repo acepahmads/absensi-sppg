@@ -1208,3 +1208,40 @@ func (h *AbsensiHandler) GetDashboardStats(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, stats)
 }
+
+func (h *AbsensiHandler) GetAttendanceStats(c *gin.Context) {
+	stats, err := h.AbsensiService.GetAttendanceStats(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to fetch attendance statistics",
+		})
+		return
+	}
+	c.JSON(http.StatusOK, stats)
+}
+
+func (h *AbsensiHandler) GetIndividualStats(c *gin.Context) {
+	karyawanIDStr := c.Query("karyawanID")
+	if karyawanIDStr == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Missing karyawanID parameter",
+		})
+		return
+	}
+	id, err := strconv.Atoi(karyawanIDStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid karyawanID parameter",
+		})
+		return
+	}
+	stats, err := h.AbsensiService.GetIndividualStats(c.Request.Context(), id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to fetch individual statistics",
+		})
+		return
+	}
+	c.JSON(http.StatusOK, stats)
+}
+

@@ -53,6 +53,8 @@ type AbsensiRepository interface {
 	GetDailyReportByID(id int64) (model.AbsensiDailyReport, error)
 	InputAbsenMesin(ctx context.Context, nama string, timestamp string, status string) error
 	GetDashboardStats(ctx context.Context) (model.DashboardStats, error)
+	GetAttendanceStats(ctx context.Context) (model.AbsensiStatistik, error)
+	GetIndividualStats(ctx context.Context, idUserKaryawan int) (model.KaryawanKehadiranIndividu, error)
 }
 
 type EmployeeMaster struct {
@@ -2295,3 +2297,198 @@ func (r *absensiRepository) GetDashboardStats(ctx context.Context) (model.Dashbo
 
 	return stats, nil
 }
+
+func calculateDistance(lat1, lon1, lat2, lon2 float64) float64 {
+	const R = 6371000 // Earth radius in meters
+	rad := math.Pi / 180
+	dLat := (lat2 - lat1) * rad
+	dLon := (lon2 - lon1) * rad
+	a := math.Sin(dLat/2)*math.Sin(dLat/2) +
+		math.Cos(lat1*rad)*math.Cos(lat2*rad)*
+			math.Sin(dLon/2)*math.Sin(dLon/2)
+	c := 2 * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
+	return R * c
+}
+
+func (r *absensiRepository) GetAttendanceStats(ctx context.Context) (model.AbsensiStatistik, error) {
+	var stats model.AbsensiStatistik
+
+	// 1. Total Karyawan
+	err := r.db.Get(&stats.TotalKaryawan, "SELECT COUNT(*) FROM user_karyawan WHERE status = 1")
+	if err != nil {
+		stats.TotalKaryawan = 0
+	}
+
+	// 2. Total Hadir Today
+	err = r.db.Get(&stats.TotalHadirToday, "SELECT COUNT(DISTINCT nama) FROM karyawan_absensi WHERE DATE(jam_masuk) = CURRENT_DATE() AND (hide is null or hide='')")
+	if err != nil {
+		stats.TotalHadirToday = 0
+	}
+
+	// 3. Attendance Rate Today
+	if stats.TotalKaryawan > 0 {
+		stats.AttendanceRateToday = math.Round((float64(stats.TotalHadirToday)/float64(stats.TotalKaryawan))*100*10) / 10
+	}
+
+	// 4. Tepat Waktu & Terlambat counts today
+	_ = r.db.Get(&stats.TepatWaktuCount, "SELECT COUNT(*) FROM karyawan_absensi WHERE DATE(jam_masuk) = CURRENT_DATE() AND (hide is null or hide='') AND (status LIKE '%TEPAT WAKTU%' OR status = 'Tepat Waktu' OR status = '' OR status IS NULL)")
+	_ = r.db.Get(&stats.TerlambatCount, "SELECT COUNT(*) FROM karyawan_absensi WHERE DATE(jam_masuk) = CURRENT_DATE() AND (hide is null or hide='') AND (status LIKE '%TERLAMBAT%' OR status = 'Terlambat')")
+
+	if stats.TotalHadirToday > 0 {
+		stats.TepatWaktuRateToday = math.Round((float64(stats.TepatWaktuCount)/float64(stats.TotalHadirToday))*100*10) / 10
+	}
+
+	// 5. Geofence Compliance today
+	type GPSCoords struct {
+		Lat float64 `db:"gps_latitude"`
+		Lng float64 `db:"gps_longitude"`
+	}
+	var coords []GPSCoords
+	err = r.db.Select(&coords, "SELECT gps_latitude, gps_longitude FROM karyawan_absensi WHERE DATE(jam_masuk) = CURRENT_DATE() AND (hide is null or hide='') AND gps_latitude != 0 AND gps_longitude != 0")
+	if err == nil {
+		const (
+			office1Lat = -6.966059539927656
+			office1Lng = 107.54982040220243
+			office2Lat = -6.9515912438129694
+			office2Lng = 107.53338639496108
+		)
+		for _, c := range coords {
+			dist1 := calculateDistance(c.Lat, c.Lng, office1Lat, office1Lng)
+			dist2 := calculateDistance(c.Lat, c.Lng, office2Lat, office2Lng)
+			if dist1 <= 50 || dist2 <= 50 {
+				stats.SafeGeofenceCount++
+			} else {
+				stats.UnsafeGeofenceCount++
+			}
+		}
+		totalGPSToday := stats.SafeGeofenceCount + stats.UnsafeGeofenceCount
+		if totalGPSToday > 0 {
+			stats.GeofenceRateToday = math.Round((float64(stats.SafeGeofenceCount)/float64(totalGPSToday))*100*10) / 10
+		} else {
+			stats.GeofenceRateToday = 100.0 // Default to 100% compliant if no GPS logs
+		}
+	}
+
+	// 6. Tren Kehadiran 7 Hari Terakhir
+	daysIndo := map[string]string{
+		"Sunday":    "MIN",
+		"Monday":    "SEN",
+		"Tuesday":   "SEL",
+		"Wednesday": "RAB",
+		"Thursday":  "KAM",
+		"Friday":    "JUM",
+		"Saturday":  "SAB",
+	}
+	for i := 6; i >= 0; i-- {
+		d := time.Now().AddDate(0, 0, -i)
+		dateStr := d.Format("2006-01-02")
+		dayName := daysIndo[d.Weekday().String()]
+		label := fmt.Sprintf("%s (%02d/%02d)", dayName, d.Day(), d.Month())
+
+		var count int
+		_ = r.db.Get(&count, "SELECT COUNT(DISTINCT nama) FROM karyawan_absensi WHERE DATE(jam_masuk) = ? AND (hide is null or hide='')", dateStr)
+		stats.Tren7Hari = append(stats.Tren7Hari, model.TrenHari{
+			Label: label,
+			Count: count,
+		})
+	}
+
+	// 7. Distribusi Kehadiran Berdasarkan Peran Relawan
+	type RoleRow struct {
+		Jabatan string `db:"jabatan"`
+	}
+	var roles []RoleRow
+	err = r.db.Select(&roles, "SELECT DISTINCT jabatan FROM user_karyawan WHERE status = 1 AND jabatan IS NOT NULL AND jabatan != ''")
+	if err == nil {
+		for _, role := range roles {
+			var totalCount int
+			_ = r.db.Get(&totalCount, "SELECT COUNT(*) FROM user_karyawan WHERE status = 1 AND jabatan = ?", role.Jabatan)
+			if totalCount == 0 {
+				continue
+			}
+
+			var hadirCount int
+			_ = r.db.Get(&hadirCount, "SELECT COUNT(DISTINCT k.nama) FROM karyawan_absensi k JOIN user_karyawan u ON k.nama = u.nama_mesin_absen WHERE DATE(k.jam_masuk) = CURRENT_DATE() AND u.jabatan = ? AND (k.hide is null or k.hide='')", role.Jabatan)
+
+			percentage := 0.0
+			if totalCount > 0 {
+				percentage = math.Round((float64(hadirCount)/float64(totalCount))*100*10) / 10
+			}
+			stats.DistribusiPeran = append(stats.DistribusiPeran, model.DistribusiPeran{
+				Peran:      role.Jabatan,
+				HadirCount: hadirCount,
+				TotalCount: totalCount,
+				Percentage: percentage,
+			})
+		}
+	}
+
+	return stats, nil
+}
+
+func (r *absensiRepository) GetIndividualStats(ctx context.Context, idUserKaryawan int) (model.KaryawanKehadiranIndividu, error) {
+	var stats model.KaryawanKehadiranIndividu
+
+	var namaMesinAbsen string
+	err := r.db.Get(&namaMesinAbsen, "SELECT nama_mesin_absen FROM user_karyawan WHERE id = ?", idUserKaryawan)
+	if err != nil {
+		return stats, err
+	}
+
+	type AbsRecord struct {
+		Status         sql.NullString `db:"status"`
+		AttendanceType sql.NullString `db:"attendance_type"`
+		JamMasuk       sql.NullString `db:"jam_masuk"`
+	}
+	var records []AbsRecord
+	err = r.db.Select(&records, "SELECT status, attendance_type, jam_masuk FROM karyawan_absensi WHERE nama = ? AND jam_masuk >= DATE_SUB(CURRENT_DATE(), INTERVAL 1 YEAR) AND (hide is null or hide='')", namaMesinAbsen)
+	if err != nil {
+		return stats, err
+	}
+
+	// Calculate checked dates to extract Libur (Sundays off)
+	checkedDates := make(map[string]bool)
+	for _, rec := range records {
+		st := ""
+		if rec.Status.Valid {
+			st = strings.ToUpper(rec.Status.String)
+		}
+		at := ""
+		if rec.AttendanceType.Valid {
+			at = strings.ToUpper(rec.AttendanceType.String)
+		}
+
+		if strings.Contains(st, "ALPHA") || strings.Contains(st, "ALPA") {
+			stats.Alpha++
+		} else if st == "SAKIT" || at == "SAKIT" {
+			stats.Sakit++
+		} else if st == "IZIN" || at == "IZIN" || strings.HasPrefix(st, "CUTI") || strings.HasPrefix(at, "CUTI") {
+			stats.Izin++
+		} else {
+			stats.Hadir++
+		}
+
+		if rec.JamMasuk.Valid && rec.JamMasuk.String != "" {
+			tVal, pErr := time.Parse("2006-01-02 15:04:05", rec.JamMasuk.String)
+			if pErr == nil {
+				checkedDates[tVal.Format("2006-01-02")] = true
+			}
+		}
+	}
+
+	// Count Sundays in last 1 year where they did not check in
+	var liburCount int
+	for day := 0; day < 365; day++ {
+		d := time.Now().AddDate(0, 0, -day)
+		if d.Weekday() == time.Sunday {
+			dateStr := d.Format("2006-01-02")
+			if !checkedDates[dateStr] {
+				liburCount++
+			}
+		}
+	}
+	stats.Libur = liburCount
+
+	return stats, nil
+}
+

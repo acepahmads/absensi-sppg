@@ -1673,6 +1673,10 @@
               <div class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="2"></circle></svg></div>
               <span>Perhitungan Absensi</span>
             </div>
+            <div class="nav-item nav-child" :class="{ 'active': activePage === 'absensi_statistik' }" @click="navigatePage('absensi_statistik')" v-show="isMenuVisible('absensi_statistik')">
+              <div class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="2"></circle></svg></div>
+              <span>Statistik Kehadiran</span>
+            </div>
           </div>
         </div>
 
@@ -2323,6 +2327,9 @@
           this.groupExpanded[groupId] = !this.groupExpanded[groupId];
         },
         isMenuVisible(menuId) {
+          if (menuId === 'absensi_statistik') {
+            return this.isMenuVisible('absensi');
+          }
           if (['input_absensi', 'absensi_saya', 'complain'].includes(menuId)) return false;
           if (!this.userProfile) return false;
           const role = this.userProfile.role;
@@ -2358,7 +2365,8 @@
               'rekapan_maintenance_da': '/rekapan_maintenance_da',
               'setup_user_karyawan': '/setup/user_karyawan',
               'setup_leaders': '/setup/leaders',
-              'setup_users': '/setup/users'
+              'setup_users': '/setup/users',
+              'absensi_statistik': '/absensi_statistik'
             };
             if (routes[page]) {
               window.location.href = routes[page];
@@ -2379,7 +2387,7 @@
             
             // Auto expand navigation group based on role/active page
             const groups = {
-              'group-absensi': ['absensi', 'input_absensi', 'absensi_saya', 'absensi_perhitungan']
+              'group-absensi': ['absensi', 'absensi_statistik', 'input_absensi', 'absensi_saya', 'absensi_perhitungan']
             };
             Object.entries(groups).forEach(([groupId, pages]) => {
               if (pages.includes(this.activePage)) {

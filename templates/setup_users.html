@@ -426,6 +426,10 @@
                   <div class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="2"></circle></svg></div>
                   <span>Perhitungan Absensi</span>
                 </div>
+                <div class="nav-item nav-child" :class="{ 'active': activePage === 'absensi_statistik' }" @click="navigatePage('absensi_statistik')" v-show="isMenuVisible('absensi_statistik')">
+                  <div class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="2"></circle></svg></div>
+                  <span>Statistik Kehadiran</span>
+                </div>
               </div>
             </div>
 
@@ -788,7 +792,8 @@
             'absensi_perhitungan': '/absensi_perhitungan',
             'setup_user_karyawan': '/setup/user_karyawan',
             'setup_leaders': '/setup/leaders',
-            'setup_users': '/setup/users'
+            'setup_users': '/setup/users',
+            'absensi_statistik': '/absensi_statistik'
           };
           if (routes[page]) {
             window.location.href = routes[page];
@@ -796,6 +801,9 @@
         };
 
         const isMenuVisible = (menuId) => {
+          if (menuId === 'absensi_statistik') {
+            return isMenuVisible('absensi');
+          }
           if (!userProfile.value) return false;
           const role = userProfile.value.role;
           if (role === 'SuperAdmin' || role === 'Manager') return true;

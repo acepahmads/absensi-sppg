@@ -170,6 +170,8 @@ func main() {
 
 		auth.GET("/absensi", absensiHandler.GetAll)
 		auth.GET("/dashboard/stats", absensiHandler.GetDashboardStats)
+		auth.GET("/absensi/statistik", absensiHandler.GetAttendanceStats)
+		auth.GET("/absensi/statistik/individu", absensiHandler.GetIndividualStats)
 		auth.GET("/absensi/last", absensiHandler.GetLast)
 		auth.GET("/absensi/perhitungan", absensiHandler.GetAllPerhitungan)
 		auth.GET("/absensi/karyawan", absensiHandler.GetAbsensiByKaryawan)
@@ -226,6 +228,7 @@ func main() {
 		"/setup/user_karyawan":          "setup_user_karyawan.html",
 		"/setup/leaders":                "setup_leaders.html",
 		"/setup/users":                  "setup_users.html",
+		"/absensi_statistik":            "absensi_statistik.html",
 	}
 
 	for path, tpl := range dashboardPages {
