@@ -599,6 +599,7 @@
             <label class="block text-xs font-bold text-slate-400 mb-2 uppercase">Leader / Supervisor</label>
             <select v-model="form.id_leader" required class="form-input w-full px-4 py-2 text-sm">
               <option value="">Select Leader</option>
+              <option :value="0">No Leader / None</option>
               <option v-for="l in leaders" :value="l.id">{{ l.nama }}</option>
             </select>
           </div>

@@ -30,6 +30,16 @@ func EnsureSchema(db *sqlx.DB) error {
 
 	if exists > 0 {
 		log.Println("Tables already exist. Skipping schema initialization.")
+		var countKaryawan int
+		var countLeader int
+		_ = db.Get(&countKaryawan, "SELECT COUNT(*) FROM user_karyawan")
+		_ = db.Get(&countLeader, "SELECT COUNT(*) FROM karyawan_leader")
+		if countKaryawan == 0 || countLeader == 0 {
+			log.Println("user_karyawan or karyawan_leader is empty. Running database seeding...")
+			if errSeed := runSeeds(db); errSeed != nil {
+				log.Printf("Warning: database seeding failed: %v", errSeed)
+			}
+		}
 		return nil
 	}
 
@@ -197,6 +207,11 @@ func EnsureSchema(db *sqlx.DB) error {
 		}
 	}
 
+	return runSeeds(db)
+}
+
+func runSeeds(db *sqlx.DB) error {
+	var err error
 	// 2. Import cais.sql if it exists
 	caisSqlPaths := []string{
 		"D:/cbi-project-src/CBI Automation & Integrated System/cais.sql",
