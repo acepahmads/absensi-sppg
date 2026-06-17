@@ -25,7 +25,7 @@ type UserAccount struct {
 	CreatedAt    time.Time      `json:"created_at" db:"created_at"`
 	UpdatedAt    time.Time      `json:"updated_at" db:"updated_at"`
 	IDKaryawan   int            `json:"id_karyawan" db:"id_karyawan"`
-	NamaKaryawan string         `json:"nama_karyawan" db:"nama_karyawan"`
+	NamaKaryawan sql.NullString `json:"nama_karyawan" db:"nama_karyawan"`
 	Jabatan      sql.NullString `json:"jabatan" db:"jabatan"`
 	Photos       string         `json:"photos" db:"photos"`
 	IDLeader     int            `json:"id_leader" db:"id_leader"`

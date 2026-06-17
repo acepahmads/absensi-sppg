@@ -36,10 +36,15 @@ func (s *authService) Login(email, password string) (string, string, string, str
 		return "", "", "", "", "", 0, 0, err
 	}
 
+	namaKaryawan := ""
+	if user.NamaKaryawan.Valid {
+		namaKaryawan = user.NamaKaryawan.String
+	}
+
 	jabatan := ""
 	if user.Jabatan.Valid {
 		jabatan = user.Jabatan.String
 	}
 
-	return user.ID, token, user.Role, user.NamaKaryawan, jabatan, user.IDKaryawan, user.IDLeader, nil
+	return user.ID, token, user.Role, namaKaryawan, jabatan, user.IDKaryawan, user.IDLeader, nil
 }
