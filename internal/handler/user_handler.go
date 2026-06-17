@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"absensi-sppg/internal/model"
 	"absensi-sppg/internal/service"
+	"absensi-sppg/pkg/utils"
 	"fmt"
 	"io"
 	"net/http"
@@ -42,6 +43,17 @@ func (h *UserHandler) Register(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request data"})
 		return
 	}
+
+	claims, ok := utils.GetClaims(c)
+	if !ok {
+		return
+	}
+	userAccount, err := h.userService.GetUserInfoByID(claims.UserID)
+	if err != nil || (userAccount.Role != "SuperAdmin" && userAccount.Role != "Manager") {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Hanya admin tenant yang dapat mendaftarkan karyawan"})
+		return
+	}
+	req.TenantID = claims.TenantID
 
 	// Call the service to register the user
 	email, err := h.userService.RegisterUser(req)

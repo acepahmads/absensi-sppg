@@ -92,7 +92,17 @@ func main() {
 		c.HTML(200, "index.html", nil)
 	})
 
-	r.GET("/user_registration", func(c *gin.Context) {
+	r.GET("/user_registration", middleware.JWTAuthDashboard(), func(c *gin.Context) {
+		claims, ok := utils.GetClaims(c)
+		if !ok {
+			c.Redirect(http.StatusFound, "/")
+			return
+		}
+		userAccount, err := userService.GetUserInfoByID(claims.UserID)
+		if err != nil || (userAccount.Role != "SuperAdmin" && userAccount.Role != "Manager") {
+			c.Redirect(http.StatusFound, "/dashboard")
+			return
+		}
 		c.HTML(200, "user_registration.html", nil)
 	})
 	r.GET("/tenant_registration", func(c *gin.Context) {
@@ -119,7 +129,7 @@ func main() {
 	// ===============================
 	api := r.Group("/api")
 	{
-		api.POST("/user/register", userHandler.Register)
+		api.POST("/user/register", middleware.JWTAuthDashboard(), userHandler.Register)
 		api.POST("/user/forgot-password", userHandler.ForgotPassword)
 		api.POST("/tenant/register", userHandler.RegisterTenant)
 		api.GET("/user/registered", userHandler.Registered)

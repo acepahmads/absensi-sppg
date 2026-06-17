@@ -301,15 +301,10 @@
        boxShadow: '0 4px 15px ' + (configState.accent_color || '#0066ff') + '66, 0 0 20px ' + (configState.accent_color || '#0066ff') + '33'
      }">{{ submitText }}</button>
     </form>
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px; font-size: 14px; padding: 0 4px;">
-     <a href="/forgot_password" :style="{ color: configState.subtitle_color }" style="text-decoration: none; transition: all 0.3s; opacity: 0.85;" onmouseover="this.style.opacity='1'; this.style.textDecoration='underline'" onmouseout="this.style.opacity='0.85'; this.style.textDecoration='none'">Lupa Password?</a>
-     <div style="display: flex; gap: 8px; align-items: center;">
-      <a href="/user_registration" :style="{ color: configState.subtitle_color }" style="text-decoration: none; transition: all 0.3s; opacity: 0.85;" onmouseover="this.style.opacity='1'; this.style.textDecoration='underline'" onmouseout="this.style.opacity='0.85'; this.style.textDecoration='none'">Daftar Karyawan</a>
-      <span :style="{ color: configState.subtitle_color }" style="opacity: 0.3;">|</span>
+     <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px; font-size: 14px; padding: 0 4px;">
+      <a href="/forgot_password" :style="{ color: configState.subtitle_color }" style="text-decoration: none; transition: all 0.3s; opacity: 0.85;" onmouseover="this.style.opacity='1'; this.style.textDecoration='underline'" onmouseout="this.style.opacity='0.85'; this.style.textDecoration='none'">Lupa Password?</a>
       <a href="/tenant_registration" :style="{ color: configState.subtitle_color }" style="text-decoration: none; transition: all 0.3s; opacity: 0.85;" onmouseover="this.style.opacity='1'; this.style.textDecoration='underline'" onmouseout="this.style.opacity='0.85'; this.style.textDecoration='none'">Daftar Tenant</a>
-     </div>
-    </div>
-    <p class="footer-text" id="footerText" :style="{ fontSize: (configState.font_size || 16) * 0.81 + 'px' }">{{ configState.footer_text }}</p>
+     </div><p class="footer-text" id="footerText" :style="{ fontSize: (configState.font_size || 16) * 0.81 + 'px' }">{{ configState.footer_text }}</p>
    </div>
   </main>
   <script>
