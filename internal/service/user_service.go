@@ -147,14 +147,60 @@ func (s *UserService) ForgotPasswordRequest(email string) error {
 		return errors.New("email tidak terdaftar")
 	}
 
-	// Print reset link to server console for simulation/testing
-	port := os.Getenv("APP_PORT")
-	if port == "" {
-		port = "8080"
+	// Resolve the base APP URL
+	appURL := os.Getenv("APP_URL")
+	if appURL == "" {
+		port := os.Getenv("APP_PORT")
+		if port == "" {
+			port = "8080"
+		}
+		appURL = fmt.Sprintf("http://localhost:%s", port)
 	}
-	resetLink := fmt.Sprintf("http://localhost:%s/reset_password?email=%s", port, email)
-	fmt.Printf("[EMAIL SIMULATION] Reset link sent to %s: %s\n", email, resetLink)
+	resetLink := fmt.Sprintf("%s/reset_password?email=%s", appURL, email)
 
+	// SMTP settings
+	smtpHost := os.Getenv("SMTP_HOST")
+	smtpPort := os.Getenv("SMTP_PORT")
+	smtpUser := os.Getenv("SMTP_USER")
+	smtpPass := os.Getenv("SMTP_PASS")
+	smtpSender := os.Getenv("SMTP_SENDER")
+
+	// If SMTP is not properly configured, log to console as simulation fallback
+	if smtpHost == "" || smtpPort == "" || smtpUser == "" || smtpPass == "" || smtpUser == "your_email@gmail.com" {
+		fmt.Printf("[WARN] SMTP is not configured or uses default values. Falling back to simulation link.\n")
+		fmt.Printf("[EMAIL SIMULATION] Reset link sent to %s: %s\n", email, resetLink)
+		return nil
+	}
+
+	// Construct HTML email body
+	subject := "Reset Kata Sandi Akun Absensi SPPG Anda"
+	htmlBody := fmt.Sprintf(`
+		<div style="font-family: 'Inter', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 30px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff; color: #1e293b;">
+			<div style="text-align: center; margin-bottom: 24px;">
+				<img src="https://absen.cbinstrument.com/static/LOGO-CBI.png" alt="Logo CBI" style="max-height: 60px; object-fit: contain;">
+				<h2 style="color: #0f172a; font-size: 22px; margin-top: 15px; font-weight: 700;">Pemulihan Kata Sandi</h2>
+			</div>
+			<p style="font-size: 15px; line-height: 1.6; color: #475569;">Halo,</p>
+			<p style="font-size: 15px; line-height: 1.6; color: #475569;">Kami menerima permintaan untuk mengatur ulang kata sandi akun Absensi SPPG Anda. Silakan klik tombol di bawah ini untuk mereset kata sandi Anda:</p>
+			
+			<div style="text-align: center; margin: 30px 0;">
+				<a href="%s" style="display: inline-block; padding: 14px 28px; background: linear-gradient(135deg, #0052cc 0%%, #0066ff 100%%); color: #ffffff; text-decoration: none; border-radius: 9999px; font-weight: 600; font-size: 15px; box-shadow: 0 4px 15px rgba(0, 102, 255, 0.25);">Atur Ulang Kata Sandi</a>
+			</div>
+			
+			<p style="font-size: 14px; line-height: 1.6; color: #64748b;">Tautan ini berlaku selama 1 jam. Jika Anda tidak merasa melakukan permintaan ini, silakan abaikan email ini secara aman.</p>
+			<hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;">
+			<p style="font-size: 12px; text-align: center; color: #94a3b8;">&copy; 2026 CBI Absensi SPPG. All rights reserved.</p>
+		</div>
+	`, resetLink)
+
+	// Send the real email
+	err = utils.SendEmail(smtpHost, smtpPort, smtpUser, smtpPass, smtpSender, email, subject, htmlBody)
+	if err != nil {
+		fmt.Printf("[ERROR] Failed to send real reset email: %v\n", err)
+		return errors.New("gagal mengirim email pemulihan, silakan hubungi admin")
+	}
+
+	fmt.Printf("[EMAIL SUCCESS] Reset email successfully sent to %s\n", email)
 	return nil
 }
 
