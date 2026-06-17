@@ -3,7 +3,7 @@
  <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Absensi SPPG - Registrasi Tenant Baru</title>
+  <title>Absensi SPPG - Registrasi Dapur SPPG Baru</title>
   <script src="/_sdk/element_sdk.js"></script>
   <style>
     * {
@@ -304,14 +304,14 @@
     <div class="left-column" :style="{
       background: 'linear-gradient(135deg, ' + (configState.background_color || '#0052cc') + ' 0%, ' + (configState.surface_color || '#0066ff') + 'CC 100%)'
     }">
-      <div class="left-content">
-        <div class="welcome-text">Registrasi</div>
-        <div class="logo-container">
-          <img src="/static/LOGO-CBI.png" class="logo-img" alt="Logo CBI">
+        <div class="left-content">
+          <div class="welcome-text">Registrasi</div>
+          <div class="logo-container">
+            <img src="/static/LOGO-CBI.png" class="logo-img" alt="Logo CBI">
+          </div>
+          <h1 class="system-title">{{ configState.page_title }}</h1>
+          <p class="system-desc">Daftarkan Dapur SPPG baru Anda untuk mengintegrasikan sistem absensi Face Recognition, pengelolaan data divisi, dan pemantauan terpadu.</p>
         </div>
-        <h1 class="system-title">{{ configState.page_title }}</h1>
-        <p class="system-desc">Daftarkan perusahaan / tenant baru Anda untuk mengintegrasikan sistem absensi Face Recognition, pengelolaan data divisi, dan pemantauan terpadu.</p>
-      </div>
 
       <!-- Cloud Wave SVG divider -->
       <div class="wave-divider">
@@ -332,24 +332,24 @@
         
         <div v-if="!isSuccess" id="form-container">
           <header class="form-header">
-            <h2 class="form-title">Daftar Tenant</h2>
-            <p class="form-subtitle">Lengkapi formulir di bawah ini untuk membuat tenant baru.</p>
+            <h2 class="form-title">Daftar Dapur SPPG</h2>
+            <p class="form-subtitle">Lengkapi formulir di bawah ini untuk mendaftarkan Dapur SPPG baru.</p>
           </header>
 
           <form id="tenant-registration-form" @submit.prevent="handleRegister">
             
-            <h3 class="section-title">Informasi Perusahaan</h3>
+            <h3 class="section-title">Informasi Dapur SPPG</h3>
 
             <!-- Tenant Name Input -->
             <div class="input-group">
-              <label class="input-label">Nama Perusahaan / Tenant</label>
-              <input type="text" class="input-field" placeholder="Contoh: Dapur SPPG" v-model="tenantName" required>
+              <label class="input-label">Nama Dapur SPPG</label>
+              <input type="text" class="input-field" placeholder="Contoh: Dapur SPPG Unit C" v-model="tenantName" @input="autoGenerateCode" required>
             </div>
 
-            <!-- Tenant Code Input -->
-            <div class="input-group">
-              <label class="input-label">Kode Perusahaan (Unik & Alfanumerik)</label>
-              <input type="text" class="input-field" placeholder="Contoh: dapur_sppg" v-model="tenantCode" @input="sanitizeCode" required>
+            <!-- Hidden Tenant Code Input -->
+            <div class="input-group" style="display: none;">
+              <label class="input-label">Kode SPPG</label>
+              <input type="text" class="input-field" v-model="tenantCode" required>
             </div>
 
             <h3 class="section-title">Akun Administrator</h3>
@@ -384,7 +384,7 @@
               background: 'linear-gradient(135deg, ' + (configState.primary_action_color || '#0052cc') + ' 0%, ' + (configState.primary_action_color || '#0066ff') + ' 100%)',
               boxShadow: '0 4px 15px ' + (configState.primary_action_color || '#0066ff') + '40'
             }">
-              <span>{{ isSubmitting ? 'Mendaftar...' : 'Daftar Tenant' }}</span>
+              <span>{{ isSubmitting ? 'Mendaftar...' : 'Daftar Dapur SPPG' }}</span>
             </button>
 
             <!-- Back to Login -->
@@ -398,7 +398,7 @@
             <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
           </svg>
           <h4 style="font-size: 1.5rem; font-weight: 700; color: #22c55e; margin-bottom: 0.75rem;">Registrasi Berhasil!</h4>
-          <p style="color: #64748b; margin-bottom: 2rem; font-size: 14px; line-height: 1.6;">Tenant <strong>{{ tenantName }}</strong> dan akun administrator Anda berhasil didaftarkan.</p>
+          <p style="color: #64748b; margin-bottom: 2rem; font-size: 14px; line-height: 1.6;">Dapur SPPG <strong>{{ tenantName }}</strong> dan akun administrator Anda berhasil didaftarkan.</p>
           <button @click="loginNow" style="width: 100%; height: 50px; background: linear-gradient(135deg, #22c55e, #16a34a); border: none; border-radius: 9999px; color: #ffffff; font-size: 15px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 15px rgba(34, 197, 94, 0.25);">
             Login Sekarang
           </button>
@@ -418,7 +418,7 @@
       secondary_action_color: "#64748b",
       font_family: "Inter",
       font_size: 16,
-      page_title: "Registrasi Tenant Baru",
+      page_title: "Registrasi Dapur SPPG Baru",
       button_text: "Daftar"
     };
 
@@ -476,6 +476,10 @@
                  adminPassword.value.length >= 6 && 
                  passwordsMatch.value;
         });
+
+        const autoGenerateCode = () => {
+          tenantCode.value = tenantName.value.toLowerCase().replace(/[^a-z0-9_]/g, '');
+        };
 
         const sanitizeCode = () => {
           tenantCode.value = tenantCode.value.toLowerCase().replace(/[^a-z0-9_]/g, '');
@@ -569,6 +573,7 @@
           confirmPassword,
           passwordsMatch,
           isFormValid,
+          autoGenerateCode,
           sanitizeCode,
           isSubmitting,
           isSuccess,
