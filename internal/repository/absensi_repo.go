@@ -2205,29 +2205,34 @@ func saveBase64File(file *model.FileUpload, folder string) (string, error) {
 }
 
 func (r *absensiRepository) GetDashboardStats(ctx context.Context) (model.DashboardStats, error) {
+	tenantID, _ := ctx.Value("tenantID").(int)
+	if tenantID == 0 {
+		tenantID = 1
+	}
+
 	var stats model.DashboardStats
 
 	// 1. Total Karyawan
-	err := r.db.Get(&stats.TotalKaryawan, "SELECT COUNT(*) FROM user_karyawan WHERE status = 1")
+	err := r.db.GetContext(ctx, &stats.TotalKaryawan, "SELECT COUNT(*) FROM user_karyawan WHERE status = 1 AND tenant_id = ?", tenantID)
 	if err != nil {
 		stats.TotalKaryawan = 0
 	}
 
 	// 2. Total Leader
-	err = r.db.Get(&stats.TotalLeader, "SELECT COUNT(*) FROM karyawan_leader WHERE status = 1")
+	err = r.db.GetContext(ctx, &stats.TotalLeader, "SELECT COUNT(*) FROM karyawan_leader WHERE status = 1 AND tenant_id = ?", tenantID)
 	if err != nil {
 		stats.TotalLeader = 0
 	}
 
 	// 3. Akun Terdaftar
-	err = r.db.Get(&stats.AkunTerdaftar, "SELECT COUNT(*) FROM user_accounts WHERE status = 1")
+	err = r.db.GetContext(ctx, &stats.AkunTerdaftar, "SELECT COUNT(*) FROM user_accounts WHERE status = 1 AND tenant_id = ?", tenantID)
 	if err != nil {
 		stats.AkunTerdaftar = 0
 	}
 
 	// 4. Kehadiran Hari Ini (Today's Attendance Rate)
 	var checkedInToday int
-	err = r.db.Get(&checkedInToday, "SELECT COUNT(DISTINCT nama) FROM karyawan_absensi WHERE DATE(jam_masuk) = CURRENT_DATE() AND (hide is null or hide='')")
+	err = r.db.GetContext(ctx, &checkedInToday, "SELECT COUNT(DISTINCT nama) FROM karyawan_absensi WHERE DATE(jam_masuk) = CURRENT_DATE() AND (hide is null or hide='') AND tenant_id = ?", tenantID)
 	if err == nil && stats.TotalKaryawan > 0 {
 		stats.AttendanceRateToday = math.Round((float64(checkedInToday)/float64(stats.TotalKaryawan))*100*10) / 10
 	} else {
@@ -2236,13 +2241,13 @@ func (r *absensiRepository) GetDashboardStats(ctx context.Context) (model.Dashbo
 
 	// 5. System Performance percentages (last 30 days)
 	var totalAbsenLast30Days int
-	err = r.db.Get(&totalAbsenLast30Days, "SELECT COUNT(*) FROM karyawan_absensi WHERE jam_masuk >= DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY) AND (hide is null or hide='')")
+	err = r.db.GetContext(ctx, &totalAbsenLast30Days, "SELECT COUNT(*) FROM karyawan_absensi WHERE jam_masuk >= DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY) AND (hide is null or hide='') AND tenant_id = ?", tenantID)
 	if err == nil && totalAbsenLast30Days > 0 {
 		var tepatWaktu, terlambat, alpha, lembur int
-		_ = r.db.Get(&tepatWaktu, "SELECT COUNT(*) FROM karyawan_absensi WHERE jam_masuk >= DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY) AND (hide is null or hide='') AND (status LIKE '%TEPAT WAKTU%' OR status = 'Tepat Waktu' OR status = '' OR status IS NULL)")
-		_ = r.db.Get(&terlambat, "SELECT COUNT(*) FROM karyawan_absensi WHERE jam_masuk >= DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY) AND (hide is null or hide='') AND (status LIKE '%TERLAMBAT%' OR status = 'Terlambat')")
-		_ = r.db.Get(&alpha, "SELECT COUNT(*) FROM karyawan_absensi WHERE jam_masuk >= DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY) AND (hide is null or hide='') AND (status LIKE '%ALPHA%' OR status = 'Alpha' OR status = 'Alpa')")
-		_ = r.db.Get(&lembur, "SELECT COUNT(*) FROM karyawan_absensi WHERE jam_masuk >= DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY) AND (hide is null or hide='') AND (lembur_masuk IS NOT NULL OR status = 'Lembur')")
+		_ = r.db.GetContext(ctx, &tepatWaktu, "SELECT COUNT(*) FROM karyawan_absensi WHERE jam_masuk >= DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY) AND (hide is null or hide='') AND (status LIKE '%TEPAT WAKTU%' OR status = 'Tepat Waktu' OR status = '' OR status IS NULL) AND tenant_id = ?", tenantID)
+		_ = r.db.GetContext(ctx, &terlambat, "SELECT COUNT(*) FROM karyawan_absensi WHERE jam_masuk >= DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY) AND (hide is null or hide='') AND (status LIKE '%TERLAMBAT%' OR status = 'Terlambat') AND tenant_id = ?", tenantID)
+		_ = r.db.GetContext(ctx, &alpha, "SELECT COUNT(*) FROM karyawan_absensi WHERE jam_masuk >= DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY) AND (hide is null or hide='') AND (status LIKE '%ALPHA%' OR status = 'Alpha' OR status = 'Alpa') AND tenant_id = ?", tenantID)
+		_ = r.db.GetContext(ctx, &lembur, "SELECT COUNT(*) FROM karyawan_absensi WHERE jam_masuk >= DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY) AND (hide is null or hide='') AND (lembur_masuk IS NOT NULL OR status = 'Lembur') AND tenant_id = ?", tenantID)
 
 		stats.TepatWaktuPercent = math.Round((float64(tepatWaktu)/float64(totalAbsenLast30Days))*100*10) / 10
 		stats.TerlambatPercent = math.Round((float64(terlambat)/float64(totalAbsenLast30Days))*100*10) / 10
@@ -2257,24 +2262,24 @@ func (r *absensiRepository) GetDashboardStats(ctx context.Context) (model.Dashbo
 	}
 
 	// 6. Total Absen Bulan Ini
-	err = r.db.Get(&stats.TotalAbsenBulanIni, "SELECT COUNT(*) FROM karyawan_absensi WHERE MONTH(jam_masuk) = MONTH(CURRENT_DATE()) AND YEAR(jam_masuk) = YEAR(CURRENT_DATE()) AND (hide is null or hide='')")
+	err = r.db.GetContext(ctx, &stats.TotalAbsenBulanIni, "SELECT COUNT(*) FROM karyawan_absensi WHERE MONTH(jam_masuk) = MONTH(CURRENT_DATE()) AND YEAR(jam_masuk) = YEAR(CURRENT_DATE()) AND (hide is null or hide='') AND tenant_id = ?", tenantID)
 	if err != nil {
 		stats.TotalAbsenBulanIni = 0
 	}
 
 	// 7. Total Lembur Bulan Ini
-	err = r.db.Get(&stats.TotalLemburBulanIni, "SELECT COUNT(*) FROM karyawan_lembur WHERE approval = '1' AND MONTH(STR_TO_DATE(tanggal_lembur, '%Y-%m-%d')) = MONTH(CURRENT_DATE()) AND YEAR(STR_TO_DATE(tanggal_lembur, '%Y-%m-%d')) = YEAR(CURRENT_DATE())")
+	err = r.db.GetContext(ctx, &stats.TotalLemburBulanIni, "SELECT COUNT(*) FROM karyawan_lembur WHERE approval = '1' AND MONTH(STR_TO_DATE(tanggal_lembur, '%Y-%m-%d')) = MONTH(CURRENT_DATE()) AND YEAR(STR_TO_DATE(tanggal_lembur, '%Y-%m-%d')) = YEAR(CURRENT_DATE()) AND tenant_id = ?", tenantID)
 	if err != nil {
 		// Fallback to checking the count of rows
-		_ = r.db.Get(&stats.TotalLemburBulanIni, "SELECT COUNT(*) FROM karyawan_lembur WHERE approval = '1'")
+		_ = r.db.GetContext(ctx, &stats.TotalLemburBulanIni, "SELECT COUNT(*) FROM karyawan_lembur WHERE approval = '1' AND tenant_id = ?", tenantID)
 	}
 
 	// 8. Rata-rata Kehadiran (Attendance Rate Average this month)
 	var activeDays int
-	err = r.db.Get(&activeDays, "SELECT COUNT(DISTINCT DATE(jam_masuk)) FROM karyawan_absensi WHERE MONTH(jam_masuk) = MONTH(CURRENT_DATE()) AND YEAR(jam_masuk) = YEAR(CURRENT_DATE()) AND (hide is null or hide='')")
+	err = r.db.GetContext(ctx, &activeDays, "SELECT COUNT(DISTINCT DATE(jam_masuk)) FROM karyawan_absensi WHERE MONTH(jam_masuk) = MONTH(CURRENT_DATE()) AND YEAR(jam_masuk) = YEAR(CURRENT_DATE()) AND (hide is null or hide='') AND tenant_id = ?", tenantID)
 	if err == nil && activeDays > 0 && stats.TotalKaryawan > 0 {
 		var totalCheckInsThisMonth int
-		err = r.db.Get(&totalCheckInsThisMonth, "SELECT COUNT(DISTINCT nama, DATE(jam_masuk)) FROM karyawan_absensi WHERE MONTH(jam_masuk) = MONTH(CURRENT_DATE()) AND YEAR(jam_masuk) = YEAR(CURRENT_DATE()) AND (hide is null or hide='')")
+		err = r.db.GetContext(ctx, &totalCheckInsThisMonth, "SELECT COUNT(DISTINCT nama, DATE(jam_masuk)) FROM karyawan_absensi WHERE MONTH(jam_masuk) = MONTH(CURRENT_DATE()) AND YEAR(jam_masuk) = YEAR(CURRENT_DATE()) AND (hide is null or hide='') AND tenant_id = ?", tenantID)
 		if err == nil {
 			stats.AttendanceRateAverage = math.Round((float64(totalCheckInsThisMonth)/float64(activeDays*stats.TotalKaryawan))*100*10) / 10
 		}
@@ -2290,7 +2295,7 @@ func (r *absensiRepository) GetDashboardStats(ctx context.Context) (model.Dashbo
 		Status    sql.NullString `db:"status"`
 	}
 	var logs []RecentLog
-	err = r.db.Select(&logs, "SELECT nama, jam_masuk, jam_pulang, status FROM karyawan_absensi WHERE (hide is null or hide='') ORDER BY id DESC LIMIT 5")
+	err = r.db.SelectContext(ctx, &logs, "SELECT nama, jam_masuk, jam_pulang, status FROM karyawan_absensi WHERE (hide is null or hide='') AND tenant_id = ? ORDER BY id DESC LIMIT 5", tenantID)
 	if err == nil {
 		for _, l := range logs {
 			var timeStr string
@@ -2345,16 +2350,21 @@ func calculateDistance(lat1, lon1, lat2, lon2 float64) float64 {
 }
 
 func (r *absensiRepository) GetAttendanceStats(ctx context.Context) (model.AbsensiStatistik, error) {
+	tenantID, _ := ctx.Value("tenantID").(int)
+	if tenantID == 0 {
+		tenantID = 1
+	}
+
 	var stats model.AbsensiStatistik
 
 	// 1. Total Karyawan
-	err := r.db.Get(&stats.TotalKaryawan, "SELECT COUNT(*) FROM user_karyawan WHERE status = 1")
+	err := r.db.GetContext(ctx, &stats.TotalKaryawan, "SELECT COUNT(*) FROM user_karyawan WHERE status = 1 AND tenant_id = ?", tenantID)
 	if err != nil {
 		stats.TotalKaryawan = 0
 	}
 
 	// 2. Total Hadir Today
-	err = r.db.Get(&stats.TotalHadirToday, "SELECT COUNT(DISTINCT nama) FROM karyawan_absensi WHERE DATE(jam_masuk) = CURRENT_DATE() AND (hide is null or hide='')")
+	err = r.db.GetContext(ctx, &stats.TotalHadirToday, "SELECT COUNT(DISTINCT nama) FROM karyawan_absensi WHERE DATE(jam_masuk) = CURRENT_DATE() AND (hide is null or hide='') AND tenant_id = ?", tenantID)
 	if err != nil {
 		stats.TotalHadirToday = 0
 	}
@@ -2365,8 +2375,8 @@ func (r *absensiRepository) GetAttendanceStats(ctx context.Context) (model.Absen
 	}
 
 	// 4. Tepat Waktu & Terlambat counts today
-	_ = r.db.Get(&stats.TepatWaktuCount, "SELECT COUNT(*) FROM karyawan_absensi WHERE DATE(jam_masuk) = CURRENT_DATE() AND (hide is null or hide='') AND (status LIKE '%TEPAT WAKTU%' OR status = 'Tepat Waktu' OR status = '' OR status IS NULL)")
-	_ = r.db.Get(&stats.TerlambatCount, "SELECT COUNT(*) FROM karyawan_absensi WHERE DATE(jam_masuk) = CURRENT_DATE() AND (hide is null or hide='') AND (status LIKE '%TERLAMBAT%' OR status = 'Terlambat')")
+	_ = r.db.GetContext(ctx, &stats.TepatWaktuCount, "SELECT COUNT(*) FROM karyawan_absensi WHERE DATE(jam_masuk) = CURRENT_DATE() AND (hide is null or hide='') AND (status LIKE '%TEPAT WAKTU%' OR status = 'Tepat Waktu' OR status = '' OR status IS NULL) AND tenant_id = ?", tenantID)
+	_ = r.db.GetContext(ctx, &stats.TerlambatCount, "SELECT COUNT(*) FROM karyawan_absensi WHERE DATE(jam_masuk) = CURRENT_DATE() AND (hide is null or hide='') AND (status LIKE '%TERLAMBAT%' OR status = 'Terlambat') AND tenant_id = ?", tenantID)
 
 	if stats.TotalHadirToday > 0 {
 		stats.TepatWaktuRateToday = math.Round((float64(stats.TepatWaktuCount)/float64(stats.TotalHadirToday))*100*10) / 10
@@ -2378,7 +2388,7 @@ func (r *absensiRepository) GetAttendanceStats(ctx context.Context) (model.Absen
 		Lng float64 `db:"gps_longitude"`
 	}
 	var coords []GPSCoords
-	err = r.db.Select(&coords, "SELECT gps_latitude, gps_longitude FROM karyawan_absensi WHERE DATE(jam_masuk) = CURRENT_DATE() AND (hide is null or hide='') AND gps_latitude != 0 AND gps_longitude != 0")
+	err = r.db.SelectContext(ctx, &coords, "SELECT gps_latitude, gps_longitude FROM karyawan_absensi WHERE DATE(jam_masuk) = CURRENT_DATE() AND (hide is null or hide='') AND gps_latitude != 0 AND gps_longitude != 0 AND tenant_id = ?", tenantID)
 	if err == nil {
 		const (
 			office1Lat = -6.966059539927656
@@ -2420,7 +2430,7 @@ func (r *absensiRepository) GetAttendanceStats(ctx context.Context) (model.Absen
 		label := fmt.Sprintf("%s (%02d/%02d)", dayName, d.Day(), d.Month())
 
 		var count int
-		_ = r.db.Get(&count, "SELECT COUNT(DISTINCT nama) FROM karyawan_absensi WHERE DATE(jam_masuk) = ? AND (hide is null or hide='')", dateStr)
+		_ = r.db.GetContext(ctx, &count, "SELECT COUNT(DISTINCT nama) FROM karyawan_absensi WHERE DATE(jam_masuk) = ? AND (hide is null or hide='') AND tenant_id = ?", dateStr, tenantID)
 		stats.Tren7Hari = append(stats.Tren7Hari, model.TrenHari{
 			Label: label,
 			Count: count,
@@ -2432,17 +2442,17 @@ func (r *absensiRepository) GetAttendanceStats(ctx context.Context) (model.Absen
 		Jabatan string `db:"jabatan"`
 	}
 	var roles []RoleRow
-	err = r.db.Select(&roles, "SELECT DISTINCT jabatan FROM user_karyawan WHERE status = 1 AND jabatan IS NOT NULL AND jabatan != ''")
+	err = r.db.SelectContext(ctx, &roles, "SELECT DISTINCT jabatan FROM user_karyawan WHERE status = 1 AND jabatan IS NOT NULL AND jabatan != '' AND tenant_id = ?", tenantID)
 	if err == nil {
 		for _, role := range roles {
 			var totalCount int
-			_ = r.db.Get(&totalCount, "SELECT COUNT(*) FROM user_karyawan WHERE status = 1 AND jabatan = ?", role.Jabatan)
+			_ = r.db.GetContext(ctx, &totalCount, "SELECT COUNT(*) FROM user_karyawan WHERE status = 1 AND jabatan = ? AND tenant_id = ?", role.Jabatan, tenantID)
 			if totalCount == 0 {
 				continue
 			}
 
 			var hadirCount int
-			_ = r.db.Get(&hadirCount, "SELECT COUNT(DISTINCT k.nama) FROM karyawan_absensi k JOIN user_karyawan u ON k.nama = u.nama_mesin_absen WHERE DATE(k.jam_masuk) = CURRENT_DATE() AND u.jabatan = ? AND (k.hide is null or k.hide='')", role.Jabatan)
+			_ = r.db.GetContext(ctx, &hadirCount, "SELECT COUNT(DISTINCT k.nama) FROM karyawan_absensi k JOIN user_karyawan u ON k.nama = u.nama_mesin_absen WHERE DATE(k.jam_masuk) = CURRENT_DATE() AND u.jabatan = ? AND (k.hide is null or k.hide='') AND k.tenant_id = ? AND u.tenant_id = ?", role.Jabatan, tenantID, tenantID)
 
 			percentage := 0.0
 			if totalCount > 0 {
@@ -2461,10 +2471,14 @@ func (r *absensiRepository) GetAttendanceStats(ctx context.Context) (model.Absen
 }
 
 func (r *absensiRepository) GetIndividualStats(ctx context.Context, idUserKaryawan int) (model.KaryawanKehadiranIndividu, error) {
+	tenantID, _ := ctx.Value("tenantID").(int)
+	if tenantID == 0 {
+		tenantID = 1
+	}
 	var stats model.KaryawanKehadiranIndividu
 
 	var namaMesinAbsen string
-	err := r.db.Get(&namaMesinAbsen, "SELECT nama_mesin_absen FROM user_karyawan WHERE id = ?", idUserKaryawan)
+	err := r.db.GetContext(ctx, &namaMesinAbsen, "SELECT nama_mesin_absen FROM user_karyawan WHERE id = ? AND tenant_id = ?", idUserKaryawan, tenantID)
 	if err != nil {
 		return stats, err
 	}
@@ -2475,7 +2489,7 @@ func (r *absensiRepository) GetIndividualStats(ctx context.Context, idUserKaryaw
 		JamMasuk       sql.NullString `db:"jam_masuk"`
 	}
 	var records []AbsRecord
-	err = r.db.Select(&records, "SELECT status, attendance_type, jam_masuk FROM karyawan_absensi WHERE nama = ? AND jam_masuk >= DATE_SUB(CURRENT_DATE(), INTERVAL 1 YEAR) AND (hide is null or hide='')", namaMesinAbsen)
+	err = r.db.SelectContext(ctx, &records, "SELECT status, attendance_type, jam_masuk FROM karyawan_absensi WHERE nama = ? AND jam_masuk >= DATE_SUB(CURRENT_DATE(), INTERVAL 1 YEAR) AND (hide is null or hide='') AND tenant_id = ?", namaMesinAbsen, tenantID)
 	if err != nil {
 		return stats, err
 	}
