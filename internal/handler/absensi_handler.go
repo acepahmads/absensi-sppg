@@ -349,15 +349,6 @@ func (h *AbsensiHandler) InputAbsensi(c *gin.Context) {
 }
 
 func (h *AbsensiHandler) InputAbsenMesin(c *gin.Context) {
-	apiKey := c.GetHeader("X-API-Key")
-	if apiKey != "9847598r234jiwefkewjfniwf3490ur39804rtjrefh" {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"success": false,
-			"message": "Unauthorized API Key",
-		})
-		return
-	}
-
 	var req struct {
 		Nama      string `json:"nama" binding:"required"`
 		Timestamp string `json:"timestamp" binding:"required"`
