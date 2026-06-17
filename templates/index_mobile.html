@@ -1,189 +1,206 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" style="height: 100%;">
  <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Absensi SPPG</title>
+  <title>Absensi SPPG - Login</title>
   <script src="/_sdk/element_sdk.js"></script>
   <style>
-    body {
+    * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      width: 100%;
+    }
+
+    body, html {
       height: 100%;
+      width: 100%;
       font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #ffffff;
       overflow: hidden;
-      background: linear-gradient(135deg, #0a0e27 0%, #1a1d3a 50%, #0d1b2a 100%);
-      position: relative;
-    }
-
-    html {
-      height: 100%;
-      width: 100%;
-    }
-
-    .background-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-image: 
-        radial-gradient(circle at 20% 30%, rgba(0, 102, 255, 0.1) 0%, transparent 50%),
-        radial-gradient(circle at 80% 70%, rgba(0, 153, 255, 0.08) 0%, transparent 50%);
-      z-index: 1;
-    }
-
-    .tech-grid {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-image: 
-        linear-gradient(rgba(0, 102, 255, 0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0, 102, 255, 0.03) 1px, transparent 1px);
-      background-size: 50px 50px;
-      z-index: 2;
-      opacity: 0.4;
     }
 
     .main-container {
-      position: relative;
-      z-index: 3;
+      display: flex;
       width: 100%;
       height: 100%;
+    }
+
+    /* Left Branding Column */
+    .left-column {
+      flex: 1.2;
+      height: 100%;
+      background: linear-gradient(135deg, #004ecc 0%, #0066ff 60%, #00aaff 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 60px;
+      color: #ffffff;
+      position: relative;
+      text-align: center;
+    }
+
+    .left-content {
+      max-width: 460px;
+      z-index: 10;
+    }
+
+    .welcome-text {
+      font-size: 24px;
+      font-weight: 300;
+      margin-bottom: 20px;
+      letter-spacing: 1px;
+      opacity: 0.9;
+    }
+
+    .logo-container {
+      width: 120px;
+      height: 120px;
+      background: #ffffff;
+      border-radius: 50%;
       display: flex;
       justify-content: center;
       align-items: center;
-      padding: 20px;
+      margin: 0 auto 24px auto;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+      padding: 15px;
     }
 
-    .access-panel {
-      background: rgba(15, 23, 42, 0.85);
-      backdrop-filter: blur(20px);
-      border-radius: 24px;
-      padding: 60px 50px;
-      width: 100%;
-      max-width: 480px;
-      box-shadow: 
-        0 0 60px rgba(0, 102, 255, 0.3),
-        0 20px 40px rgba(0, 0, 0, 0.4),
-        inset 0 1px 0 rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(0, 153, 255, 0.2);
-      position: relative;
+    .logo-img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
     }
 
-    .shield-icon-container {
-      text-align: center;
-      margin-bottom: 35px;
-    }
-
-    .shield-icon {
-      width: 80px;
-      height: 80px;
-      filter: drop-shadow(0 0 20px rgba(0, 153, 255, 0.6));
-      animation: pulse 3s ease-in-out infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.8; transform: scale(1.05); }
-    }
-
-    .panel-header {
-      text-align: center;
-      margin-bottom: 40px;
-    }
-
-    .panel-title {
-      font-size: 20px;
-      font-weight: 700;
-      color: #ffffff;
-      margin: 0 0 10px 0;
+    .system-title {
+      font-size: 40px;
+      font-weight: 800;
+      margin-bottom: 24px;
       letter-spacing: -0.5px;
+      text-transform: uppercase;
     }
 
-    .panel-subtitle {
-      font-size: 26px;
-      color: rgba(148, 163, 184, 0.9);
-      margin: 0;
+    .system-desc {
+      font-size: 14px;
+      line-height: 1.6;
+      opacity: 0.85;
       font-weight: 400;
     }
 
+    /* Wave Divider (Cloud style overlaying the right) */
+    .wave-divider {
+      position: absolute;
+      right: -1px;
+      top: 0;
+      bottom: 0;
+      width: 90px;
+      z-index: 5;
+      pointer-events: none;
+    }
+
+    .wave-divider svg {
+      height: 100%;
+      width: 100%;
+      fill: #ffffff;
+    }
+
+    /* Right Form Column */
+    .right-column {
+      flex: 1;
+      height: 100%;
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 60px;
+      position: relative;
+    }
+
+    .form-wrapper {
+      width: 100%;
+      max-width: 380px;
+    }
+
+    .form-header {
+      margin-bottom: 40px;
+      text-align: left;
+    }
+
+    .form-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 8px;
+    }
+
+    .form-subtitle {
+      font-size: 14px;
+      color: #64748b;
+    }
+
+    /* Underline Styled Inputs */
     .input-group {
-      margin-bottom: 24px;
+      margin-bottom: 30px;
+      position: relative;
     }
 
     .input-label {
       display: block;
-      color: rgba(148, 163, 184, 0.9);
-      font-size: 14px;
-      font-weight: 500;
-      margin-bottom: 10px;
-      letter-spacing: 0.3px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #475569;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
 
     .input-field {
       width: 100%;
-      height: 52px;
-      background: rgba(30, 41, 59, 0.6);
-      border: 1px solid rgba(0, 153, 255, 0.3);
-      border-radius: 12px;
-      padding: 0 20px;
-      color: #ffffff;
-      font-size: 15px;
+      height: 44px;
+      border: none;
+      border-bottom: 2px solid #e2e8f0;
+      background: transparent;
+      padding: 0 4px;
+      color: #1e293b;
+      font-size: 16px;
       font-family: inherit;
       transition: all 0.3s ease;
       outline: none;
-      box-sizing: border-box;
-    }
-
-    .input-field::placeholder {
-      color: rgba(148, 163, 184, 0.5);
-    }
-
-    .input-field:hover {
-      border-color: rgba(0, 153, 255, 0.5);
-      background: rgba(30, 41, 59, 0.8);
     }
 
     .input-field:focus {
-      border-color: rgba(0, 153, 255, 0.8);
-      background: rgba(30, 41, 59, 0.9);
-      box-shadow: 0 0 20px rgba(0, 153, 255, 0.2);
+      border-bottom-color: #0066ff;
     }
 
-    .password-field {
-      letter-spacing: 0.1em;
+    .input-field::placeholder {
+      color: #94a3b8;
+      opacity: 0.7;
     }
 
+    /* Gradient Pill Button */
     .proceed-button {
       width: 100%;
-      height: 56px;
-      background: linear-gradient(135deg, #0066ff 0%, #0052cc 100%);
+      height: 52px;
+      background: linear-gradient(135deg, #0052cc 0%, #0066ff 100%);
       border: none;
-      border-radius: 12px;
+      border-radius: 9999px;
       color: #ffffff;
-      font-size: 17px;
+      font-size: 16px;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.3s ease;
-      box-shadow: 
-        0 4px 15px rgba(0, 102, 255, 0.4),
-        0 0 20px rgba(0, 102, 255, 0.2);
-      margin-top: 32px;
-      letter-spacing: 0.5px;
+      box-shadow: 0 4px 15px rgba(0, 102, 255, 0.25);
+      margin-top: 10px;
+      margin-bottom: 24px;
       text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
 
     .proceed-button:hover:not(:disabled) {
       transform: translateY(-2px);
-      box-shadow: 
-        0 6px 25px rgba(0, 102, 255, 0.5),
-        0 0 30px rgba(0, 102, 255, 0.3);
-      background: linear-gradient(135deg, #0073ff 0%, #005ce6 100%);
+      box-shadow: 0 6px 20px rgba(0, 102, 255, 0.35);
     }
 
     .proceed-button:active:not(:disabled) {
@@ -195,21 +212,55 @@
       cursor: not-allowed;
     }
 
-    .footer-text {
-      text-align: center;
-      margin-top: 30px;
-      color: rgba(148, 163, 184, 0.7);
-      font-size: 13px;
+    /* Outlined Links & Footer */
+    .action-links {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 8px;
     }
 
-    .decorative-line {
+    .link-item {
+      text-align: center;
+      font-size: 14px;
+      font-weight: 500;
+      color: #0066ff;
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+
+    .link-item:hover {
+      text-decoration: underline;
+    }
+
+    .link-item-outline {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      height: 46px;
+      border: 1px solid #cbd5e1;
+      border-radius: 9999px;
+      color: #475569;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      background: #ffffff;
+    }
+
+    .link-item-outline:hover {
+      background: #f8fafc;
+      border-color: #94a3b8;
+      color: #1e293b;
+    }
+
+    .footer-text {
       position: absolute;
-      top: -1px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 40%;
-      height: 2px;
-      background: linear-gradient(90deg, transparent 0%, rgba(0, 153, 255, 0.6) 50%, transparent 100%);
+      bottom: 24px;
+      color: #94a3b8;
+      font-size: 12px;
+      text-align: center;
     }
 
     .notification-message {
@@ -222,9 +273,10 @@
       font-size: 14px;
       font-weight: 500;
       z-index: 1000;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
       max-width: 90%;
       text-align: center;
+      animation: slideDown 0.3s ease;
     }
 
     @keyframes slideDown {
@@ -249,71 +301,98 @@
       }
     }
 
-    @media (max-width: 640px) {
-      .access-panel {
-        padding: 40px 30px;
+    /* Responsive */
+    @media (max-width: 900px) {
+      .left-column {
+        display: none;
       }
-      
-      .panel-title {
-        font-size:32px;
+      .wave-divider {
+        display: none;
       }
-      
-      .shield-icon {
-        width: 65px;
-        height: 65px;
+      .right-column {
+        flex: 1;
+        width: 100%;
       }
     }
-
-    
+  </style>
   <style>[v-cloak] { display: none; }</style>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
  </head>
  <body>
-  <div class="background-overlay"></div>
-  <div class="tech-grid"></div>
   <main class="main-container" id="app" v-cloak>
-   <div class="access-panel" :style="{
-     boxShadow: '0 0 60px ' + (configState.accent_color || '#0066ff') + '4D, 0 20px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05)',
-     borderColor: (configState.accent_color || '#0066ff') + '33'
-   }">
-    <div class="decorative-line"></div>
-    <div class="shield-icon-container">
-      <img src="/static/LOGO-CBI.png" class="shield-icon1" />
+    
+    <!-- Left Column (Branding) - usually hidden on mobile by CSS -->
+    <div class="left-column" :style="{
+      background: 'linear-gradient(135deg, ' + (configState.accent_color || '#0052cc') + ' 0%, ' + (configState.accent_color || '#0066ff') + 'CC 100%)'
+    }">
+      <div class="left-content">
+        <div class="welcome-text">Welcome to</div>
+        <div class="logo-container">
+          <img src="/static/LOGO-CBI.png" class="logo-img" alt="Logo CBI">
+        </div>
+        <h1 class="system-title">{{ configState.subtitle }}</h1>
+        <p class="system-desc">CBI Automation & Integrated System merupakan inisiatif strategis untuk pengelolaan data kehadiran, pemantauan sistem otomatis, serta koordinasi antar divisi.</p>
+      </div>
+
+      <!-- Cloud Wave SVG divider -->
+      <div class="wave-divider">
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none">
+          <path d="M100,0 C65,15 75,35 100,50 C65,65 65,85 100,100 L100,100 L0,100 L0,0 Z"></path>
+        </svg>
+      </div>
     </div>
 
-    <header class="panel-header">
-     <h1 class="panel-title" id="mainTitle" :style="{ fontSize: (configState.font_size || 16) * 2 + 'px', color: configState.text_color }">{{ configState.main_title }}</h1>
-     <p class="panel-title" id="subtitle2">_______________________</p>
-     <p class="panel-title" id="subtitle" :style="{ fontSize: (configState.font_size || 16) * 0.94 + 'px', color: configState.subtitle_color }">{{ configState.subtitle }}</p>
-    </header>
-    <form id="loginForm" @submit.prevent="handleLogin">
-     <div class="input-group">
-      <label class="input-label" for="userInput" id="userLabel" :style="{ fontSize: (configState.font_size || 16) * 0.88 + 'px', color: configState.subtitle_color }">{{ configState.user_label }}</label>
-      <input type="text" id="userInput" class="input-field" placeholder="Enter your username" v-model="username" required>
-     </div>
-     <div class="input-group">
-      <label class="input-label" for="passwordInput" id="passwordLabel" :style="{ fontSize: (configState.font_size || 16) * 0.88 + 'px', color: configState.subtitle_color }">{{ configState.password_label }}</label>
-      <input type="password" id="passwordInput" class="input-field password-field" placeholder="Enter your access code" v-model="password" required>
-     </div>
-     <button type="submit" class="proceed-button" id="proceedButton" :disabled="isSubmitting" :style="{
-       fontSize: (configState.font_size || 16) * 1.06 + 'px',
-       background: 'linear-gradient(135deg, ' + (configState.accent_color || '#0066ff') + ' 0%, ' + (configState.accent_color || '#0066ff') + 'CC 100%)',
-       boxShadow: '0 4px 15px ' + (configState.accent_color || '#0066ff') + '66, 0 0 20px ' + (configState.accent_color || '#0066ff') + '33'
-     }">{{ submitText }}</button>
-    </form>
-     <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px; font-size: 14px; padding: 0 4px;">
-      <a href="/forgot_password" :style="{ color: configState.subtitle_color }" style="text-decoration: none; transition: all 0.3s; opacity: 0.85;" onmouseover="this.style.opacity='1'; this.style.textDecoration='underline'" onmouseout="this.style.opacity='0.85'; this.style.textDecoration='none'">Lupa Password?</a>
-      <a href="/tenant_registration" :style="{ color: configState.subtitle_color }" style="text-decoration: none; transition: all 0.3s; opacity: 0.85;" onmouseover="this.style.opacity='1'; this.style.textDecoration='underline'" onmouseout="this.style.opacity='0.85'; this.style.textDecoration='none'">Daftar Tenant</a>
-     </div><p class="footer-text" id="footerText" :style="{ fontSize: (configState.font_size || 16) * 0.81 + 'px' }">{{ configState.footer_text }}</p>
-   </div>
+    <!-- Right Column (Form) -->
+    <div class="right-column">
+      <div class="form-wrapper">
+        
+        <header class="form-header">
+          <h2 class="form-title">{{ configState.main_title }}</h2>
+          <p class="form-subtitle">Silakan masukkan akun Anda untuk masuk ke sistem.</p>
+        </header>
+
+        <form id="loginForm" @submit.prevent="handleLogin">
+          
+          <!-- Email / Username Input -->
+          <div class="input-group">
+            <label class="input-label" for="userInput">{{ configState.user_label }}</label>
+            <input type="text" id="userInput" class="input-field" placeholder="nama@email.com" v-model="username" required>
+          </div>
+          
+          <!-- Password Input -->
+          <div class="input-group">
+            <label class="input-label" for="passwordInput">{{ configState.password_label }}</label>
+            <input type="password" id="passwordInput" class="input-field" placeholder="Masukkan password" v-model="password" required>
+          </div>
+
+          <!-- Submit Button -->
+          <button type="submit" class="proceed-button" id="proceedButton" :disabled="isSubmitting" :style="{
+            background: 'linear-gradient(135deg, ' + (configState.accent_color || '#0052cc') + ' 0%, ' + (configState.accent_color || '#0066ff') + ' 100%)',
+            boxShadow: '0 4px 15px ' + (configState.accent_color || '#0066ff') + '40'
+          }">{{ submitText }}</button>
+
+        </form>
+
+        <!-- Navigation Links -->
+        <div class="action-links">
+          <a href="/forgot_password" class="link-item">Lupa Password?</a>
+          <a href="/tenant_registration" class="link-item-outline">Daftar Tenant Baru</a>
+        </div>
+
+      </div>
+
+      <p class="footer-text" id="footerText">{{ configState.footer_text }}</p>
+    </div>
+
   </main>
+
   <script>
     const defaultConfig = {
-      background_color: '#0a0e27',
-      panel_color: '#0f172a',
+      background_color: '#ffffff',
+      panel_color: '#ffffff',
       accent_color: '#0066ff',
-      text_color: '#ffffff',
-      subtitle_color: '#94a3b8',
+      text_color: '#1e293b',
+      subtitle_color: '#64748b',
       main_title: 'Login',
       subtitle: 'Absensi SPPG',
       user_label: 'User Identification',
@@ -334,7 +413,6 @@
       const msgDiv = document.createElement('div');
       msgDiv.className = 'notification-message';
       msgDiv.textContent = message;
-      msgDiv.style.animation = 'slideDown 0.3s ease';
       
       if (type === 'success') {
         msgDiv.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
@@ -350,81 +428,6 @@
         msgDiv.style.animation = 'slideUp 0.3s ease';
         setTimeout(() => msgDiv.remove(), 300);
       }, 4000);
-    }
-
-    function mapToCapabilities(config) {
-      return {
-        recolorables: [
-          {
-            get: () => config.background_color || defaultConfig.background_color,
-            set: (value) => {
-              if (window.elementSdk) {
-                window.elementSdk.setConfig({ background_color: value });
-              }
-            }
-          },
-          {
-            get: () => config.panel_color || defaultConfig.panel_color,
-            set: (value) => {
-              if (window.elementSdk) {
-                window.elementSdk.setConfig({ panel_color: value });
-              }
-            }
-          },
-          {
-            get: () => config.accent_color || defaultConfig.accent_color,
-            set: (value) => {
-              if (window.elementSdk) {
-                window.elementSdk.setConfig({ accent_color: value });
-              }
-            }
-          },
-          {
-            get: () => config.text_color || defaultConfig.text_color,
-            set: (value) => {
-              if (window.elementSdk) {
-                window.elementSdk.setConfig({ text_color: value });
-              }
-            }
-          },
-          {
-            get: () => config.subtitle_color || defaultConfig.subtitle_color,
-            set: (value) => {
-              if (window.elementSdk) {
-                window.elementSdk.setConfig({ subtitle_color: value });
-              }
-            }
-          }
-        ],
-        borderables: [],
-        fontEditable: {
-          get: () => config.font_family || defaultConfig.font_family,
-          set: (value) => {
-            if (window.elementSdk) {
-              window.elementSdk.setConfig({ font_family: value });
-            }
-          }
-        },
-        fontSizeable: {
-          get: () => config.font_size || defaultConfig.font_size,
-          set: (value) => {
-            if (window.elementSdk) {
-              window.elementSdk.setConfig({ font_size: value });
-            }
-          }
-        }
-      };
-    }
-
-    function mapToEditPanelValues(config) {
-      return new Map([
-        ['main_title', config.main_title || defaultConfig.main_title],
-        ['subtitle', config.subtitle || defaultConfig.subtitle],
-        ['user_label', config.user_label || defaultConfig.user_label],
-        ['password_label', config.password_label || defaultConfig.password_label],
-        ['button_text', config.button_text || defaultConfig.button_text],
-        ['footer_text', config.footer_text || defaultConfig.footer_text]
-      ]);
     }
 
     const { createApp, ref, reactive, onMounted } = Vue;
@@ -464,7 +467,7 @@
             if (response.ok) {
               showMessage('Login successful! Access granted.', 'success');
               setTimeout(() => {
-                window.location.href = '/input_absensi';
+                window.location.href = '/dashboard';
               }, 1500);
             } else {
               showMessage(data.message || 'Login failed. Invalid credentials.', 'error');
@@ -480,30 +483,41 @@
 
         const onConfigChange = (newConfig) => {
           Object.assign(configState, newConfig);
-
-          // Apply global non-reactive layout stylings
-          const backgroundColor = configState.background_color || defaultConfig.background_color;
-          const panelColor = configState.panel_color || defaultConfig.panel_color;
-          document.body.style.background = `linear-gradient(135deg, ${backgroundColor} 0%, ${panelColor} 50%, ${backgroundColor} 100%)`;
-
-          const fontFamily = configState.font_family || defaultConfig.font_family;
-          const fontStack = `${fontFamily}, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif`;
-          document.body.style.fontFamily = fontStack;
-
           submitText.value = configState.button_text || defaultConfig.button_text;
         };
 
         onMounted(() => {
-          // Initialize SDK
           if (window.elementSdk) {
             window.elementSdk.init({
               defaultConfig,
               onConfigChange,
-              mapToCapabilities,
-              mapToEditPanelValues
+              mapToCapabilities: (cfg) => ({
+                recolorables: [
+                  {
+                    get: () => cfg.accent_color || defaultConfig.accent_color,
+                    set: (value) => { window.elementSdk.setConfig({ accent_color: value }); }
+                  }
+                ],
+                borderables: [],
+                fontEditable: {
+                  get: () => cfg.font_family || defaultConfig.font_family,
+                  set: (value) => { window.elementSdk.setConfig({ font_family: value }); }
+                },
+                fontSizeable: {
+                  get: () => cfg.font_size || defaultConfig.font_size,
+                  set: (value) => { window.elementSdk.setConfig({ font_size: value }); }
+                }
+              }),
+              mapToEditPanelValues: (cfg) => new Map([
+                ['main_title', cfg.main_title || defaultConfig.main_title],
+                ['subtitle', cfg.subtitle || defaultConfig.subtitle],
+                ['user_label', cfg.user_label || defaultConfig.user_label],
+                ['password_label', cfg.password_label || defaultConfig.password_label],
+                ['button_text', cfg.button_text || defaultConfig.button_text],
+                ['footer_text', cfg.footer_text || defaultConfig.footer_text]
+              ])
             });
           } else {
-            // Apply defaults if SDK not present
             onConfigChange(defaultConfig);
           }
         });

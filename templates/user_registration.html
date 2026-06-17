@@ -1,342 +1,643 @@
 <!doctype html>
-<html lang="id" class="h-full">
+<html lang="id" style="height: 100%;">
  <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Absensi SPPG - Registrasi Pengguna</title>
+  <title>Absensi SPPG - Registrasi Karyawan</title>
   <script src="/_sdk/element_sdk.js"></script>
-  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body {
-      box-sizing: border-box;
-    }
-    
     * {
-      margin: 0;
-      padding: 0;
       box-sizing: border-box;
-    }
-
-    html, body {
-      height: 100%;
       margin: 0;
       padding: 0;
     }
 
-    .main-wrapper {
-      min-height: 100%;
+    body, html {
+      height: 100%;
       width: 100%;
-      overflow-auto;
+      font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #ffffff;
+      overflow: hidden;
     }
 
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-    
-    body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    .main-container {
+      display: flex;
+      width: 100%;
+      height: 100%;
     }
 
-    .glass-panel {
-      background: rgba(15, 23, 42, 0.7);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(59, 130, 246, 0.3);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    /* Left Branding Column */
+    .left-column {
+      flex: 1.2;
+      height: 100%;
+      background: linear-gradient(135deg, #004ecc 0%, #0066ff 60%, #00aaff 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 60px;
+      color: #ffffff;
+      position: relative;
+      text-align: center;
     }
 
-    .input-field {
-      background: rgba(30, 41, 59, 0.5);
-      border: 1px solid rgba(71, 85, 105, 0.5);
-      transition: all 0.3s ease;
+    .left-content {
+      max-width: 460px;
+      z-index: 10;
     }
 
-    .input-field:focus {
-      outline: none;
-      border-color: #3b82f6;
-      background: rgba(30, 41, 59, 0.8);
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    .welcome-text {
+      font-size: 24px;
+      font-weight: 300;
+      margin-bottom: 20px;
+      letter-spacing: 1px;
+      opacity: 0.9;
     }
 
-    .btn-primary {
-      background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
-    }
-
-    .btn-primary:hover:not(:disabled) {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
-    }
-
-    .btn-primary:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    .photo-step {
-      transition: all 0.3s ease;
-    }
-
-    .photo-step.active {
-      background: rgba(59, 130, 246, 0.2);
-      border-color: #3b82f6;
-    }
-
-    .photo-step.completed {
-      background: rgba(34, 197, 94, 0.2);
-      border-color: #22c55e;
-    }
-
-    .camera-frame {
-      background: rgba(15, 23, 42, 0.8);
-      border: 2px dashed rgba(59, 130, 246, 0.4);
-    }
-
-    .progress-dot {
-      width: 12px;
-      height: 12px;
+    .logo-container {
+      width: 120px;
+      height: 120px;
+      background: #ffffff;
       border-radius: 50%;
-      background: rgba(71, 85, 105, 0.5);
-      transition: all 0.3s ease;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 0 auto 24px auto;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+      padding: 15px;
     }
 
-    .progress-dot.active {
-      background: #3b82f6;
-      box-shadow: 0 0 10px rgba(59, 130, 246, 0.6);
+    .logo-img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
     }
 
-    .progress-dot.completed {
-      background: #22c55e;
+    .system-title {
+      font-size: 40px;
+      font-weight: 800;
+      margin-bottom: 24px;
+      letter-spacing: -0.5px;
+      text-transform: uppercase;
     }
 
-    .divider {
-      height: 2px;
-      background: linear-gradient(90deg, transparent, #3b82f6, transparent);
+    .system-desc {
+      font-size: 14px;
+      line-height: 1.6;
+      opacity: 0.85;
+      font-weight: 400;
     }
 
-    select option {
-      background: #1e293b;
-      color: #e2e8f0;
+    /* Wave Divider (Cloud style overlaying the right) */
+    .wave-divider {
+      position: absolute;
+      right: -1px;
+      top: 0;
+      bottom: 0;
+      width: 90px;
+      z-index: 5;
+      pointer-events: none;
     }
 
-    .icon-wrapper {
+    .wave-divider svg {
+      height: 100%;
+      width: 100%;
+      fill: #ffffff;
+    }
+
+    /* Right Form Column */
+    .right-column {
+      flex: 1;
+      height: 100%;
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+      padding: 40px;
+      position: relative;
+      overflow-y: auto;
+    }
+
+    .form-wrapper {
+      width: 100%;
+      max-width: 500px;
+      padding: 20px 0;
+    }
+
+    .form-header {
+      margin-bottom: 30px;
+      text-align: left;
+    }
+
+    .form-title {
+      font-size: 26px;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 6px;
+    }
+
+    .form-subtitle {
+      font-size: 14px;
       color: #64748b;
     }
 
-    .input-field:focus + .icon-wrapper {
-      color: #3b82f6;
+    /* Underline Styled Inputs */
+    .input-group {
+      margin-bottom: 20px;
+      position: relative;
     }
+
+    .input-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: #475569;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .input-field {
+      width: 100%;
+      height: 40px;
+      border: none;
+      border-bottom: 2px solid #e2e8f0;
+      background: transparent;
+      padding: 0 4px;
+      color: #1e293b;
+      font-size: 15px;
+      font-family: inherit;
+      transition: all 0.3s ease;
+      outline: none;
+    }
+
+    .input-field:focus {
+      border-bottom-color: #0066ff;
+    }
+
+    select option {
+      background: #ffffff;
+      color: #1e293b;
+    }
+
+    /* Section Subheading */
+    .section-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #0f172a;
+      margin: 15px 0 10px 0;
+      padding-bottom: 6px;
+      border-bottom: 1px solid #e2e8f0;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Face Recognition Area */
+    .camera-box {
+      border: 1px solid #cbd5e1;
+      border-radius: 12px;
+      background: #f8fafc;
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+
+    .video-view {
+      width: 100%;
+      max-width: 400px;
+      margin: 0 auto 12px auto;
+      border-radius: 8px;
+      background: #000;
+      display: block;
+    }
+
+    .photo-preview-img {
+      width: 100%;
+      max-width: 400px;
+      margin: 0 auto 12px auto;
+      border-radius: 8px;
+      display: block;
+    }
+
+    .camera-placeholder {
+      text-align: center;
+      padding: 40px 20px;
+      color: #94a3b8;
+    }
+
+    .progress-dots {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #cbd5e1;
+      transition: all 0.3s;
+    }
+
+    .dot.active {
+      background: #0066ff;
+      box-shadow: 0 0 8px rgba(0, 102, 255, 0.5);
+    }
+
+    .dot.completed {
+      background: #22c55e;
+    }
+
+    .btn-action {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px 20px;
+      border-radius: 9999px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      border: none;
+    }
+
+    .btn-action-primary {
+      background: linear-gradient(135deg, #0052cc, #0066ff);
+      color: #ffffff;
+      box-shadow: 0 4px 10px rgba(0, 102, 255, 0.2);
+    }
+
+    .btn-action-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 15px rgba(0, 102, 255, 0.3);
+    }
+
+    .btn-action-secondary {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      color: #475569;
+    }
+
+    .btn-action-secondary:hover {
+      background: #f1f5f9;
+    }
+
+    .photo-step-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      transition: all 0.3s;
+    }
+
+    .photo-step-item.active {
+      border-color: #0066ff;
+      background: rgba(0, 102, 255, 0.02);
+    }
+
+    .photo-step-item.completed {
+      border-color: #22c55e;
+      background: rgba(34, 197, 94, 0.02);
+    }
+
+    .step-number {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: #e2e8f0;
+      color: #475569;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 13px;
+    }
+
+    .photo-step-item.active .step-number {
+      background: #0066ff;
+      color: #ffffff;
+    }
+
+    .photo-step-item.completed .step-number {
+      background: #22c55e;
+      color: #ffffff;
+    }
+
+    /* Submit / Register Button */
+    .proceed-button {
+      width: 100%;
+      height: 50px;
+      background: linear-gradient(135deg, #0052cc 0%, #0066ff 100%);
+      border: none;
+      border-radius: 9999px;
+      color: #ffffff;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0, 102, 255, 0.25);
+      margin-top: 20px;
+      margin-bottom: 15px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .proceed-button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 102, 255, 0.35);
+    }
+
+    .proceed-button:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    .proceed-button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    /* Links & Notifications */
+    .link-item {
+      display: block;
+      text-align: center;
+      font-size: 14px;
+      font-weight: 500;
+      color: #0066ff;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      margin-top: 10px;
+    }
+
+    .link-item:hover {
+      text-decoration: underline;
+    }
+
+    .notification-message {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 16px 24px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 500;
+      z-index: 1000;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+      max-width: 90%;
+      text-align: center;
+      animation: slideDown 0.3s ease;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+      to {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-20px);
+      }
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .left-column {
+        display: none;
+      }
+      .wave-divider {
+        display: none;
+      }
+      .right-column {
+        flex: 1;
+        width: 100%;
+        padding: 30px 20px;
+      }
+    }
+  </style>
   <style>[v-cloak] { display: none; }</style>
-  <style>@view-transition { navigation: auto; }</style>
-  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
  </head>
- <body class="h-full">
-  <div class="main-wrapper" id="app" v-cloak :style="{ background: 'linear-gradient(135deg, ' + (configState.background_color || '#0f172a') + ' 0%, ' + (configState.surface_color || '#1e293b') + ' 100%)' }">
-   <div style="min-height: 100%; padding: 0.5rem 0.5rem; display: flex; align-items: center; justify-content: center;">
-    <div style="width: 100%; max-width: 800px;"><!-- Header -->
-     <div style="text-align: center; margin-bottom: 1rem;">
-      <div style="display: inline-flex; align-items: center; gap: 0rem; margin-bottom: 0rem;">
-       <img id="company-logo" src="/static/LOGO-CBI.png" alt="Company Logo" style="width: 200px; height: 100px; object-fit: contain;">
-      </div>
-      <h2 id="page-title" :style="{ fontSize: (configState.font_size || 16) * 1.25 + 'px', color: configState.text_color }" style="font-weight: 700; margin-bottom: 0.5rem;">{{ configState.page_title }}</h2>
-      <div class="divider" style="width: 100px; margin: 0 auto;"></div>
-     </div><!-- Main Panel -->
-     <div class="glass-panel" style="border-radius: 1rem; padding: 2.5rem; max-width: 900px; margin: 0 auto;">
-      <div v-if="!isSuccess" id="form-container"><!-- Registration Form -->
-       <div style="margin-bottom: 3rem;">
-        <h3 style="font-size: 1.25rem; font-weight: 600; color: #f1f5f9; margin-bottom: 1.5rem;">Informasi Akun</h3>
-        <form id="registration-form" @submit.prevent>
-         <div style="display: grid; gap: 1.5rem;">
-          <!-- Tenant Selection Field -->
-          <div><label id="tenant-label" style="display: block; font-size: 0.875rem; font-weight: 500; color: #cbd5e1; margin-bottom: 0.5rem;">Perusahaan / Tenant</label>
-           <div style="position: relative;">
-            <svg style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; color: #64748b;" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-            </svg>
-            <select id="tenant-select" class="input-field" style="width: 100%; padding: 0.875rem 1rem 0.875rem 3rem; border-radius: 0.5rem; color: #e2e8f0; font-size: 1rem;" v-model="selectedTenant" @change="onTenantChange" :disabled="tenantsLoading" required>
-             <option value="" v-if="tenantsLoading">Memuat daftar perusahaan...</option>
-             <option value="" v-else-if="tenantsError">Gagal memuat daftar perusahaan</option>
-             <option value="" v-else>Pilih perusahaan</option>
-             <option v-for="tenant in tenants" :key="tenant.id" :value="tenant.id">{{ tenant.name }}</option>
-            </select>
-           </div>
-          </div>
-          <!-- Name Field -->
-          <div><label id="name-label" style="display: block; font-size: 0.875rem; font-weight: 500; color: #cbd5e1; margin-bottom: 0.5rem;">{{ configState.name_label }}</label>
-           <div style="position: relative;">
-            <svg style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; color: #64748b;" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-            </svg>
-            <select id="name-select" class="input-field" style="width: 100%; padding: 0.875rem 1rem 0.875rem 3rem; border-radius: 0.5rem; color: #e2e8f0; font-size: 1rem;" v-model="selectedName" :disabled="namesLoading" required>
-             <option value="" v-if="namesLoading">Memuat nama pengguna...</option>
-             <option value="" v-else-if="namesError">Gagal memuat nama pengguna</option>
-             <option value="" v-else>Pilih nama pengguna</option>
-             <option v-for="name in names" :key="name" :value="name">{{ name }}</option>
-            </select>
-           </div>
-          </div><!-- Leader Field -->
-          <div><label id="leader-label" style="display: block; font-size: 0.875rem; font-weight: 500; color: #cbd5e1; margin-bottom: 0.5rem;">{{ configState.leader_label }}</label>
-           <div style="position: relative;">
-            <svg style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; color: #64748b;" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-            </svg>
-            <select id="leader-select" class="input-field" style="width: 100%; padding: 0.875rem 1rem 0.875rem 3rem; border-radius: 0.5rem; color: #e2e8f0; font-size: 1rem;" v-model="selectedLeader" :disabled="leadersLoading" required>
-             <option value="" v-if="leadersLoading">Memuat daftar leader...</option>
-             <option value="" v-else-if="leadersError">Gagal memuat daftar leader</option>
-             <option value="" v-else>Pilih leader</option>
-             <option v-for="leader in leaders" :key="leader" :value="leader">{{ leader }}</option>
-            </select>
-           </div>
-          </div><!-- Email Field -->
-          <div><label id="email-label" style="display: block; font-size: 0.875rem; font-weight: 500; color: #cbd5e1; margin-bottom: 0.5rem;">{{ configState.email_label }}</label>
-           <div style="position: relative;">
-            <svg style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; color: #64748b;" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-            </svg>
-            <input type="email" id="email-input" class="input-field" placeholder="email@perusahaan.com" style="width: 100%; padding: 0.875rem 1rem 0.875rem 3rem; border-radius: 0.5rem; color: #e2e8f0; font-size: 1rem;" v-model="email" required>
-           </div>
-          </div><!-- Password Field -->
-          <div><label id="password-label" style="display: block; font-size: 0.875rem; font-weight: 500; color: #cbd5e1; margin-bottom: 0.5rem;">{{ configState.password_label }}</label>
-           <div style="position: relative;">
-            <svg style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; color: #64748b;" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-            </svg>
-            <input type="password" id="password-input" class="input-field" placeholder="••••••••" style="width: 100%; padding: 0.875rem 1rem 0.875rem 3rem; border-radius: 0.5rem; color: #e2e8f0; font-size: 1rem;" v-model="password" required>
-           </div>
-          </div><!-- Confirm Password Field -->
-          <div><label id="confirm-password-label" style="display: block; font-size: 0.875rem; font-weight: 500; color: #cbd5e1; margin-bottom: 0.5rem;">{{ configState.confirm_password_label }}</label>
-           <div style="position: relative;">
-            <svg style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; color: #64748b;" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-            </svg>
-            <input type="password" id="confirm-password-input" class="input-field" placeholder="••••••••" style="width: 100%; padding: 0.875rem 1rem 0.875rem 3rem; border-radius: 0.5rem; color: #e2e8f0; font-size: 1rem;" v-model="confirmPassword" required>
-           </div>
-           <p id="password-match-message" style="font-size: 0.875rem; margin-top: 0.5rem; color: #ef4444;" v-show="confirmPassword && !passwordsMatch">Password tidak cocok</p>
-          </div>
-         </div>
-        </form>
-       </div><!-- Face Recognition Section -->
-       <div style="border-top: 1px solid rgba(71, 85, 105, 0.3); padding-top: 2rem;">
-        <h3 id="face-title" style="font-size: 1.25rem; font-weight: 600; color: #f1f5f9; margin-bottom: 0.5rem;">{{ configState.face_title }}</h3>
-        <p id="face-subtitle" style="font-size: 0.875rem; color: #94a3b8; margin-bottom: 2rem;">{{ configState.face_subtitle }}</p><!-- Camera Frame -->
-        <div class="camera-frame" style="border-radius: 1rem; padding: 2rem; margin-bottom: 2rem;"><!-- Camera View -->
-         <div style="position: relative; max-width: 500px; margin: 0 auto 1.5rem;">
-          <video ref="cameraVideo" autoplay playsinline style="width: 100%; border-radius: 0.75rem; background: #000;" v-show="isCameraActive && !capturedPhotos[currentStep - 1]"></video>
-          <canvas ref="cameraCanvas" style="display: none;"></canvas><!-- Camera Icon (shown when camera is off) -->
-          <div id="camera-placeholder" style="text-align: center; padding: 3rem 2rem;" v-show="!isCameraActive && !capturedPhotos[currentStep - 1]">
-           <svg style="width: 80px; height: 80px; margin: 0 auto 1.5rem; color: #475569;" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-           </svg>
-          </div><!-- Captured Photo Preview --> 
-          <img id="photo-preview" style="width: 100%; border-radius: 0.75rem;" :src="capturedPhotos[currentStep - 1]" v-show="capturedPhotos[currentStep - 1]" alt="Captured photo">
-         </div>
-         <div id="current-instruction" :style="{ color: photosCompleted === 3 ? '#22c55e' : '#cbd5e1' }" style="font-size: 1.125rem; font-weight: 500; margin-bottom: 1rem; text-align: center;">
-          {{ currentInstruction }}
-         </div><!-- Progress Indicator -->
-         <div style="display: flex; align-items: center; justify-content: center; gap: 0.75rem; margin-bottom: 1.5rem;">
-          <div class="progress-dot" :class="{ active: currentStep === 1 && photosCompleted < 1, completed: photosCompleted >= 1 }" id="dot-1"></div>
-          <div style="width: 40px; height: 2px; background: rgba(71, 85, 105, 0.5);"></div>
-          <div class="progress-dot" :class="{ active: currentStep === 2 && photosCompleted < 2, completed: photosCompleted >= 2 }" id="dot-2"></div>
-          <div style="width: 40px; height: 2px; background: rgba(71, 85, 105, 0.5);"></div>
-          <div class="progress-dot" :class="{ active: currentStep === 3 && photosCompleted < 3, completed: photosCompleted >= 3 }" id="dot-3"></div>
-         </div><!-- Camera Buttons -->
-         <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-          <button id="start-camera-btn" class="btn-primary" style="padding: 0.875rem 2rem; border-radius: 0.5rem; color: white; font-weight: 600; font-size: 1rem; border: none; cursor: pointer;" v-show="!isCameraActive && !capturedPhotos[currentStep - 1]" @click="startCamera"> 
-           <span style="display: flex; align-items: center; gap: 0.5rem; justify-content: center;">
-            <svg width="20" height="20" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-            </svg> Buka Kamera </span> 
-          </button> 
-          <button id="capture-btn" class="btn-primary" style="padding: 0.875rem 2rem; border-radius: 0.5rem; color: white; font-weight: 600; font-size: 1rem; border: none; cursor: pointer;" v-show="isCameraActive && !capturedPhotos[currentStep - 1]" @click="capturePhoto"> 
-           <span style="display: flex; align-items: center; gap: 0.5rem; justify-content: center;">
-            <svg width="20" height="20" fill="currentColor" viewbox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none" /> <circle cx="12" cy="12" r="6" fill="currentColor" />
-            </svg> Ambil Foto </span> 
-          </button> 
-          <button id="retake-btn" style="padding: 0.875rem 2rem; border-radius: 0.5rem; color: #cbd5e1; font-weight: 600; font-size: 1rem; border: 1px solid rgba(71, 85, 105, 0.5); cursor: pointer; background: rgba(30, 41, 59, 0.5);" v-show="capturedPhotos[currentStep - 1]" @click="retakePhoto"> 
-           <span style="display: flex; align-items: center; gap: 0.5rem; justify-content: center;">
-            <svg width="20" height="20" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg> Ulangi </span> 
-          </button> 
-          <button id="next-photo-btn" class="btn-primary" style="padding: 0.875rem 2rem; border-radius: 0.5rem; color: white; font-weight: 600; font-size: 1rem; border: none; cursor: pointer;" v-show="capturedPhotos[currentStep - 1] && currentStep < 3" @click="nextPhoto"> 
-           <span style="display: flex; align-items: center; gap: 0.5rem; justify-content: center;"> Lanjut Foto Berikutnya 
-            <svg width="20" height="20" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-            </svg></span> 
-          </button>
-         </div>
-        </div><!-- Photo Steps -->
-        <div style="display: grid; gap: 1rem; margin-bottom: 2rem;">
-         <div id="step-1" class="photo-step" :class="{ active: currentStep === 1 && photosCompleted < 1, completed: photosCompleted >= 1 }" style="padding: 1rem 1.5rem; border-radius: 0.5rem; border: 1px solid rgba(71, 85, 105, 0.5); display: flex; align-items: center; gap: 1rem;">
-          <div style="width: 32px; height: 32px; border-radius: 50%; background: rgba(59, 130, 246, 0.2); display: flex; align-items: center; justify-content: center; color: #3b82f6; font-weight: 600; font-size: 0.875rem;">
-           1
-          </div>
-          <div style="flex: 1;">
-           <div style="font-weight: 500; color: #e2e8f0; margin-bottom: 0.25rem;">
-            Foto 1: Wajah Lurus
-           </div>
-           <div style="font-size: 0.875rem; color: #94a3b8;">
-            Posisi wajah menghadap ke depan
-           </div>
-          </div>
-          <div id="check-1" style="color: #22c55e;" v-show="photosCompleted >= 1">
-           <svg width="24" height="24" fill="currentColor" viewbox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
-           </svg>
-          </div>
-         </div>
-         <div id="step-2" class="photo-step" :class="{ active: currentStep === 2 && photosCompleted < 2, completed: photosCompleted >= 2 }" style="padding: 1rem 1.5rem; border-radius: 0.5rem; border: 1px solid rgba(71, 85, 105, 0.5); display: flex; align-items: center; gap: 1rem;">
-          <div style="width: 32px; height: 32px; border-radius: 50%; background: rgba(71, 85, 105, 0.2); display: flex; align-items: center; justify-content: center; color: #64748b; font-weight: 600; font-size: 0.875rem;">
-           2
-          </div>
-          <div style="flex: 1;">
-           <div style="font-weight: 500; color: #e2e8f0; margin-bottom: 0.25rem;">
-            Foto 2: Wajah Ke Kiri
-           </div>
-           <div style="font-size: 0.875rem; color: #94a3b8;">
-            Putar wajah sedikit ke kiri
-           </div>
-          </div>
-          <div id="check-2" style="color: #22c55e;" v-show="photosCompleted >= 2">
-           <svg width="24" height="24" fill="currentColor" viewbox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
-           </svg>
-          </div>
-         </div>
-         <div id="step-3" class="photo-step" :class="{ active: currentStep === 3 && photosCompleted < 3, completed: photosCompleted >= 3 }" style="padding: 1rem 1.5rem; border-radius: 0.5rem; border: 1px solid rgba(71, 85, 105, 0.5); display: flex; align-items: center; gap: 1rem;">
-          <div style="width: 32px; height: 32px; border-radius: 50%; background: rgba(71, 85, 105, 0.2); display: flex; align-items: center; justify-content: center; color: #64748b; font-weight: 600; font-size: 0.875rem;">
-           3
-          </div>
-          <div style="flex: 1;">
-           <div style="font-weight: 500; color: #e2e8f0; margin-bottom: 0.25rem;">
-            Foto 3: Wajah Ke Kanan
-           </div>
-           <div style="font-size: 0.875rem; color: #94a3b8;">
-            Putar wajah sedikit ke kanan
-           </div>
-          </div>
-          <div id="check-3" style="color: #22c55e;" v-show="photosCompleted >= 3">
-           <svg width="24" height="24" fill="currentColor" viewbox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
-           </svg>
-          </div>
-         </div>
+ <body>
+  <main class="main-container" id="app" v-cloak>
+    
+    <!-- Left Column (Branding) -->
+    <div class="left-column" :style="{
+      background: 'linear-gradient(135deg, ' + (configState.background_color || '#0052cc') + ' 0%, ' + (configState.surface_color || '#0066ff') + 'CC 100%)'
+    }">
+      <div class="left-content">
+        <div class="welcome-text">Registrasi</div>
+        <div class="logo-container">
+          <img src="/static/LOGO-CBI.png" class="logo-img" alt="Logo CBI">
         </div>
-       </div><!-- Register Button --> 
-       <button id="register-btn" class="btn-primary" :disabled="!isFormValid || isSubmitting" @click="handleRegister" style="width: 100%; padding: 1rem; border-radius: 0.5rem; color: white; font-weight: 600; font-size: 1.125rem; border: none; cursor: pointer; margin-top: 2rem;"> 
-        <span id="register-btn-text">{{ isSubmitting ? 'Mendaftar...' : configState.button_text }}</span> 
-       </button>
-      </div><!-- Success Message -->
-      <div v-else id="success-message" style="padding: 1.5rem; background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.3); border-radius: 0.5rem; text-align: center;">
-       <svg style="width: 48px; height: 48px; margin: 0 auto 1rem; color: #22c55e;" fill="currentColor" viewbox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
-       </svg>
-       <h4 style="font-size: 1.25rem; font-weight: 600; color: #22c55e; margin-bottom: 0.5rem;">Registrasi Berhasil!</h4>
-       <p style="color: #94a3b8; margin-bottom: 1.5rem;">Akun Anda telah berhasil didaftarkan dengan face recognition.</p>
-       <button id="btn-login" @click="loginNow" style="padding: 0.75rem 2rem; background: linear-gradient(135deg, #22c55e, #16a34a); border: none; border-radius: 999px; color: #ffffff; font-size: 1rem; font-weight: 600; cursor: pointer;">
-        Login Sekarang
-       </button>
+        <h1 class="system-title">{{ configState.page_title }}</h1>
+        <p class="system-desc">Daftarkan profil karyawan baru dengan Face Recognition untuk mencatat absensi secara akurat, modern, dan real-time.</p>
       </div>
-     </div>
+
+      <!-- Cloud Wave SVG divider -->
+      <div class="wave-divider">
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none">
+          <path d="M100,0 C65,15 75,35 100,50 C65,65 65,85 100,100 L100,100 L0,100 L0,0 Z"></path>
+        </svg>
+      </div>
     </div>
-   </div>
-  </div>
+
+    <!-- Right Column (Form) -->
+    <div class="right-column">
+      <div class="form-wrapper">
+        
+        <div v-if="!isSuccess" id="form-container">
+          <header class="form-header">
+            <h2 class="form-title">Daftar Karyawan</h2>
+            <p class="form-subtitle">Lengkapi formulir di bawah ini untuk membuat akun karyawan baru.</p>
+          </header>
+
+          <form id="registration-form" @submit.prevent>
+            
+            <h3 class="section-title">Informasi Akun</h3>
+
+            <!-- Tenant Selection -->
+            <div class="input-group">
+              <label class="input-label">Perusahaan / Tenant</label>
+              <select class="input-field" v-model="selectedTenant" @change="onTenantChange" :disabled="tenantsLoading" required>
+                <option value="" v-if="tenantsLoading">Memuat daftar perusahaan...</option>
+                <option value="" v-else-if="tenantsError">Gagal memuat daftar perusahaan</option>
+                <option value="" v-else>Pilih perusahaan</option>
+                <option v-for="tenant in tenants" :key="tenant.id" :value="tenant.id">{{ tenant.name }}</option>
+              </select>
+            </div>
+
+            <!-- Name Input -->
+            <div class="input-group">
+              <label class="input-label">Nama Pengguna (Terdaftar di Mesin)</label>
+              <select class="input-field" v-model="selectedName" :disabled="namesLoading" required>
+                <option value="" v-if="namesLoading">Memuat nama pengguna...</option>
+                <option value="" v-else-if="namesError">Gagal memuat nama pengguna</option>
+                <option value="" v-else>Pilih nama pengguna</option>
+                <option v-for="name in names" :key="name" :value="name">{{ name }}</option>
+              </select>
+            </div>
+
+            <!-- Leader Input -->
+            <div class="input-group">
+              <label class="input-label">Leader / Atasan</label>
+              <select class="input-field" v-model="selectedLeader" :disabled="leadersLoading" required>
+                <option value="" v-if="leadersLoading">Memuat daftar leader...</option>
+                <option value="" v-else-if="leadersError">Gagal memuat daftar leader</option>
+                <option value="" v-else>Pilih leader</option>
+                <option v-for="leader in leaders" :key="leader" :value="leader">{{ leader }}</option>
+              </select>
+            </div>
+
+            <!-- Email Input -->
+            <div class="input-group">
+              <label class="input-label">Email</label>
+              <input type="email" class="input-field" placeholder="email@perusahaan.com" v-model="email" required>
+            </div>
+
+            <!-- Password Input -->
+            <div class="input-group">
+              <label class="input-label">Password</label>
+              <input type="password" class="input-field" placeholder="••••••••" v-model="password" required>
+            </div>
+
+            <!-- Confirm Password Input -->
+            <div class="input-group">
+              <label class="input-label">Ulangi Password</label>
+              <input type="password" class="input-field" placeholder="••••••••" v-model="confirmPassword" required>
+              <p style="font-size: 13px; margin-top: 4px; color: #ef4444;" v-show="confirmPassword && !passwordsMatch">Password tidak cocok</p>
+            </div>
+
+            <h3 class="section-title">Face Recognition (Face ID)</h3>
+            <p style="font-size: 13px; color: #64748b; margin-bottom: 15px;">Ambil 3 foto dengan sudut berbeda untuk mengenali wajah Anda.</p>
+
+            <!-- Camera Box -->
+            <div class="camera-box">
+              <div style="position: relative; text-align: center;">
+                <video ref="cameraVideo" autoplay playsinline class="video-view" v-show="isCameraActive && !capturedPhotos[currentStep - 1]"></video>
+                <canvas ref="cameraCanvas" style="display: none;"></canvas>
+                
+                <div class="camera-placeholder" v-show="!isCameraActive && !capturedPhotos[currentStep - 1]">
+                  <svg style="width: 56px; height: 56px; margin: 0 auto 10px; color: #cbd5e1;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  <span>Kamera belum aktif</span>
+                </div>
+
+                <img class="photo-preview-img" :src="capturedPhotos[currentStep - 1]" v-show="capturedPhotos[currentStep - 1]" alt="Preview Foto">
+              </div>
+
+              <div :style="{ color: photosCompleted === 3 ? '#22c55e' : '#1e293b' }" style="font-size: 14px; font-weight: 600; margin: 12px 0; text-align: center;">
+                {{ currentInstruction }}
+              </div>
+
+              <!-- Progress Dots -->
+              <div class="progress-dots">
+                <div class="dot" :class="{ active: currentStep === 1 && photosCompleted < 1, completed: photosCompleted >= 1 }"></div>
+                <div style="width: 30px; height: 1px; background: #e2e8f0;"></div>
+                <div class="dot" :class="{ active: currentStep === 2 && photosCompleted < 2, completed: photosCompleted >= 2 }"></div>
+                <div style="width: 30px; height: 1px; background: #e2e8f0;"></div>
+                <div class="dot" :class="{ active: currentStep === 3 && photosCompleted < 3, completed: photosCompleted >= 3 }"></div>
+              </div>
+
+              <!-- Action Buttons for Camera -->
+              <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                <button type="button" class="btn-action btn-action-primary" v-show="!isCameraActive && !capturedPhotos[currentStep - 1]" @click="startCamera">
+                  Buka Kamera
+                </button>
+                <button type="button" class="btn-action btn-action-primary" v-show="isCameraActive && !capturedPhotos[currentStep - 1]" @click="capturePhoto">
+                  Ambil Foto
+                </button>
+                <button type="button" class="btn-action btn-action-secondary" v-show="capturedPhotos[currentStep - 1]" @click="retakePhoto">
+                  Ulangi
+                </button>
+                <button type="button" class="btn-action btn-action-primary" v-show="capturedPhotos[currentStep - 1] && currentStep < 3" @click="nextPhoto">
+                  Lanjut
+                </button>
+              </div>
+            </div>
+
+            <!-- Photo Steps Indicators -->
+            <div>
+              <div class="photo-step-item" :class="{ active: currentStep === 1 && photosCompleted < 1, completed: photosCompleted >= 1 }">
+                <div class="step-number">1</div>
+                <div style="flex: 1;">
+                  <div style="font-size: 13px; font-weight: 600; color: #1e293b;">Foto 1: Wajah Lurus</div>
+                  <div style="font-size: 11px; color: #64748b;">Muka menghadap lurus ke arah kamera</div>
+                </div>
+              </div>
+              <div class="photo-step-item" :class="{ active: currentStep === 2 && photosCompleted < 2, completed: photosCompleted >= 2 }">
+                <div class="step-number">2</div>
+                <div style="flex: 1;">
+                  <div style="font-size: 13px; font-weight: 600; color: #1e293b;">Foto 2: Serong Kiri</div>
+                  <div style="font-size: 11px; color: #64748b;">Hadapkan kepala sedikit serong ke kiri</div>
+                </div>
+              </div>
+              <div class="photo-step-item" :class="{ active: currentStep === 3 && photosCompleted < 3, completed: photosCompleted >= 3 }">
+                <div class="step-number">3</div>
+                <div style="flex: 1;">
+                  <div style="font-size: 13px; font-weight: 600; color: #1e293b;">Foto 3: Serong Kanan</div>
+                  <div style="font-size: 11px; color: #64748b;">Hadapkan kepala sedikit serong ke kanan</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Submit Registration -->
+            <button type="button" class="proceed-button" :disabled="!isFormValid || isSubmitting" @click="handleRegister">
+              <span>{{ isSubmitting ? 'Mendaftar...' : 'Daftar Karyawan' }}</span>
+            </button>
+
+            <!-- Back link -->
+            <a href="/dashboard" class="link-item">Kembali ke Dashboard</a>
+
+          </form>
+        </div>
+
+        <!-- Success Message -->
+        <div v-else style="padding: 2rem 1.5rem; background: rgba(34, 197, 94, 0.05); border: 1px solid rgba(34, 197, 94, 0.2); border-radius: 1rem; text-align: center;">
+          <svg style="width: 56px; height: 56px; margin: 0 auto 1.5rem; color: #22c55e;" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
+          </svg>
+          <h4 style="font-size: 1.5rem; font-weight: 700; color: #22c55e; margin-bottom: 0.75rem;">Registrasi Berhasil!</h4>
+          <p style="color: #64748b; margin-bottom: 2rem; font-size: 14px; line-height: 1.6;">Akun karyawan baru Anda berhasil didaftarkan dengan face recognition.</p>
+          <button @click="loginNow" style="width: 100%; height: 50px; background: linear-gradient(135deg, #22c55e, #16a34a); border: none; border-radius: 9999px; color: #ffffff; font-size: 15px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 15px rgba(34, 197, 94, 0.25);">
+            Kembali ke Dashboard
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
   <script>
     const defaultConfig = {
-      background_color: "#0f172a",
-      surface_color: "#1e293b",
+      background_color: "#0052cc",
+      surface_color: "#0066ff",
       text_color: "#e2e8f0",
-      primary_action_color: "#3b82f6",
+      primary_action_color: "#0066ff",
       secondary_action_color: "#64748b",
       font_family: "Inter",
       font_size: 16,
       company_name : "",
-      page_title: "Registrasi Pengguna Absensi SPPG",
+      page_title: "Registrasi Karyawan Baru",
       page_subtitle:"",
       name_label: "Nama",
       leader_label: "Leader",
@@ -551,10 +852,13 @@
               body: JSON.stringify(registrationData)
             });
 
-            if (!response.ok) throw new Error();
+            if (!response.ok) {
+              const res = await response.json();
+              throw new Error(res.error || 'Gagal mendaftar');
+            }
             isSuccess.value = true;
           } catch (e) {
-            alert('Gagal mendaftar. Silakan coba lagi.');
+            alert(e.message || 'Gagal mendaftar. Silakan coba lagi.');
           } finally {
             isSubmitting.value = false;
           }
@@ -562,10 +866,6 @@
 
         const onConfigChange = (newConfig) => {
           Object.assign(configState, newConfig);
-          // Non-reactive body styling
-          const customFont = configState.font_family || defaultConfig.font_family;
-          const baseFontStack = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-          document.body.style.fontFamily = `${customFont}, ${baseFontStack}`;
         };
 
         onMounted(() => {
@@ -584,18 +884,6 @@
                   {
                     get: () => cfg.surface_color || defaultConfig.surface_color,
                     set: (v) => { cfg.surface_color = v; window.elementSdk.setConfig({ surface_color: v }); }
-                  },
-                  {
-                    get: () => cfg.text_color || defaultConfig.text_color,
-                    set: (v) => { cfg.text_color = v; window.elementSdk.setConfig({ text_color: v }); }
-                  },
-                  {
-                    get: () => cfg.primary_action_color || defaultConfig.primary_action_color,
-                    set: (v) => { cfg.primary_action_color = v; window.elementSdk.setConfig({ primary_action_color: v }); }
-                  },
-                  {
-                    get: () => cfg.secondary_action_color || defaultConfig.secondary_action_color,
-                    set: (v) => { cfg.secondary_action_color = v; window.elementSdk.setConfig({ secondary_action_color: v }); }
                   }
                 ],
                 borderables: [],
@@ -609,17 +897,7 @@
                 }
               }),
               mapToEditPanelValues: (cfg) => new Map([
-                ["company_name", cfg.company_name || defaultConfig.company_name],
-                ["page_title", cfg.page_title || defaultConfig.page_title],
-                ["page_subtitle", cfg.page_subtitle || defaultConfig.page_subtitle],
-                ["name_label", cfg.name_label || defaultConfig.name_label],
-                ["leader_label", cfg.leader_label || defaultConfig.leader_label],
-                ["email_label", cfg.email_label || defaultConfig.email_label],
-                ["password_label", cfg.password_label || defaultConfig.password_label],
-                ["confirm_password_label", cfg.confirm_password_label || defaultConfig.confirm_password_label],
-                ["face_title", cfg.face_title || defaultConfig.face_title],
-                ["face_subtitle", cfg.face_subtitle || defaultConfig.face_subtitle],
-                ["button_text", cfg.button_text || defaultConfig.button_text]
+                ["page_title", cfg.page_title || defaultConfig.page_title]
               ])
             });
           } else {
@@ -628,7 +906,7 @@
         });
 
         const loginNow = () => {
-          window.location.href = '/';
+          window.location.href = '/dashboard';
         };
 
         return {

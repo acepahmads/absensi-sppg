@@ -65,7 +65,11 @@ func main() {
 	r.Use(DeviceDetector())
 	// r.Use(SecurityHeaders())
 
-	r.Static("/static", "/home/cais/apps/cais/cais/static")
+	if _, err := os.Stat("./static"); err == nil {
+		r.Static("/static", "./static")
+	} else {
+		r.Static("/static", "/home/cais/apps/cais/cais/static")
+	}
 	r.Delims("{[{", "}]}")
 	r.LoadHTMLGlob("templates/*.html")
 

@@ -1,78 +1,245 @@
 <!doctype html>
-<html lang="id" class="h-full">
+<html lang="id" style="height: 100%;">
  <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Absensi SPPG - Registrasi Tenant Baru</title>
   <script src="/_sdk/element_sdk.js"></script>
-  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body {
+    * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
+    }
+
+    body, html {
+      height: 100%;
+      width: 100%;
+      font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #ffffff;
+      overflow: hidden;
+    }
+
+    .main-container {
+      display: flex;
+      width: 100%;
       height: 100%;
     }
-    
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
 
-    .main-wrapper {
-      min-height: 100%;
-      width: 100%;
+    /* Left Branding Column */
+    .left-column {
+      flex: 1.2;
+      height: 100%;
+      background: linear-gradient(135deg, #004ecc 0%, #0066ff 60%, #00aaff 100%);
       display: flex;
-      align-items: center;
+      flex-direction: column;
       justify-content: center;
+      align-items: center;
+      padding: 60px;
+      color: #ffffff;
+      position: relative;
+      text-align: center;
     }
 
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-    
-    body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    .left-content {
+      max-width: 460px;
+      z-index: 10;
     }
 
-    .glass-panel {
-      background: rgba(15, 23, 42, 0.75);
-      backdrop-filter: blur(20px);
-      border: 1px solid rgba(59, 130, 246, 0.3);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 60px rgba(59, 130, 246, 0.1);
+    .welcome-text {
+      font-size: 24px;
+      font-weight: 300;
+      margin-bottom: 20px;
+      letter-spacing: 1px;
+      opacity: 0.9;
+    }
+
+    .logo-container {
+      width: 120px;
+      height: 120px;
+      background: #ffffff;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 0 auto 24px auto;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+      padding: 15px;
+    }
+
+    .logo-img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+    .system-title {
+      font-size: 40px;
+      font-weight: 800;
+      margin-bottom: 24px;
+      letter-spacing: -0.5px;
+      text-transform: uppercase;
+    }
+
+    .system-desc {
+      font-size: 14px;
+      line-height: 1.6;
+      opacity: 0.85;
+      font-weight: 400;
+    }
+
+    /* Wave Divider (Cloud style overlaying the right) */
+    .wave-divider {
+      position: absolute;
+      right: -1px;
+      top: 0;
+      bottom: 0;
+      width: 90px;
+      z-index: 5;
+      pointer-events: none;
+    }
+
+    .wave-divider svg {
+      height: 100%;
+      width: 100%;
+      fill: #ffffff;
+    }
+
+    /* Right Form Column */
+    .right-column {
+      flex: 1;
+      height: 100%;
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 40px;
+      position: relative;
+      overflow-y: auto;
+    }
+
+    .form-wrapper {
+      width: 100%;
+      max-width: 420px;
+      padding: 20px 0;
+    }
+
+    .form-header {
+      margin-bottom: 30px;
+      text-align: left;
+    }
+
+    .form-title {
+      font-size: 26px;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 6px;
+    }
+
+    .form-subtitle {
+      font-size: 14px;
+      color: #64748b;
+    }
+
+    /* Underline Styled Inputs */
+    .input-group {
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    .input-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: #475569;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
 
     .input-field {
-      background: rgba(30, 41, 59, 0.5);
-      border: 1px solid rgba(71, 85, 105, 0.5);
+      width: 100%;
+      height: 40px;
+      border: none;
+      border-bottom: 2px solid #e2e8f0;
+      background: transparent;
+      padding: 0 4px;
+      color: #1e293b;
+      font-size: 15px;
+      font-family: inherit;
       transition: all 0.3s ease;
+      outline: none;
     }
 
     .input-field:focus {
-      outline: none;
-      border-color: #3b82f6;
-      background: rgba(30, 41, 59, 0.8);
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+      border-bottom-color: #0066ff;
     }
 
-    .btn-primary {
-      background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+    .input-field::placeholder {
+      color: #94a3b8;
+      opacity: 0.7;
+    }
+
+    /* Section Subheading */
+    .section-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #0f172a;
+      margin: 15px 0 10px 0;
+      padding-bottom: 6px;
+      border-bottom: 1px solid #e2e8f0;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Gradient Pill Button */
+    .proceed-button {
+      width: 100%;
+      height: 50px;
+      background: linear-gradient(135deg, #0052cc 0%, #0066ff 100%);
+      border: none;
+      border-radius: 9999px;
+      color: #ffffff;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
       transition: all 0.3s ease;
-      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+      box-shadow: 0 4px 15px rgba(0, 102, 255, 0.25);
+      margin-top: 15px;
+      margin-bottom: 15px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
 
-    .btn-primary:hover:not(:disabled) {
+    .proceed-button:hover:not(:disabled) {
       transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+      box-shadow: 0 6px 20px rgba(0, 102, 255, 0.35);
     }
 
-    .btn-primary:disabled {
-      opacity: 0.5;
+    .proceed-button:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    .proceed-button:disabled {
+      opacity: 0.6;
       cursor: not-allowed;
     }
 
-    .divider {
-      height: 2px;
-      background: linear-gradient(90deg, transparent, #3b82f6, transparent);
+    /* Links & Notifications */
+    .link-item {
+      display: block;
+      text-align: center;
+      font-size: 14px;
+      font-weight: 500;
+      color: #0066ff;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      margin-top: 10px;
+    }
+
+    .link-item:hover {
+      text-decoration: underline;
     }
 
     .notification-message {
@@ -85,7 +252,7 @@
       font-size: 14px;
       font-weight: 500;
       z-index: 1000;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
       max-width: 90%;
       text-align: center;
       animation: slideDown 0.3s ease;
@@ -112,137 +279,143 @@
         transform: translateX(-50%) translateY(-20px);
       }
     }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .left-column {
+        display: none;
+      }
+      .wave-divider {
+        display: none;
+      }
+      .right-column {
+        flex: 1;
+        width: 100%;
+        padding: 30px 20px;
+      }
+    }
   </style>
   <style>[v-cloak] { display: none; }</style>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
  </head>
- <body class="h-full">
-  <div class="main-wrapper" id="app" v-cloak :style="{ background: 'linear-gradient(135deg, ' + (configState.background_color || '#0f172a') + ' 0%, ' + (configState.surface_color || '#1e293b') + ' 100%)' }">
-   <div style="min-height: 100%; padding: 2rem 1rem; display: flex; align-items: center; justify-content: center; width: 100%;">
-    <div style="width: 100%; max-width: 600px;">
-     <!-- Header -->
-     <div style="text-align: center; margin-bottom: 1.5rem;">
-      <div style="display: inline-flex; align-items: center; gap: 0rem; margin-bottom: 0.5rem;">
-       <img id="company-logo" src="/static/LOGO-CBI.png" alt="Company Logo" style="width: 150px; height: 75px; object-fit: contain;">
-      </div>
-      <h2 id="page-title" :style="{ fontSize: (configState.font_size || 16) * 1.25 + 'px', color: configState.text_color }" style="font-weight: 700; margin-bottom: 0.5rem;">Registrasi Tenant Baru</h2>
-      <div class="divider" style="width: 100px; margin: 0 auto;"></div>
-     </div>
-     
-     <!-- Main Panel -->
-     <div class="glass-panel" style="border-radius: 1rem; padding: 2rem; width: 100%;">
-      <div v-if="!isSuccess" id="form-container">
-       <form id="tenant-registration-form" @submit.prevent="handleRegister">
-        <div style="display: grid; gap: 1.25rem;">
-         
-         <!-- Tenant Name Field -->
-         <div>
-          <label style="display: block; font-size: 0.875rem; font-weight: 500; color: #cbd5e1; margin-bottom: 0.375rem;">Nama Perusahaan / Tenant</label>
-          <div style="position: relative;">
-           <svg style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; color: #64748b;" fill="none" stroke="currentColor" viewbox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-           </svg>
-           <input type="text" class="input-field" placeholder="Contoh: Dapur SPPG" style="width: 100%; padding: 0.75rem 1rem 0.75rem 3rem; border-radius: 0.5rem; color: #e2e8f0; font-size: 1rem;" v-model="tenantName" required>
-          </div>
-         </div>
-
-         <!-- Tenant Code Field -->
-         <div>
-          <label style="display: block; font-size: 0.875rem; font-weight: 500; color: #cbd5e1; margin-bottom: 0.375rem;">Kode Perusahaan / Tenant Code (Unik)</label>
-          <div style="position: relative;">
-           <svg style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; color: #64748b;" fill="none" stroke="currentColor" viewbox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-           </svg>
-           <input type="text" class="input-field" placeholder="Contoh: dapur_sppg (hanya huruf, angka, underscore)" style="width: 100%; padding: 0.75rem 1rem 0.75rem 3rem; border-radius: 0.5rem; color: #e2e8f0; font-size: 1rem;" v-model="tenantCode" @input="sanitizeCode" required>
-          </div>
-         </div>
-
-         <!-- Divider -->
-         <div class="divider" style="opacity: 0.3; margin: 0.5rem 0;"></div>
-         <h3 style="font-size: 1rem; font-weight: 600; color: #f1f5f9; margin-bottom: 0.25rem;">Akun Administrator Utama</h3>
-
-         <!-- Admin Name Field -->
-         <div>
-          <label style="display: block; font-size: 0.875rem; font-weight: 500; color: #cbd5e1; margin-bottom: 0.375rem;">Nama Lengkap Administrator</label>
-          <div style="position: relative;">
-           <svg style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; color: #64748b;" fill="none" stroke="currentColor" viewbox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-           </svg>
-           <input type="text" class="input-field" placeholder="Nama lengkap admin" style="width: 100%; padding: 0.75rem 1rem 0.75rem 3rem; border-radius: 0.5rem; color: #e2e8f0; font-size: 1rem;" v-model="adminName" required>
-          </div>
-         </div>
-
-         <!-- Admin Email Field -->
-         <div>
-          <label style="display: block; font-size: 0.875rem; font-weight: 500; color: #cbd5e1; margin-bottom: 0.375rem;">Email Administrator</label>
-          <div style="position: relative;">
-           <svg style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; color: #64748b;" fill="none" stroke="currentColor" viewbox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-           </svg>
-           <input type="email" class="input-field" placeholder="admin@perusahaan.com" style="width: 100%; padding: 0.75rem 1rem 0.75rem 3rem; border-radius: 0.5rem; color: #e2e8f0; font-size: 1rem;" v-model="adminEmail" required>
-          </div>
-         </div>
-
-         <!-- Password Field -->
-         <div>
-          <label style="display: block; font-size: 0.875rem; font-weight: 500; color: #cbd5e1; margin-bottom: 0.375rem;">Password</label>
-          <div style="position: relative;">
-           <svg style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; color: #64748b;" fill="none" stroke="currentColor" viewbox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-           </svg>
-           <input type="password" class="input-field" placeholder="••••••••" style="width: 100%; padding: 0.75rem 1rem 0.75rem 3rem; border-radius: 0.5rem; color: #e2e8f0; font-size: 1rem;" v-model="adminPassword" required>
-          </div>
-         </div>
-
-         <!-- Confirm Password Field -->
-         <div>
-          <label style="display: block; font-size: 0.875rem; font-weight: 500; color: #cbd5e1; margin-bottom: 0.375rem;">Ulangi Password</label>
-          <div style="position: relative;">
-           <svg style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; color: #64748b;" fill="none" stroke="currentColor" viewbox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-           </svg>
-           <input type="password" class="input-field" placeholder="••••••••" style="width: 100%; padding: 0.75rem 1rem 0.75rem 3rem; border-radius: 0.5rem; color: #e2e8f0; font-size: 1rem;" v-model="confirmPassword" required>
-          </div>
-          <p style="font-size: 0.875rem; margin-top: 0.375rem; color: #ef4444;" v-show="confirmPassword && !passwordsMatch">Password tidak cocok</p>
-         </div>
-
+ <body>
+  <main class="main-container" id="app" v-cloak>
+    
+    <!-- Left Column (Branding) -->
+    <div class="left-column" :style="{
+      background: 'linear-gradient(135deg, ' + (configState.background_color || '#0052cc') + ' 0%, ' + (configState.surface_color || '#0066ff') + 'CC 100%)'
+    }">
+      <div class="left-content">
+        <div class="welcome-text">Registrasi</div>
+        <div class="logo-container">
+          <img src="/static/LOGO-CBI.png" class="logo-img" alt="Logo CBI">
         </div>
-
-        <!-- Register Button --> 
-        <button type="submit" class="btn-primary" :disabled="!isFormValid || isSubmitting" style="width: 100%; padding: 0.875rem; border-radius: 0.5rem; color: white; font-weight: 600; font-size: 1.125rem; border: none; cursor: pointer; margin-top: 1.5rem;"> 
-         <span>{{ isSubmitting ? 'Mendaftar...' : 'Daftar Tenant & Admin' }}</span> 
-        </button>
-
-        <!-- Back to Login -->
-        <div style="text-align: center; margin-top: 1.25rem;">
-         <a href="/" style="font-size: 0.875rem; color: #3b82f6; text-decoration: none; font-weight: 500;">Kembali ke Halaman Login</a>
-        </div>
-       </form>
+        <h1 class="system-title">{{ configState.page_title }}</h1>
+        <p class="system-desc">Daftarkan perusahaan / tenant baru Anda untuk mengintegrasikan sistem absensi Face Recognition, pengelolaan data divisi, dan pemantauan terpadu.</p>
       </div>
 
-      <!-- Success Message -->
-      <div v-else style="padding: 1.5rem; background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.3); border-radius: 0.5rem; text-align: center;">
-       <svg style="width: 48px; height: 48px; margin: 0 auto 1rem; color: #22c55e;" fill="currentColor" viewbox="0 0 24 24">
-        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
-       </svg>
-       <h4 style="font-size: 1.25rem; font-weight: 600; color: #22c55e; margin-bottom: 0.5rem;">Registrasi Tenant Berhasil!</h4>
-       <p style="color: #94a3b8; margin-bottom: 1.5rem;">Tenant <strong>{{ tenantName }}</strong> dan akun administrator utama Anda telah berhasil didaftarkan.</p>
-       <button @click="loginNow" style="padding: 0.75rem 2rem; background: linear-gradient(135deg, #22c55e, #16a34a); border: none; border-radius: 999px; color: #ffffff; font-size: 1rem; font-weight: 600; cursor: pointer;">
-        Login Sekarang
-       </button>
+      <!-- Cloud Wave SVG divider -->
+      <div class="wave-divider">
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none">
+          <path d="M100,0 C65,15 75,35 100,50 C65,65 65,85 100,100 L100,100 L0,100 L0,0 Z"></path>
+        </svg>
       </div>
-     </div>
     </div>
-   </div>
-  </div>
+
+    <!-- Right Column (Form) -->
+    <div class="right-column">
+      <div class="form-wrapper">
+        
+        <div v-if="!isSuccess" id="form-container">
+          <header class="form-header">
+            <h2 class="form-title">Daftar Tenant</h2>
+            <p class="form-subtitle">Lengkapi formulir di bawah ini untuk membuat tenant baru.</p>
+          </header>
+
+          <form id="tenant-registration-form" @submit.prevent="handleRegister">
+            
+            <h3 class="section-title">Informasi Perusahaan</h3>
+
+            <!-- Tenant Name Input -->
+            <div class="input-group">
+              <label class="input-label">Nama Perusahaan / Tenant</label>
+              <input type="text" class="input-field" placeholder="Contoh: Dapur SPPG" v-model="tenantName" required>
+            </div>
+
+            <!-- Tenant Code Input -->
+            <div class="input-group">
+              <label class="input-label">Kode Perusahaan (Unik & Alfanumerik)</label>
+              <input type="text" class="input-field" placeholder="Contoh: dapur_sppg" v-model="tenantCode" @input="sanitizeCode" required>
+            </div>
+
+            <h3 class="section-title">Akun Administrator</h3>
+
+            <!-- Admin Name Input -->
+            <div class="input-group">
+              <label class="input-label">Nama Lengkap Admin</label>
+              <input type="text" class="input-field" placeholder="Nama lengkap Anda" v-model="adminName" required>
+            </div>
+
+            <!-- Admin Email Input -->
+            <div class="input-group">
+              <label class="input-label">Email Admin</label>
+              <input type="email" class="input-field" placeholder="admin@perusahaan.com" v-model="adminEmail" required>
+            </div>
+
+            <!-- Password Input -->
+            <div class="input-group">
+              <label class="input-label">Password</label>
+              <input type="password" class="input-field" placeholder="Minimal 6 karakter" v-model="adminPassword" required>
+            </div>
+
+            <!-- Confirm Password Input -->
+            <div class="input-group">
+              <label class="input-label">Ulangi Password</label>
+              <input type="password" class="input-field" placeholder="Konfirmasi password" v-model="confirmPassword" required>
+              <p style="font-size: 13px; margin-top: 4px; color: #ef4444;" v-show="confirmPassword && !passwordsMatch">Password tidak cocok</p>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="proceed-button" :disabled="!isFormValid || isSubmitting" :style="{
+              background: 'linear-gradient(135deg, ' + (configState.primary_action_color || '#0052cc') + ' 0%, ' + (configState.primary_action_color || '#0066ff') + ' 100%)',
+              boxShadow: '0 4px 15px ' + (configState.primary_action_color || '#0066ff') + '40'
+            }">
+              <span>{{ isSubmitting ? 'Mendaftar...' : 'Daftar Tenant' }}</span>
+            </button>
+
+            <!-- Back to Login -->
+            <a href="/" class="link-item">Kembali ke Halaman Login</a>
+          </form>
+        </div>
+
+        <!-- Success Message -->
+        <div v-else style="padding: 2rem 1.5rem; background: rgba(34, 197, 94, 0.05); border: 1px solid rgba(34, 197, 94, 0.2); border-radius: 1rem; text-align: center;">
+          <svg style="width: 56px; height: 56px; margin: 0 auto 1.5rem; color: #22c55e;" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
+          </svg>
+          <h4 style="font-size: 1.5rem; font-weight: 700; color: #22c55e; margin-bottom: 0.75rem;">Registrasi Berhasil!</h4>
+          <p style="color: #64748b; margin-bottom: 2rem; font-size: 14px; line-height: 1.6;">Tenant <strong>{{ tenantName }}</strong> dan akun administrator Anda berhasil didaftarkan.</p>
+          <button @click="loginNow" style="width: 100%; height: 50px; background: linear-gradient(135deg, #22c55e, #16a34a); border: none; border-radius: 9999px; color: #ffffff; font-size: 15px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 15px rgba(34, 197, 94, 0.25);">
+            Login Sekarang
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
 
   <script>
     const defaultConfig = {
-      background_color: "#0f172a",
-      surface_color: "#1e293b",
+      background_color: "#0052cc",
+      surface_color: "#0066ff",
       text_color: "#e2e8f0",
+      primary_action_color: "#0066ff",
+      secondary_action_color: "#64748b",
       font_family: "Inter",
-      font_size: 16
+      font_size: 16,
+      page_title: "Registrasi Tenant Baru",
+      button_text: "Daftar"
     };
 
     // Message notification system
@@ -341,9 +514,6 @@
 
         const onConfigChange = (newConfig) => {
           Object.assign(configState, newConfig);
-          const customFont = configState.font_family || defaultConfig.font_family;
-          const baseFontStack = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-          document.body.style.fontFamily = `${customFont}, ${baseFontStack}`;
         };
 
         onMounted(() => {
@@ -360,10 +530,6 @@
                   {
                     get: () => cfg.surface_color || defaultConfig.surface_color,
                     set: (v) => { cfg.surface_color = v; window.elementSdk.setConfig({ surface_color: v }); }
-                  },
-                  {
-                    get: () => cfg.text_color || defaultConfig.text_color,
-                    set: (v) => { cfg.text_color = v; window.elementSdk.setConfig({ text_color: v }); }
                   }
                 ],
                 borderables: [],
@@ -377,7 +543,7 @@
                 }
               }),
               mapToEditPanelValues: (cfg) => new Map([
-                ["page_title", "Registrasi Tenant Baru"]
+                ["page_title", cfg.page_title || defaultConfig.page_title]
               ])
             });
           } else {
