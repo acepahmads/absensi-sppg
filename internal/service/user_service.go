@@ -127,3 +127,22 @@ func (s *UserService) UpdateUserAccount(ctx context.Context, ua *model.UserAccou
 func (s *UserService) DeleteUserAccount(ctx context.Context, id string) error {
 	return s.repo.DeleteUserAccount(ctx, id)
 }
+
+func (s *UserService) RegisterTenant(req model.RegisterTenantRequest) error {
+	hashed, err := utils.HashPassword(req.AdminPassword)
+	if err != nil {
+		return err
+	}
+	req.AdminPassword = hashed
+	return s.repo.CreateTenant(&req)
+}
+
+func (s *UserService) ForgotPasswordReset(req model.ForgotPasswordRequest) error {
+	hashed, err := utils.HashPassword(req.NewPassword)
+	if err != nil {
+		return err
+	}
+	req.NewPassword = hashed
+	return s.repo.ResetPassword(&req)
+}
+

@@ -338,3 +338,36 @@ func (h *UserHandler) DeleteUserAccount(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "User account deleted successfully"})
 }
+
+func (h *UserHandler) RegisterTenant(c *gin.Context) {
+	var req model.RegisterTenantRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Input data tidak valid: " + err.Error()})
+		return
+	}
+
+	err := h.userService.RegisterTenant(req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Tenant dan admin berhasil didaftarkan"})
+}
+
+func (h *UserHandler) ForgotPassword(c *gin.Context) {
+	var req model.ForgotPasswordRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Input data tidak valid: " + err.Error()})
+		return
+	}
+
+	err := h.userService.ForgotPasswordReset(req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Password berhasil diperbarui"})
+}
+

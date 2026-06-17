@@ -115,3 +115,19 @@ type UserAccountCRUD struct {
 	UpdatedAt    time.Time `json:"updated_at" db:"updated_at"`
 	TenantID     int       `json:"tenant_id" db:"tenant_id"`
 }
+
+type RegisterTenantRequest struct {
+	TenantName    string `json:"tenant_name" binding:"required"`
+	TenantCode    string `json:"tenant_code" binding:"required"`
+	AdminName     string `json:"admin_name" binding:"required"`
+	AdminEmail    string `json:"admin_email" binding:"required,email"`
+	AdminPassword string `json:"admin_password" binding:"required,min=6"`
+}
+
+type ForgotPasswordRequest struct {
+	Email        string `json:"email" binding:"required,email"`
+	TenantID     int    `json:"tenant_id" binding:"required"`
+	KaryawanName string `json:"karyawan_name" binding:"required"`
+	NewPassword  string `json:"new_password" binding:"required,min=6"`
+}
+

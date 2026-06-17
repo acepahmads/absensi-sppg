@@ -45,6 +45,8 @@ type UserRepository interface {
 
 	// Tenants
 	GetTenants(ctx context.Context) ([]model.Tenant, error)
+	CreateTenant(req *model.RegisterTenantRequest) error
+	ResetPassword(req *model.ForgotPasswordRequest) error
 }
 
 type userRepository struct {
@@ -463,3 +465,90 @@ func (r *userRepository) GetTenants(ctx context.Context) ([]model.Tenant, error)
 	err := r.db.SelectContext(ctx, &list, query)
 	return list, err
 }
+
+func (r *userRepository) CreateTenant(req *model.RegisterTenantRequest) error {
+	var count int
+	err := r.db.Get(&count, "SELECT COUNT(*) FROM tenants WHERE code = ?", req.TenantCode)
+	if err != nil {
+		return err
+	}
+	if count > 0 {
+		return errors.New("kode tenant sudah terdaftar")
+	}
+
+	err = r.db.Get(&count, "SELECT COUNT(*) FROM user_accounts WHERE email = ?", req.AdminEmail)
+	if err != nil {
+		return err
+	}
+	if count > 0 {
+		return errors.New("email administrator sudah terdaftar")
+	}
+
+	tx, err := r.db.Beginx()
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
+
+	res, err := tx.Exec("INSERT INTO tenants (name, code, status) VALUES (?, ?, 1)", req.TenantName, req.TenantCode)
+	if err != nil {
+		return err
+	}
+	tenantID, err := res.LastInsertId()
+	if err != nil {
+		return err
+	}
+
+	resLeader, err := tx.Exec("INSERT INTO karyawan_leader (nama, divisi, status, tenant_id) VALUES (?, 'Management', 1, ?)", req.AdminName, tenantID)
+	if err != nil {
+		return err
+	}
+	leaderID, err := resLeader.LastInsertId()
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec("INSERT INTO karyawan_terdaftar (names, tenant_id) VALUES (?, ?)", req.AdminName, tenantID)
+	if err != nil {
+		return err
+	}
+
+	resKaryawan, err := tx.Exec("INSERT INTO user_karyawan (nama_mesin_absen, status, id_leader, tenant_id, jabatan) VALUES (?, 1, ?, ?, 'Manager')", req.AdminName, leaderID, tenantID)
+	if err != nil {
+		return err
+	}
+	karyawanID, err := resKaryawan.LastInsertId()
+	if err != nil {
+		return err
+	}
+
+	userID := uuid.New().String()
+	query := `INSERT INTO user_accounts (id, email, password, role, status, created_at, updated_at, photos, id_karyawan, name, id_leader, tenant_id) 
+              VALUES (?, ?, ?, 'SuperAdmin', 1, NOW(), NOW(), '[]', ?, ?, ?, ?)`
+	_, err = tx.Exec(query, userID, req.AdminEmail, req.AdminPassword, karyawanID, req.AdminName, leaderID, tenantID)
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
+}
+
+func (r *userRepository) ResetPassword(req *model.ForgotPasswordRequest) error {
+	var user model.UserAccount
+	query := `SELECT * FROM user_accounts WHERE email = ? AND tenant_id = ? AND name = ? LIMIT 1`
+	err := r.db.Get(&user, query, req.Email, req.TenantID, req.KaryawanName)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return errors.New("data verifikasi tidak cocok dengan akun manapun")
+		}
+		return err
+	}
+
+	_, err = r.db.Exec("UPDATE user_accounts SET password = ?, updated_at = NOW() WHERE id = ?", req.NewPassword, user.ID)
+	return err
+}
+

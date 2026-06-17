@@ -95,6 +95,12 @@ func main() {
 	r.GET("/user_registration", func(c *gin.Context) {
 		c.HTML(200, "user_registration.html", nil)
 	})
+	r.GET("/tenant_registration", func(c *gin.Context) {
+		c.HTML(200, "tenant_registration.html", nil)
+	})
+	r.GET("/forgot_password", func(c *gin.Context) {
+		c.HTML(200, "forgot_password.html", nil)
+	})
 	r.GET("/absen", func(c *gin.Context) {
 		c.HTML(200, "absen.html", nil)
 	})
@@ -114,6 +120,8 @@ func main() {
 	api := r.Group("/api")
 	{
 		api.POST("/user/register", userHandler.Register)
+		api.POST("/user/forgot-password", userHandler.ForgotPassword)
+		api.POST("/tenant/register", userHandler.RegisterTenant)
 		api.GET("/user/registered", userHandler.Registered)
 		api.GET("/user/leaders", userHandler.GetLeaders)
 		api.GET("/tenants", userHandler.GetTenants)
