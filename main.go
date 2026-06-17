@@ -126,6 +126,13 @@ func main() {
 	})
 	r.POST("/input/absen", absensiHandler.InputAbsenMesin)
 
+	// ZKTeco/Solution ADMS Push Protocol Routes (Root Level Alias)
+	r.GET("/iclock/cdata", absensiHandler.HandleADMSHandshake)
+	r.POST("/iclock/cdata", absensiHandler.HandleADMSUpload)
+	r.GET("/iclock/getrequest", absensiHandler.HandleADMSGetRequest)
+	r.POST("/iclock/getrequest", absensiHandler.HandleADMSGetRequest)
+	r.POST("/iclock/devicecmd", absensiHandler.HandleADMSDeviceCmd)
+
 	// ===============================
 	// AUTH PUBLIC API
 	// ===============================
