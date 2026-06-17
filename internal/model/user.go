@@ -126,8 +126,6 @@ type RegisterTenantRequest struct {
 
 type ForgotPasswordRequest struct {
 	Email        string `json:"email" binding:"required,email"`
-	TenantID     int    `json:"tenant_id" binding:"required"`
-	KaryawanName string `json:"karyawan_name" binding:"required"`
 	NewPassword  string `json:"new_password" binding:"required,min=6"`
 }
 

@@ -539,8 +539,8 @@ func (r *userRepository) CreateTenant(req *model.RegisterTenantRequest) error {
 
 func (r *userRepository) ResetPassword(req *model.ForgotPasswordRequest) error {
 	var user model.UserAccount
-	query := `SELECT * FROM user_accounts WHERE email = ? AND tenant_id = ? AND name = ? LIMIT 1`
-	err := r.db.Get(&user, query, req.Email, req.TenantID, req.KaryawanName)
+	query := `SELECT * FROM user_accounts WHERE email = ? LIMIT 1`
+	err := r.db.Get(&user, query, req.Email)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return errors.New("data verifikasi tidak cocok dengan akun manapun")
