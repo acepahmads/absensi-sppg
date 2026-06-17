@@ -283,7 +283,7 @@ func (r *userRepository) GetAllUserKaryawan(ctx context.Context) ([]model.UserKa
 		tenantID = 1
 	}
 	query := `
-		SELECT uk.id, uk.nama_mesin_absen, uk.status, uk.id_leader, uk.uang_makan, uk.uang_harian, uk.jabatan, COALESCE(kl.nama, '') as leader_nama
+		SELECT uk.id, uk.nama_mesin_absen, uk.pin_mesin, uk.status, uk.id_leader, uk.uang_makan, uk.uang_harian, uk.jabatan, COALESCE(kl.nama, '') as leader_nama
 		FROM user_karyawan uk
 		LEFT JOIN karyawan_leader kl ON uk.id_leader = kl.id AND kl.tenant_id = uk.tenant_id
 		WHERE uk.tenant_id = ?
@@ -303,10 +303,10 @@ func (r *userRepository) CreateUserKaryawan(ctx context.Context, uk *model.UserK
 		tenantID = 1
 	}
 	query := `
-		INSERT INTO user_karyawan (nama_mesin_absen, status, id_leader, uang_makan, uang_harian, jabatan, tenant_id)
-		VALUES (?, ?, ?, ?, ?, ?, ?)
+		INSERT INTO user_karyawan (nama_mesin_absen, pin_mesin, status, id_leader, uang_makan, uang_harian, jabatan, tenant_id)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 	`
-	_, err := r.db.ExecContext(ctx, query, uk.NamaMesinAbsen, uk.Status, uk.IDLeader, uk.UangMakan, uk.UangHarian, uk.Jabatan, tenantID)
+	_, err := r.db.ExecContext(ctx, query, uk.NamaMesinAbsen, uk.PinMesin, uk.Status, uk.IDLeader, uk.UangMakan, uk.UangHarian, uk.Jabatan, tenantID)
 	return err
 }
 
@@ -317,10 +317,10 @@ func (r *userRepository) UpdateUserKaryawan(ctx context.Context, uk *model.UserK
 	}
 	query := `
 		UPDATE user_karyawan
-		SET nama_mesin_absen = ?, status = ?, id_leader = ?, uang_makan = ?, uang_harian = ?, jabatan = ?
+		SET nama_mesin_absen = ?, pin_mesin = ?, status = ?, id_leader = ?, uang_makan = ?, uang_harian = ?, jabatan = ?
 		WHERE id = ? AND tenant_id = ?
 	`
-	_, err := r.db.ExecContext(ctx, query, uk.NamaMesinAbsen, uk.Status, uk.IDLeader, uk.UangMakan, uk.UangHarian, uk.Jabatan, uk.ID, tenantID)
+	_, err := r.db.ExecContext(ctx, query, uk.NamaMesinAbsen, uk.PinMesin, uk.Status, uk.IDLeader, uk.UangMakan, uk.UangHarian, uk.Jabatan, uk.ID, tenantID)
 	return err
 }
 

@@ -325,6 +325,10 @@ func (s *AbsensiService) InputAbsenMesin(ctx context.Context, nama string, times
 	return s.repo.InputAbsenMesin(ctx, nama, timestamp, status)
 }
 
+func (s *AbsensiService) GetKaryawanNameByPin(ctx context.Context, pin string) (string, error) {
+	return s.repo.GetKaryawanNameByPin(ctx, pin)
+}
+
 func incrementSummary(s *model.SummaryAbsensi, status string) {
 	norm := strings.ToLower(strings.TrimSpace(status))
 	switch norm {

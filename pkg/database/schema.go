@@ -34,6 +34,7 @@ func EnsureSchema(db *sqlx.DB) error {
 		"ALTER TABLE user_accounts ADD COLUMN tenant_id INT NOT NULL DEFAULT 1",
 		"ALTER TABLE user_infos ADD COLUMN tenant_id INT NOT NULL DEFAULT 1",
 		"ALTER TABLE user_karyawan ADD COLUMN tenant_id INT NOT NULL DEFAULT 1",
+		"ALTER TABLE user_karyawan ADD COLUMN pin_mesin VARCHAR(50) DEFAULT NULL",
 		"ALTER TABLE karyawan_leader ADD COLUMN tenant_id INT NOT NULL DEFAULT 1",
 		"ALTER TABLE karyawan_terdaftar ADD COLUMN tenant_id INT NOT NULL DEFAULT 1",
 		"ALTER TABLE karyawan_absensi ADD COLUMN tenant_id INT NOT NULL DEFAULT 1",
@@ -106,6 +107,7 @@ func EnsureSchema(db *sqlx.DB) error {
 		`CREATE TABLE IF NOT EXISTS user_karyawan (
 			id INT AUTO_INCREMENT PRIMARY KEY,
 			nama_mesin_absen VARCHAR(100) NOT NULL,
+			pin_mesin VARCHAR(50) DEFAULT NULL,
 			status TINYINT(1) DEFAULT 1,
 			id_leader INT NOT NULL,
 			uang_makan DOUBLE DEFAULT 0,

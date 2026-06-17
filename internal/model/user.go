@@ -83,6 +83,7 @@ type UserInfoAccount struct {
 type UserKaryawan struct {
 	ID             int     `json:"id" db:"id" gorm:"primaryKey;autoIncrement"`
 	NamaMesinAbsen string  `json:"nama_mesin_absen" db:"nama_mesin_absen" gorm:"size:100;not null"`
+	PinMesin       *string `json:"pin_mesin" db:"pin_mesin" gorm:"size:50;default:null"`
 	Status         int     `json:"status" db:"status" gorm:"default:1"`
 	IDLeader       int     `json:"id_leader" db:"id_leader" gorm:"not null"`
 	UangMakan      float64 `json:"uang_makan" db:"uang_makan" gorm:"default:0"`

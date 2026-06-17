@@ -5,6 +5,7 @@ import (
 	"absensi-sppg/internal/service"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"math"
 	"net/http"
@@ -1234,5 +1235,113 @@ func (h *AbsensiHandler) GetIndividualStats(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, stats)
+}
+
+func (h *AbsensiHandler) HandleADMSHandshake(c *gin.Context) {
+	sn := c.Query("SN")
+	options := c.Query("options")
+	log.Printf("[ADMS] GET handshake/ping from SN: %s, options: %s", sn, options)
+
+	c.Header("Content-Type", "text/plain")
+	if options == "all" {
+		// Respond with standard ZK configuration options
+		response := "RegistryCode=\r\n" +
+			"RequestDelay=30\r\n" +
+			"ResponseDelay=30\r\n" +
+			"TransInterval=10\r\n" +
+			"TransFlag=1111111111\r\n" +
+			"Realtime=1\r\n" +
+			"SessionID=1\r\n"
+		c.String(http.StatusOK, response)
+		return
+	}
+
+	c.String(http.StatusOK, "OK")
+}
+
+func (h *AbsensiHandler) HandleADMSUpload(c *gin.Context) {
+	sn := c.Query("SN")
+	table := c.Query("table")
+	log.Printf("[ADMS] POST upload for SN: %s, table: %s", sn, table)
+
+	bodyBytes, err := io.ReadAll(c.Request.Body)
+	if err != nil {
+		log.Printf("[ADMS] Failed to read body: %v", err)
+		c.Header("Content-Type", "text/plain")
+		c.String(http.StatusBadRequest, "ERROR: failed to read body")
+		return
+	}
+
+	bodyStr := string(bodyBytes)
+	log.Printf("[ADMS] Payload:\n%s", bodyStr)
+
+	if table == "ATTLOG" {
+		lines := strings.Split(bodyStr, "\n")
+		successCount := 0
+		for _, line := range lines {
+			line = strings.TrimSpace(line)
+			if line == "" {
+				continue
+			}
+
+			// Fields are separated by tab \t
+			fields := strings.Split(line, "\t")
+			if len(fields) < 3 {
+				log.Printf("[ADMS] Invalid log line: %s", line)
+				continue
+			}
+
+			pin := strings.TrimSpace(fields[0])
+			timestamp := strings.TrimSpace(fields[1])
+			statusCode := strings.TrimSpace(fields[2])
+
+			// ZK status codes: 0 = Masuk, 1 = Pulang, 4 = Lembur-Masuk, 5 = Lembur-Pulang
+			var status string
+			switch statusCode {
+			case "0":
+				status = "Masuk"
+			case "1":
+				status = "Pulang"
+			case "4":
+				status = "Lembur-Masuk"
+			case "5":
+				status = "Lembur-Pulang"
+			default:
+				log.Printf("[ADMS] Skipping status code %s (line: %s)", statusCode, line)
+				continue
+			}
+
+			// Look up employee name by pin_mesin
+			employeeName, err := h.AbsensiService.GetKaryawanNameByPin(c.Request.Context(), pin)
+			if err != nil {
+				log.Printf("[ADMS] Employee not found for PIN: %s (error: %v)", pin, err)
+				continue
+			}
+
+			// Call InputAbsenMesin using service
+			err = h.AbsensiService.InputAbsenMesin(c.Request.Context(), employeeName, timestamp, status)
+			if err != nil {
+				log.Printf("[ADMS] Failed to save attendance for %s: %v", employeeName, err)
+				continue
+			}
+
+			successCount++
+			log.Printf("[ADMS] Success check-in for %s (PIN: %s) at %s with status %s", employeeName, pin, timestamp, status)
+		}
+		log.Printf("[ADMS] Processed %d records successfully", successCount)
+	}
+
+	c.Header("Content-Type", "text/plain")
+	c.String(http.StatusOK, "OK")
+}
+
+func (h *AbsensiHandler) HandleADMSGetRequest(c *gin.Context) {
+	c.Header("Content-Type", "text/plain")
+	c.String(http.StatusOK, "OK")
+}
+
+func (h *AbsensiHandler) HandleADMSDeviceCmd(c *gin.Context) {
+	c.Header("Content-Type", "text/plain")
+	c.String(http.StatusOK, "OK")
 }
 

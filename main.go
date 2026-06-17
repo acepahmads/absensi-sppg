@@ -124,6 +124,7 @@ func main() {
 	r.GET("/absen_test", func(c *gin.Context) {
 		c.HTML(200, "absen.html", nil)
 	})
+	r.POST("/input/absen", absensiHandler.InputAbsenMesin)
 
 	// ===============================
 	// AUTH PUBLIC API
@@ -145,6 +146,13 @@ func main() {
 		api.GET("/tenants", userHandler.GetTenants)
 		api.GET("/indHolidays", absensiHandler.GetIndHolidays)
 		api.POST("/absen", absensiHandler.InputAbsenMesin)
+
+		// ZKTeco/Solution ADMS Push Protocol Routes
+		api.GET("/absen/iclock/cdata", absensiHandler.HandleADMSHandshake)
+		api.POST("/absen/iclock/cdata", absensiHandler.HandleADMSUpload)
+		api.GET("/absen/iclock/getrequest", absensiHandler.HandleADMSGetRequest)
+		api.POST("/absen/iclock/getrequest", absensiHandler.HandleADMSGetRequest)
+		api.POST("/absen/iclock/devicecmd", absensiHandler.HandleADMSDeviceCmd)
 		api.POST("/verify-face", func(c *gin.Context) {
 			type VerifyRequest struct {
 				Image string `json:"image"`

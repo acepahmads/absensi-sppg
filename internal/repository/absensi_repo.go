@@ -52,6 +52,7 @@ type AbsensiRepository interface {
 	GetDailyReports(ctx context.Context, page int, per_page int, nama string, fromDate string, toDate string, role string) ([]model.AbsensiDailyReport, error)
 	GetDailyReportByID(ctx context.Context, id int64) (model.AbsensiDailyReport, error)
 	InputAbsenMesin(ctx context.Context, nama string, timestamp string, status string) error
+	GetKaryawanNameByPin(ctx context.Context, pin string) (string, error)
 	GetDashboardStats(ctx context.Context) (model.DashboardStats, error)
 	GetAttendanceStats(ctx context.Context) (model.AbsensiStatistik, error)
 	GetIndividualStats(ctx context.Context, idUserKaryawan int) (model.KaryawanKehadiranIndividu, error)
@@ -1005,6 +1006,11 @@ func (r *absensiRepository) InputAbsenMesin(ctx context.Context, nama string, ti
 	}
 
 	return nil
+}
+func (r *absensiRepository) GetKaryawanNameByPin(ctx context.Context, pin string) (string, error) {
+	var name string
+	err := r.db.GetContext(ctx, &name, "SELECT nama_mesin_absen FROM user_karyawan WHERE pin_mesin = ? AND status = 1 LIMIT 1", pin)
+	return name, err
 }
 func (r *absensiRepository) GetLastAbsensi(ctx context.Context, id_karyawan int64, date string) (model.AbsensiKeterlambatan, error) {
 	tenantID, _ := ctx.Value("tenantID").(int)

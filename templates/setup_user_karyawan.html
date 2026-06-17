@@ -549,6 +549,7 @@
                       <tr class="border-b border-cyan-500/20 bg-cyan-950/20 text-cyan-400 text-xs uppercase tracking-wider font-bold">
                         <th class="px-6 py-4">No</th>
                         <th class="px-6 py-4">Nama Mesin Absen</th>
+                        <th class="px-6 py-4">PIN Mesin</th>
                         <th class="px-6 py-4">Jabatan</th>
                         <th class="px-6 py-4">Leader / Supervisor</th>
                         <th class="px-6 py-4">Uang Makan</th>
@@ -561,6 +562,7 @@
                       <tr v-for="(k, index) in filteredKaryawan" :key="k.id" class="hover:bg-cyan-500/5 transition-colors">
                         <td class="px-6 py-4 text-xs font-semibold text-slate-400">{{ index + 1 }}</td>
                         <td class="px-6 py-4 font-semibold text-cyan-300">{{ k.nama_mesin_absen }}</td>
+                        <td class="px-6 py-4 font-mono text-cyan-400">{{ k.pin_mesin || '-' }}</td>
                         <td class="px-6 py-4">{{ k.jabatan || '-' }}</td>
                         <td class="px-6 py-4">{{ k.leader_nama || '-' }}</td>
                         <td class="px-6 py-4">{{ formatCurrency(k.uang_makan) }}</td>
@@ -582,7 +584,7 @@
                         </td>
                       </tr>
                       <tr v-if="filteredKaryawan.length === 0">
-                        <td colspan="8" class="px-6 py-12 text-center text-slate-400">
+                        <td colspan="9" class="px-6 py-12 text-center text-slate-400">
                           No employees found. Try expanding your search filters.
                         </td>
                       </tr>
@@ -609,6 +611,11 @@
           <div>
             <label class="block text-xs font-bold text-slate-400 mb-2 uppercase">Nama Mesin Absen</label>
             <input type="text" v-model="form.nama_mesin_absen" required class="form-input w-full px-4 py-2 text-sm" placeholder="e.g. Erwin Widianto" />
+          </div>
+          
+          <div>
+            <label class="block text-xs font-bold text-slate-400 mb-2 uppercase">PIN Mesin (ZK ADMS)</label>
+            <input type="text" v-model="form.pin_mesin" class="form-input w-full px-4 py-2 text-sm" placeholder="e.g. 23" />
           </div>
           
           <div>
@@ -718,6 +725,7 @@
         const form = reactive({
           id: 0,
           nama_mesin_absen: '',
+          pin_mesin: '',
           jabatan: '',
           id_leader: '',
           uang_makan: 0,
@@ -872,6 +880,7 @@
           modalMode.value = 'add';
           form.id = 0;
           form.nama_mesin_absen = '';
+          form.pin_mesin = '';
           form.jabatan = 'Operator';
           form.id_leader = '';
           form.uang_makan = 25000;
@@ -884,6 +893,7 @@
           modalMode.value = 'edit';
           form.id = k.id;
           form.nama_mesin_absen = k.nama_mesin_absen;
+          form.pin_mesin = k.pin_mesin || '';
           form.jabatan = k.jabatan;
           form.id_leader = k.id_leader;
           form.uang_makan = k.uang_makan;
