@@ -46,7 +46,7 @@ type UserRepository interface {
 	// Tenants
 	GetTenants(ctx context.Context) ([]model.Tenant, error)
 	CreateTenant(req *model.RegisterTenantRequest) error
-	ResetPassword(req *model.ForgotPasswordRequest) error
+	ResetPassword(email, newPassword string) error
 }
 
 type userRepository struct {
@@ -537,10 +537,10 @@ func (r *userRepository) CreateTenant(req *model.RegisterTenantRequest) error {
 	return tx.Commit()
 }
 
-func (r *userRepository) ResetPassword(req *model.ForgotPasswordRequest) error {
+func (r *userRepository) ResetPassword(email, newPassword string) error {
 	var user model.UserAccount
 	query := `SELECT * FROM user_accounts WHERE email = ? LIMIT 1`
-	err := r.db.Get(&user, query, req.Email)
+	err := r.db.Get(&user, query, email)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return errors.New("data verifikasi tidak cocok dengan akun manapun")
@@ -548,7 +548,7 @@ func (r *userRepository) ResetPassword(req *model.ForgotPasswordRequest) error {
 		return err
 	}
 
-	_, err = r.db.Exec("UPDATE user_accounts SET password = ?, updated_at = NOW() WHERE id = ?", req.NewPassword, user.ID)
+	_, err = r.db.Exec("UPDATE user_accounts SET password = ?, updated_at = NOW() WHERE id = ?", newPassword, user.ID)
 	return err
 }
 

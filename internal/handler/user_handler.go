@@ -374,7 +374,23 @@ func (h *UserHandler) ForgotPassword(c *gin.Context) {
 		return
 	}
 
-	err := h.userService.ForgotPasswordReset(req)
+	err := h.userService.ForgotPasswordRequest(req.Email)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Link reset password telah dikirim ke email Anda!"})
+}
+
+func (h *UserHandler) ResetPassword(c *gin.Context) {
+	var req model.ResetPasswordRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Input data tidak valid: " + err.Error()})
+		return
+	}
+
+	err := h.userService.ResetPassword(req.Email, req.NewPassword)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

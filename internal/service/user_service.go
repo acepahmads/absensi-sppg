@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 
 	"absensi-sppg/internal/model"
 )
@@ -137,12 +138,31 @@ func (s *UserService) RegisterTenant(req model.RegisterTenantRequest) error {
 	return s.repo.CreateTenant(&req)
 }
 
-func (s *UserService) ForgotPasswordReset(req model.ForgotPasswordRequest) error {
-	hashed, err := utils.HashPassword(req.NewPassword)
+func (s *UserService) ForgotPasswordRequest(email string) error {
+	existing, err := s.repo.FindByEmail(email)
 	if err != nil {
 		return err
 	}
-	req.NewPassword = hashed
-	return s.repo.ResetPassword(&req)
+	if existing == "" {
+		return errors.New("email tidak terdaftar")
+	}
+
+	// Print reset link to server console for simulation/testing
+	port := os.Getenv("APP_PORT")
+	if port == "" {
+		port = "8080"
+	}
+	resetLink := fmt.Sprintf("http://localhost:%s/reset_password?email=%s", port, email)
+	fmt.Printf("[EMAIL SIMULATION] Reset link sent to %s: %s\n", email, resetLink)
+
+	return nil
+}
+
+func (s *UserService) ResetPassword(email, newPassword string) error {
+	hashed, err := utils.HashPassword(newPassword)
+	if err != nil {
+		return err
+	}
+	return s.repo.ResetPassword(email, hashed)
 }
 

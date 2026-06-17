@@ -115,6 +115,9 @@ func main() {
 	r.GET("/forgot_password", func(c *gin.Context) {
 		c.HTML(200, "forgot_password.html", nil)
 	})
+	r.GET("/reset_password", func(c *gin.Context) {
+		c.HTML(200, "reset_password.html", nil)
+	})
 	r.GET("/absen", func(c *gin.Context) {
 		c.HTML(200, "absen.html", nil)
 	})
@@ -135,6 +138,7 @@ func main() {
 	{
 		api.POST("/user/register", middleware.JWTAuthDashboard(), userHandler.Register)
 		api.POST("/user/forgot-password", userHandler.ForgotPassword)
+		api.POST("/user/reset-password", userHandler.ResetPassword)
 		api.POST("/tenant/register", userHandler.RegisterTenant)
 		api.GET("/user/registered", userHandler.Registered)
 		api.GET("/user/leaders", userHandler.GetLeaders)
