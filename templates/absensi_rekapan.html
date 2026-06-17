@@ -3167,7 +3167,7 @@
         },
         navigatePage(page) {
           if (page === 'dashboard') {
-            this.activePage = 'dashboard';
+            window.location.href = '/dashboard';
           } else {
             const routes = {
               'complain': '/complain_handling',
