@@ -94,7 +94,7 @@
       right: -1px;
       top: 0;
       bottom: 0;
-      width: 90px;
+      width: 100px;
       z-index: 5;
       pointer-events: none;
     }
@@ -102,7 +102,6 @@
     .wave-divider svg {
       height: 100%;
       width: 100%;
-      fill: #ffffff;
     }
 
     /* Right Form Column */
@@ -453,7 +452,12 @@
       <!-- Cloud Wave SVG divider -->
       <div class="wave-divider">
         <svg viewBox="0 0 100 100" preserveAspectRatio="none">
-          <path d="M100,0 C65,15 75,35 100,50 C65,65 65,85 100,100 L100,100 L0,100 L0,0 Z"></path>
+          <!-- Layer 1: Semi-transparent wave -->
+          <path d="M100,0 C50,15 60,35 100,50 C50,65 50,85 100,100 L100,0 Z" fill="rgba(255,255,255,0.1)"></path>
+          <!-- Layer 2: Semi-transparent wave -->
+          <path d="M100,0 C58,15 68,35 100,50 C58,65 58,85 100,100 L100,0 Z" fill="rgba(255,255,255,0.25)"></path>
+          <!-- Layer 3: Solid white wave -->
+          <path d="M100,0 C65,15 75,35 100,50 C65,65 65,85 100,100 L100,0 Z" fill="#ffffff"></path>
         </svg>
       </div>
     </div>
