@@ -431,10 +431,10 @@
               <div class="nav-item nav-child" @click="navigatePage('absensi')" v-show="isMenuVisible('absensi')">
                 <span>Rekapan Absensi</span>
               </div>
-              <div class="nav-item nav-child" @click="navigatePage('input_absensi')" v-show="isMenuVisible('input_absensi')">
+              <div class="nav-item nav-child" @click="navigatePage('input_absensi')" v-show="false">
                 <span>Input Absensi</span>
               </div>
-              <div class="nav-item nav-child" @click="navigatePage('absensi_saya')" v-show="isMenuVisible('absensi_saya')">
+              <div class="nav-item nav-child" @click="navigatePage('absensi_saya')" v-show="false">
                 <span>Absensi Saya</span>
               </div>
               <div class="nav-item nav-child" @click="navigatePage('absensi_perhitungan')" v-show="isMenuVisible('absensi_perhitungan')">
@@ -514,8 +514,6 @@
               <select class="theme-select-control" v-model="currentTheme" @change="changeTheme">
                 <option value="theme-cyber">Cyber (Default)</option>
                 <option value="theme-light">Light</option>
-                <option value="theme-synthwave">Synthwave</option>
-                <option value="theme-matrix">Matrix</option>
               </select>
             </div>
             
@@ -765,7 +763,7 @@
             'group-laporan': true,
             'group-setup': false
           },
-          currentTheme: localStorage.getItem('selectedTheme') || 'theme-cyber',
+          currentTheme: (['theme-light', 'theme-cyber'].includes(localStorage.getItem('selectedTheme')) ? localStorage.getItem('selectedTheme') : 'theme-cyber'),
           sidebarOpen: true,
           sidebarWidth: parseInt(localStorage.getItem('sidebarWidth')) || 200,
           

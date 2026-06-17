@@ -414,11 +414,11 @@
                   <div class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="2"></circle></svg></div>
                   <span>Absensi</span>
                 </div>
-                <div class="nav-item nav-child" @click="navigatePage('input_absensi')" v-show="isMenuVisible('input_absensi')">
+                <div class="nav-item nav-child" @click="navigatePage('input_absensi')" v-show="false">
                   <div class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="2"></circle></svg></div>
                   <span>Input Absensi</span>
                 </div>
-                <div class="nav-item nav-child" @click="navigatePage('absensi_saya')" v-show="isMenuVisible('absensi_saya')">
+                <div class="nav-item nav-child" @click="navigatePage('absensi_saya')" v-show="false">
                   <div class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="2"></circle></svg></div>
                   <span>Absensi Saya</span>
                 </div>
@@ -500,8 +500,6 @@
                 <select v-model="currentTheme" class="theme-select-control border border-cyan-500/30 bg-slate-900 text-cyan-400 px-3 py-1.5 rounded text-sm outline-none" @change="saveTheme">
                   <option value="theme-cyber">🌐 Cyber Mode (Dark)</option>
                   <option value="theme-light">☀️ Day Mode (Light)</option>
-                  <option value="theme-synthwave">🔮 Synthwave (Purple)</option>
-                  <option value="theme-matrix">📟 Matrix (Green)</option>
                 </select>
               </div>
               <div class="profile-section flex items-center gap-3">
@@ -688,7 +686,8 @@
 
     createApp({
       setup() {
-        const currentTheme = ref(localStorage.getItem('selectedTheme') || 'theme-cyber');
+        const savedTheme = localStorage.getItem('selectedTheme');
+        const currentTheme = ref((savedTheme === 'theme-light' || savedTheme === 'theme-cyber') ? savedTheme : 'theme-cyber');
         const sidebarOpen = ref(true);
         const sidebarWidth = ref(parseInt(localStorage.getItem('sidebarWidth')) || 200);
         const isResizing = ref(false);
