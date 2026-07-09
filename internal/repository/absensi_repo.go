@@ -56,6 +56,7 @@ type AbsensiRepository interface {
 	GetDashboardStats(ctx context.Context) (model.DashboardStats, error)
 	GetAttendanceStats(ctx context.Context) (model.AbsensiStatistik, error)
 	GetIndividualStats(ctx context.Context, idUserKaryawan int) (model.KaryawanKehadiranIndividu, error)
+	GetLateRules(ctx context.Context, tenantID int) ([]model.AbsensiLateRule, error)
 }
 
 type EmployeeMaster struct {
@@ -100,6 +101,15 @@ func (r *absensiRepository) getTenantIDByLeaderID(idLeader int) int {
 		return 1
 	}
 	return tenantID
+}
+func (r *absensiRepository) GetLateRules(ctx context.Context, tenantID int) ([]model.AbsensiLateRule, error) {
+	rules := []model.AbsensiLateRule{}
+	query := `SELECT id, code, min_minutes, max_minutes, deduction_base, deduction_percent, tenant_id FROM absensi_late_rules WHERE tenant_id = ? ORDER BY min_minutes ASC`
+	err := r.db.SelectContext(ctx, &rules, query, tenantID)
+	if err != nil {
+		return nil, err
+	}
+	return rules, nil
 }
 func (r *absensiRepository) GetAll(ctx context.Context, page int, limit int, per_page int, date_from string, date_to string, nameSearch string, id_leader int, activeFilters string, hide_dup bool) ([]model.Absensi, int, error) {
 	tenantID, _ := ctx.Value("tenantID").(int)
@@ -388,6 +398,18 @@ func (r *absensiRepository) Insert(ctx context.Context, a model.Absensi) error {
 				return err
 			}
 
+			// Fetch late rules from database
+			rules, errRules := r.GetLateRules(ctx, tenantID)
+			if errRules != nil {
+				log.Printf("Warning: failed to get late rules: %v. Using fallback rules.", errRules)
+				rules = []model.AbsensiLateRule{
+					{Code: "T1", MinMinutes: 1, MaxMinutes: 10, DeductionBase: "none", DeductionPercent: 0.0},
+					{Code: "T2", MinMinutes: 11, MaxMinutes: 15, DeductionBase: "uang_makan", DeductionPercent: 50.0},
+					{Code: "T3", MinMinutes: 16, MaxMinutes: 30, DeductionBase: "uang_harian", DeductionPercent: 50.0},
+					{Code: "T4", MinMinutes: 31, MaxMinutes: 99999, DeductionBase: "uang_harian", DeductionPercent: 50.0},
+				}
+			}
+
 			// logic status
 			if keterlambatanMenit <= 0 {
 				if *a.AttendanceType == "wfh" {
@@ -398,41 +420,35 @@ func (r *absensiRepository) Insert(ctx context.Context, a model.Absensi) error {
 					status = "Kantor"
 				}
 				potongan = "0"
-			} else if keterlambatanMenit >= 1 && keterlambatanMenit <= 10 {
+			} else {
 				if *a.AttendanceType == "dinas_lapangan" {
 					status = "Dinas Lapangan"
-				} else {
-					status = "T1"
 					potongan = "0"
-				}
-			} else if keterlambatanMenit >= 11 && keterlambatanMenit <= 15 {
-				if *a.AttendanceType == "dinas_lapangan" {
-					status = "Dinas Lapangan"
 				} else {
-					status = "T2"
-					if *a.AttendanceType == "kantor" {
-						potongan = strconv.FormatInt(p.UangMakan/2, 10)
+					// Default fallback
+					status = "Kantor"
+					potongan = "0"
+					for _, rule := range rules {
+						if keterlambatanMenit >= rule.MinMinutes && keterlambatanMenit <= rule.MaxMinutes {
+							status = rule.Code
+							var deductionVal float64
+							switch rule.DeductionBase {
+							case "uang_makan":
+								deductionVal = float64(p.UangMakan) * (rule.DeductionPercent / 100.0)
+							case "uang_harian":
+								deductionVal = float64(p.UangHarian) * (rule.DeductionPercent / 100.0)
+							default:
+								deductionVal = 0
+							}
+							if *a.AttendanceType == "kantor" {
+								potongan = strconv.FormatInt(int64(deductionVal), 10)
+							} else {
+								potongan = "0"
+							}
+							break
+						}
 					}
 				}
-			} else if keterlambatanMenit >= 16 && keterlambatanMenit <= 30 {
-				if *a.AttendanceType == "dinas_lapangan" {
-					status = "Dinas Lapangan"
-				} else {
-					status = "T3"
-					if *a.AttendanceType == "kantor" {
-						potongan = strconv.FormatInt(p.UangHarian/2, 10)
-					}
-				}
-			} else if keterlambatanMenit >= 31 {
-				if *a.AttendanceType == "dinas_lapangan" {
-					status = "Dinas Lapangan"
-				} else {
-					status = "T4"
-					if *a.AttendanceType == "kantor" {
-						potongan = strconv.FormatInt(p.UangHarian/2, 10)
-					}
-				}
-				//+ potong stgh cuti
 			}
 		}
 	}
@@ -915,21 +931,40 @@ func (r *absensiRepository) InputAbsenMesin(ctx context.Context, nama string, ti
 
 		if hour > 8 || (hour == 8 && (minute > 0 || second > 0)) {
 			keterlambatan = (hour-8)*60 + minute
+
+			// Fetch late rules from database
+			rules, errRules := r.GetLateRules(ctx, uk.TenantID)
+			if errRules != nil {
+				log.Printf("Warning: failed to get late rules: %v. Using fallback rules.", errRules)
+				rules = []model.AbsensiLateRule{
+					{Code: "T1", MinMinutes: 1, MaxMinutes: 10, DeductionBase: "none", DeductionPercent: 0.0},
+					{Code: "T2", MinMinutes: 11, MaxMinutes: 15, DeductionBase: "uang_makan", DeductionPercent: 50.0},
+					{Code: "T3", MinMinutes: 16, MaxMinutes: 30, DeductionBase: "uang_harian", DeductionPercent: 50.0},
+					{Code: "T4", MinMinutes: 31, MaxMinutes: 99999, DeductionBase: "uang_harian", DeductionPercent: 50.0},
+				}
+			}
+
 			if keterlambatan <= 0 {
 				potongan = 0
 				finalStatus = "Kantor"
-			} else if keterlambatan > 1 && keterlambatan <= 10 {
+			} else {
+				// Default fallback
+				finalStatus = "Kantor"
 				potongan = 0
-				finalStatus = "T1"
-			} else if keterlambatan >= 11 && keterlambatan <= 15 {
-				potongan = uk.UangMakan / 2.0
-				finalStatus = "T2"
-			} else if keterlambatan >= 16 && keterlambatan <= 30 {
-				potongan = uk.UangHarian / 2.0
-				finalStatus = "T3"
-			} else if keterlambatan >= 31 {
-				potongan = uk.UangHarian / 2.0
-				finalStatus = "T4"
+				for _, rule := range rules {
+					if keterlambatan >= rule.MinMinutes && keterlambatan <= rule.MaxMinutes {
+						finalStatus = rule.Code
+						switch rule.DeductionBase {
+						case "uang_makan":
+							potongan = uk.UangMakan * (rule.DeductionPercent / 100.0)
+						case "uang_harian":
+							potongan = uk.UangHarian * (rule.DeductionPercent / 100.0)
+						default:
+							potongan = 0
+						}
+						break
+					}
+				}
 			}
 		} else {
 			finalStatus = "Kantor"

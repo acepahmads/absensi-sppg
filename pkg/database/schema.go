@@ -259,6 +259,16 @@ func EnsureSchema(db *sqlx.DB) error {
 			name VARCHAR(255) NOT NULL,
 			tenant_id INT NOT NULL DEFAULT 1
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;`,
+
+		`CREATE TABLE IF NOT EXISTS absensi_late_rules (
+			id INT AUTO_INCREMENT PRIMARY KEY,
+			code VARCHAR(10) NOT NULL,
+			min_minutes INT NOT NULL,
+			max_minutes INT NOT NULL,
+			deduction_base VARCHAR(20) NOT NULL,
+			deduction_percent DOUBLE NOT NULL,
+			tenant_id INT NOT NULL DEFAULT 1
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;`,
 	}
 
 	for _, schema := range schemas {
@@ -286,6 +296,40 @@ func runSeeds(db *sqlx.DB) error {
 			if err != nil {
 				log.Printf("Warning: failed to import SQL file %s: %v", path, err)
 			}
+		}
+	}
+
+	// Seed Late Rules
+	lateRulesQueries := []struct {
+		Code             string
+		MinMinutes       int
+		MaxMinutes       int
+		DeductionBase    string
+		DeductionPercent float64
+		TenantID         int
+	}{
+		// Tenant 1
+		{"T1", 1, 10, "none", 0.0, 1},
+		{"T2", 11, 15, "uang_makan", 50.0, 1},
+		{"T3", 16, 30, "uang_harian", 50.0, 1},
+		{"T4", 31, 99999, "uang_harian", 50.0, 1},
+		// Tenant 2
+		{"T1", 1, 10, "none", 0.0, 2},
+		{"T2", 11, 15, "uang_makan", 50.0, 2},
+		{"T3", 16, 30, "uang_harian", 50.0, 2},
+		{"T4", 31, 99999, "uang_harian", 50.0, 2},
+	}
+
+	for _, rule := range lateRulesQueries {
+		_, err = db.Exec(`
+			INSERT INTO absensi_late_rules (code, min_minutes, max_minutes, deduction_base, deduction_percent, tenant_id)
+			SELECT ?, ?, ?, ?, ?, ?
+			WHERE NOT EXISTS (
+				SELECT 1 FROM absensi_late_rules WHERE code = ? AND tenant_id = ?
+			)
+		`, rule.Code, rule.MinMinutes, rule.MaxMinutes, rule.DeductionBase, rule.DeductionPercent, rule.TenantID, rule.Code, rule.TenantID)
+		if err != nil {
+			return fmt.Errorf("failed to seed late rule %s for tenant %d: %v", rule.Code, rule.TenantID, err)
 		}
 	}
 	// 3. Seed Leaders
