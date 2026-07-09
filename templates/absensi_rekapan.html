@@ -1915,6 +1915,39 @@
       box-shadow: 0 0 12px var(--accent-glow) !important;
     }
 
+    .filter-checkbox {
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border: 1.5px solid var(--border-color) !important;
+      border-radius: 4px;
+      background: var(--panel-bg) !important;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.2s ease;
+    }
+
+    .filter-checkbox:hover {
+      border-color: var(--accent-color) !important;
+      box-shadow: 0 0 5px var(--accent-glow) !important;
+    }
+
+    .filter-checkbox:checked {
+      background: var(--row-selected) !important;
+      border-color: var(--accent-color) !important;
+    }
+
+    .filter-checkbox:checked::after {
+      content: '✓';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: var(--accent-color);
+      font-size: 11px;
+      font-weight: bold;
+    }
+
     .metric-card {
       background: var(--panel-bg) !important;
       border: 1px solid var(--border-color) !important;
@@ -2373,17 +2406,28 @@
               <input v-model="dateTo" type="date" placeholder="Sampai" class="search-input w-full rounded-lg pl-9 pr-2 py-2 text-sm focus:outline-none" style="color-scheme: dark;">
               <label class="input-field-label absolute -top-2.5 left-7 px-1 text-[10px]">Sampai</label>
             </div>
-            <!-- Filter Chips -->
-            <div class="flex flex-wrap gap-1.5 items-center">
-              <button type="button" @click="toggleFilter('filter-late')" :class="{ 'active': activeFilters.includes('filter-late') }" class="filter-chip text-center"> {{ configState.filter_late || 'Terlambat' }} </button> 
-              <button @click="toggleFilter('filter-present')" :class="{ 'active': activeFilters.includes('filter-present') }" class="filter-chip text-center"> {{ configState.filter_present || 'Kantor' }} </button> 
-              <button @click="toggleFilter('filter-site')" :class="{ 'active': activeFilters.includes('filter-site') }" class="filter-chip text-center"> {{ configState.filter_site || 'Dinas' }} </button>
-              <button @click="toggleFilter('filter-permission')" :class="{ 'active': activeFilters.includes('filter-permission') }" class="filter-chip text-center"> {{ configState.filter_permission || 'Cuti Thn' }} </button> 
-              <button @click="toggleFilter('filter-permission-site')" :class="{ 'active': activeFilters.includes('filter-permission-site') }" class="filter-chip text-center"> {{ configState.filter_permission_site || 'Cuti Lap' }} </button> 
-              <button @click="toggleFilter('filter-absent')" :class="{ 'active': activeFilters.includes('filter-absent') }" class="filter-chip text-center"> {{ configState.filter_absent || 'Alpa' }} </button> 
-              <button @click="toggleFilter('filter-wfh')" :class="{ 'active': activeFilters.includes('filter-wfh') }" class="filter-chip text-center"> {{ configState.filter_wfh || 'WFH' }} </button>
-              <button @click="toggleFilter('filter-sick')" :class="{ 'active': activeFilters.includes('filter-sick') }" class="filter-chip text-center"> {{ configState.filter_sick || 'Sakit' }} </button>
-              <button @click="toggleFilter('filter-hide-duplicate')" :class="{ 'active': activeFilters.includes('filter-hide-duplicate') }" class="filter-chip text-center"> {{ configState.filter_hide_duplicate || 'No Duplikat' }} </button>
+            <!-- Filter Checkboxes -->
+            <div class="flex flex-wrap gap-4 items-center pl-1">
+              <label class="flex items-center gap-2 cursor-pointer select-none text-cyan-200/90 hover:text-cyan-300 transition-colors text-xs font-semibold">
+                <input type="checkbox" :checked="activeFilters.includes('filter-late')" @change="toggleFilter('filter-late')" class="filter-checkbox">
+                <span>{{ configState.filter_late || 'Terlambat' }}</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer select-none text-cyan-200/90 hover:text-cyan-300 transition-colors text-xs font-semibold">
+                <input type="checkbox" :checked="activeFilters.includes('filter-present')" @change="toggleFilter('filter-present')" class="filter-checkbox">
+                <span>{{ configState.filter_present || 'Kantor' }}</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer select-none text-cyan-200/90 hover:text-cyan-300 transition-colors text-xs font-semibold">
+                <input type="checkbox" :checked="activeFilters.includes('filter-permission')" @change="toggleFilter('filter-permission')" class="filter-checkbox">
+                <span>{{ configState.filter_permission || 'Cuti Thn' }}</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer select-none text-cyan-200/90 hover:text-cyan-300 transition-colors text-xs font-semibold">
+                <input type="checkbox" :checked="activeFilters.includes('filter-absent')" @change="toggleFilter('filter-absent')" class="filter-checkbox">
+                <span>{{ configState.filter_absent || 'Alpa' }}</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer select-none text-cyan-200/90 hover:text-cyan-300 transition-colors text-xs font-semibold">
+                <input type="checkbox" :checked="activeFilters.includes('filter-sick')" @change="toggleFilter('filter-sick')" class="filter-checkbox">
+                <span>{{ configState.filter_sick || 'Sakit' }}</span>
+              </label>
             </div>
           </section>
 
