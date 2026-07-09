@@ -600,7 +600,7 @@
                 <div class="absolute top-0 right-0 w-24 h-24 bg-red-500/5 rounded-full -mr-8 -mt-8"></div>
                 <p class="text-xs font-bold text-slate-400 uppercase">Potongan Keterlambatan</p>
                 <h3 class="text-2xl font-bold text-red-400 mt-2">{{ formatCurrency(totals.deductions) }}</h3>
-                <p class="text-[10px] text-slate-500 mt-1">Total denda keterlambatan (Rp 15.000/hari)</p>
+                <p class="text-[10px] text-slate-500 mt-1">Total denda keterlambatan berdasarkan aturan</p>
               </div>
 
               <div class="glass-card p-5 relative overflow-hidden">
@@ -996,7 +996,7 @@
             
             // Late counts & denda
             const lateCount = summary.terlambat1 + summary.terlambat2 + summary.terlambat3 + summary.terlambat4;
-            const totalPotonganTerlambat = lateCount * 15000;
+            const totalPotonganTerlambat = summary.totalPotongan || 0;
             
             // Net Take Home Pay
             const netPay = Math.max(0, (totalUangHarian + totalUangMakan + totalLembur) - totalPotonganTerlambat);
@@ -1090,7 +1090,7 @@
                     <div class="flex" style="color: #16a34a;"><span>Uang Lembur:</span><span>${this.formatCurrency(this.selectedPayslip.totalLembur)}</span></div>
                     
                     <div class="flex font-bold text-red-400" style="border-bottom: 1px solid #eee; padding-bottom: 4px; margin-top: 12px;"><span>Potongan</span></div>
-                    <div class="flex text-red-400"><span>Denda Keterlambatan (${this.selectedPayslip.lateCount}x @ 15.000):</span><span>-${this.formatCurrency(this.selectedPayslip.totalPotonganTerlambat)}</span></div>
+                    <div class="flex text-red-400"><span>Denda Keterlambatan (${this.selectedPayslip.lateCount}x):</span><span>-${this.formatCurrency(this.selectedPayslip.totalPotonganTerlambat)}</span></div>
                   </div>
 
                   <div class="flex font-bold bg-cyan-950-40 mb-4">
