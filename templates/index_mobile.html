@@ -16,55 +16,52 @@
       height: 100%;
       width: 100%;
       font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #ffffff;
-      overflow: hidden;
+      background-color: #121214;
+      overflow-x: hidden;
+      overflow-y: auto;
     }
 
     .main-container {
       display: flex;
-      width: 100%;
-      height: 100%;
-    }
-
-    /* Left Branding Column */
-    .left-column {
-      flex: 1.2;
-      height: 100%;
-      background: linear-gradient(135deg, #004ecc 0%, #0066ff 60%, #00aaff 100%);
-      display: flex;
-      flex-direction: column;
       justify-content: center;
       align-items: center;
-      padding: 60px;
-      color: #ffffff;
-      position: relative;
+      width: 100%;
+      min-height: 100%;
+      padding: 20px;
+    }
+
+    .login-card {
+      width: 100%;
+      max-width: 420px;
+      background: rgba(24, 24, 27, 0.75);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: 16px;
+      border: 1px solid rgba(59, 130, 246, 0.25);
+      padding: 40px 30px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .brand-section {
       text-align: center;
-    }
-
-    .left-content {
-      max-width: 460px;
-      z-index: 10;
-    }
-
-    .welcome-text {
-      font-size: 24px;
-      font-weight: 300;
-      margin-bottom: 20px;
-      letter-spacing: 1px;
-      opacity: 0.9;
+      margin-bottom: 24px;
     }
 
     .logo-container {
-      width: 120px;
-      height: 120px;
+      width: 90px;
+      height: 90px;
       background: #ffffff;
       border-radius: 50%;
       display: flex;
       justify-content: center;
       align-items: center;
-      margin: 0 auto 24px auto;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-      padding: 15px;
+      margin: 0 auto 16px auto;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      padding: 10px;
     }
 
     .logo-img {
@@ -74,82 +71,47 @@
     }
 
     .system-title {
-      font-size: 40px;
-      font-weight: 800;
-      margin-bottom: 24px;
-      letter-spacing: -0.5px;
-      text-transform: uppercase;
-    }
-
-    .system-desc {
-      font-size: 14px;
-      line-height: 1.6;
-      opacity: 0.85;
-      font-weight: 400;
-    }
-
-    /* Wave Divider (Cloud style overlaying the right) */
-    .wave-divider {
-      position: absolute;
-      right: -1px;
-      top: 0;
-      bottom: 0;
-      width: 100px;
-      z-index: 5;
-      pointer-events: none;
-    }
-
-    .wave-divider svg {
-      height: 100%;
-      width: 100%;
-    }
-
-    /* Right Form Column */
-    .right-column {
-      flex: 1;
-      height: 100%;
-      background: #ffffff;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      padding: 60px;
-      position: relative;
-    }
-
-    .form-wrapper {
-      width: 100%;
-      max-width: 380px;
-    }
-
-    .form-header {
-      margin-bottom: 40px;
-      text-align: left;
-    }
-
-    .form-title {
-      font-size: 28px;
+      font-size: 20px;
       font-weight: 700;
-      color: #1e293b;
+      color: #ffffff;
+      letter-spacing: 0.5px;
       margin-bottom: 8px;
     }
 
-    .form-subtitle {
-      font-size: 14px;
-      color: #64748b;
+    .system-desc {
+      font-size: 13px;
+      line-height: 1.5;
+      color: #94a3b8;
+      font-weight: 400;
     }
 
-    /* Underline Styled Inputs */
+    .form-header {
+      margin-bottom: 24px;
+      text-align: center;
+    }
+
+    .form-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 6px;
+    }
+
+    .form-subtitle {
+      font-size: 13px;
+      color: #94a3b8;
+    }
+
     .input-group {
-      margin-bottom: 30px;
+      margin-bottom: 20px;
       position: relative;
     }
 
     .input-label {
       display: block;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 600;
-      color: #475569;
+      color: #cbd5e1;
       margin-bottom: 6px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
@@ -158,48 +120,47 @@
     .input-field {
       width: 100%;
       height: 44px;
-      border: none;
-      border-bottom: 2px solid #e2e8f0;
-      background: transparent;
-      padding: 0 4px;
-      color: #1e293b;
-      font-size: 16px;
+      border: 1px solid #27272a;
+      border-radius: 8px;
+      background: rgba(24, 24, 27, 0.5);
+      padding: 0 14px;
+      color: #ffffff;
+      font-size: 15px;
       font-family: inherit;
       transition: all 0.3s ease;
       outline: none;
     }
 
     .input-field:focus {
-      border-bottom-color: #0066ff;
+      border-color: #3b82f6;
+      background: rgba(24, 24, 27, 0.8);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
     }
 
     .input-field::placeholder {
-      color: #94a3b8;
-      opacity: 0.7;
+      color: #64748b;
+      opacity: 0.8;
     }
 
-    /* Gradient Pill Button */
     .proceed-button {
       width: 100%;
-      height: 52px;
-      background: linear-gradient(135deg, #0052cc 0%, #0066ff 100%);
+      height: 48px;
       border: none;
-      border-radius: 9999px;
+      border-radius: 8px;
       color: #ffffff;
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.3s ease;
-      box-shadow: 0 4px 15px rgba(0, 102, 255, 0.25);
       margin-top: 10px;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
 
     .proceed-button:hover:not(:disabled) {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(0, 102, 255, 0.35);
+      transform: translateY(-1px);
+      filter: brightness(1.1);
     }
 
     .proceed-button:active:not(:disabled) {
@@ -211,7 +172,6 @@
       cursor: not-allowed;
     }
 
-    /* Outlined Links & Footer */
     .action-links {
       display: flex;
       flex-direction: column;
@@ -221,15 +181,16 @@
 
     .link-item {
       text-align: center;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 500;
-      color: #0066ff;
+      color: #3b82f6;
       text-decoration: none;
       transition: all 0.3s ease;
     }
 
     .link-item:hover {
       text-decoration: underline;
+      color: #60a5fa;
     }
 
     .link-item-outline {
@@ -237,29 +198,29 @@
       justify-content: center;
       align-items: center;
       width: 100%;
-      height: 46px;
-      border: 1px solid #cbd5e1;
-      border-radius: 9999px;
-      color: #475569;
-      font-size: 14px;
+      height: 42px;
+      border: 1px solid #27272a;
+      border-radius: 8px;
+      color: #e2e8f0;
+      font-size: 13px;
       font-weight: 600;
       text-decoration: none;
       transition: all 0.3s ease;
-      background: #ffffff;
+      background: transparent;
     }
 
     .link-item-outline:hover {
-      background: #f8fafc;
-      border-color: #94a3b8;
-      color: #1e293b;
+      background: rgba(39, 39, 42, 0.5);
+      border-color: #3b82f6;
+      color: #ffffff;
     }
 
     .footer-text {
-      position: absolute;
-      bottom: 24px;
-      color: #94a3b8;
-      font-size: 12px;
+      margin-top: 24px;
+      color: #64748b;
+      font-size: 11px;
       text-align: center;
+      line-height: 1.4;
     }
 
     .notification-message {
@@ -272,7 +233,7 @@
       font-size: 14px;
       font-weight: 500;
       z-index: 1000;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
       max-width: 90%;
       text-align: center;
       animation: slideDown 0.3s ease;
@@ -299,20 +260,6 @@
         transform: translateX(-50%) translateY(-20px);
       }
     }
-
-    /* Responsive */
-    @media (max-width: 900px) {
-      .left-column {
-        display: none;
-      }
-      .wave-divider {
-        display: none;
-      }
-      .right-column {
-        flex: 1;
-        width: 100%;
-      }
-    }
   </style>
   <style>[v-cloak] { display: none; }</style>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -320,74 +267,60 @@
  <body>
   <main class="main-container" id="app" v-cloak>
     
-    <!-- Left Column (Branding) - usually hidden on mobile by CSS -->
-    <div class="left-column" :style="{
-      background: 'linear-gradient(135deg, ' + (configState.accent_color || '#0052cc') + ' 0%, ' + (configState.accent_color || '#0066ff') + 'CC 100%)'
+    <!-- Central Login Card with dynamic accent color border -->
+    <div class="login-card" :style="{
+      borderColor: (configState.accent_color || '#3b82f6') + '66',
+      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4), 0 0 15px ' + (configState.accent_color || '#3b82f6') + '22'
     }">
-      <div class="left-content">
-        <div class="welcome-text">Welcome to</div>
+      
+      <!-- Brand/Logo Section inside card -->
+      <div class="brand-section">
         <div class="logo-container">
           <img src="/static/LOGO-CBI.png" class="logo-img" alt="Logo CBI">
         </div>
         <h1 class="system-title">{{ configState.subtitle }}</h1>
-        <p class="system-desc">Solusi pencatatan kehadiran pintar berbasis Face Recognition secara praktis, akurat, dan real-time. Tingkatkan transparansi, kedisiplinan, dan efisiensi operasional perusahaan Anda secara maksimal.</p>
+        <p class="system-desc">Solusi pencatatan kehadiran pintar berbasis Face Recognition.</p>
       </div>
 
-      <!-- Cloud Wave SVG divider -->
-      <div class="wave-divider">
-        <svg viewBox="0 0 100 100" preserveAspectRatio="none">
-          <!-- Layer 1: Semi-transparent wave -->
-          <path d="M100,0 C50,15 60,35 100,50 C50,65 50,85 100,100 L100,0 Z" fill="rgba(255,255,255,0.1)"></path>
-          <!-- Layer 2: Semi-transparent wave -->
-          <path d="M100,0 C58,15 68,35 100,50 C58,65 58,85 100,100 L100,0 Z" fill="rgba(255,255,255,0.25)"></path>
-          <!-- Layer 3: Solid white wave -->
-          <path d="M100,0 C65,15 75,35 100,50 C65,65 65,85 100,100 L100,0 Z" fill="#ffffff"></path>
-        </svg>
-      </div>
-    </div>
+      <!-- Form Header -->
+      <header class="form-header">
+        <h2 class="form-title">{{ configState.main_title }}</h2>
+        <p class="form-subtitle">Silakan masukkan akun Anda untuk masuk ke sistem.</p>
+      </header>
 
-    <!-- Right Column (Form) -->
-    <div class="right-column">
-      <div class="form-wrapper">
+      <!-- Form -->
+      <form id="loginForm" @submit.prevent="handleLogin">
         
-        <header class="form-header">
-          <h2 class="form-title">{{ configState.main_title }}</h2>
-          <p class="form-subtitle">Silakan masukkan akun Anda untuk masuk ke sistem.</p>
-        </header>
-
-        <form id="loginForm" @submit.prevent="handleLogin">
-          
-          <!-- Email / Username Input -->
-          <div class="input-group">
-            <label class="input-label" for="userInput">{{ configState.user_label }}</label>
-            <input type="text" id="userInput" class="input-field" placeholder="nama@email.com" v-model="username" required>
-          </div>
-          
-          <!-- Password Input -->
-          <div class="input-group">
-            <label class="input-label" for="passwordInput">{{ configState.password_label }}</label>
-            <input type="password" id="passwordInput" class="input-field" placeholder="Masukkan password" v-model="password" required>
-          </div>
-
-          <!-- Submit Button -->
-          <button type="submit" class="proceed-button" id="proceedButton" :disabled="isSubmitting" :style="{
-            background: 'linear-gradient(135deg, ' + (configState.accent_color || '#0052cc') + ' 0%, ' + (configState.accent_color || '#0066ff') + ' 100%)',
-            boxShadow: '0 4px 15px ' + (configState.accent_color || '#0066ff') + '40'
-          }">{{ submitText }}</button>
-
-        </form>
-
-        <!-- Navigation Links -->
-        <div class="action-links">
-          <a href="/forgot_password" class="link-item">Lupa Password?</a>
-          <a href="/tenant_registration" class="link-item-outline">Daftar Dapur SPPG Baru</a>
+        <!-- Email / Username Input -->
+        <div class="input-group">
+          <label class="input-label" for="userInput">{{ configState.user_label }}</label>
+          <input type="text" id="userInput" class="input-field" placeholder="nama@email.com" v-model="username" required>
+        </div>
+        
+        <!-- Password Input -->
+        <div class="input-group">
+          <label class="input-label" for="passwordInput">{{ configState.password_label }}</label>
+          <input type="password" id="passwordInput" class="input-field" placeholder="Masukkan password" v-model="password" required>
         </div>
 
+        <!-- Submit Button -->
+        <button type="submit" class="proceed-button" id="proceedButton" :disabled="isSubmitting" :style="{
+          background: 'linear-gradient(135deg, ' + (configState.accent_color || '#0052cc') + ' 0%, ' + (configState.accent_color || '#0066ff') + ' 100%)',
+          boxShadow: '0 4px 15px ' + (configState.accent_color || '#0066ff') + '40'
+        }">{{ submitText }}</button>
+
+      </form>
+
+      <!-- Navigation Links -->
+      <div class="action-links">
+        <a href="/forgot_password" class="link-item">Lupa Password?</a>
+        <a href="/tenant_registration" class="link-item-outline">Daftar Dapur SPPG Baru</a>
       </div>
 
+      <!-- Footer Text -->
       <p class="footer-text" id="footerText">{{ configState.footer_text }}</p>
-    </div>
 
+    </div>
   </main>
 
   <script>
