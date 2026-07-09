@@ -321,15 +321,20 @@ func runSeeds(db *sqlx.DB) error {
 	}
 
 	for _, rule := range lateRulesQueries {
-		_, err = db.Exec(`
-			INSERT INTO absensi_late_rules (code, min_minutes, max_minutes, deduction_base, deduction_percent, tenant_id)
-			SELECT ?, ?, ?, ?, ?, ?
-			WHERE NOT EXISTS (
-				SELECT 1 FROM absensi_late_rules WHERE code = ? AND tenant_id = ?
-			)
-		`, rule.Code, rule.MinMinutes, rule.MaxMinutes, rule.DeductionBase, rule.DeductionPercent, rule.TenantID, rule.Code, rule.TenantID)
+		var count int
+		err = db.Get(&count, "SELECT COUNT(*) FROM absensi_late_rules WHERE code = ? AND tenant_id = ?", rule.Code, rule.TenantID)
 		if err != nil {
-			return fmt.Errorf("failed to seed late rule %s for tenant %d: %v", rule.Code, rule.TenantID, err)
+			// If table doesn't exist yet (e.g. schema migration run in separate step), log and skip or return err
+			return fmt.Errorf("failed to check late rule existence: %v", err)
+		}
+		if count == 0 {
+			_, err = db.Exec(`
+				INSERT INTO absensi_late_rules (code, min_minutes, max_minutes, deduction_base, deduction_percent, tenant_id)
+				VALUES (?, ?, ?, ?, ?, ?)
+			`, rule.Code, rule.MinMinutes, rule.MaxMinutes, rule.DeductionBase, rule.DeductionPercent, rule.TenantID)
+			if err != nil {
+				return fmt.Errorf("failed to seed late rule %s for tenant %d: %v", rule.Code, rule.TenantID, err)
+			}
 		}
 	}
 	// 3. Seed Leaders

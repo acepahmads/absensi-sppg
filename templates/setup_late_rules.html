@@ -708,8 +708,12 @@
             });
             if (response.ok) {
               rules.value = await response.json();
+            } else {
+              const res = await response.json();
+              showToast(res.error || 'Gagal memuat aturan keterlambatan', 'error');
             }
           } catch (error) {
+            showToast('Koneksi jaringan bermasalah saat memuat data', 'error');
             console.error("Failed to fetch late rules:", error);
           }
         };
