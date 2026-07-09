@@ -527,7 +527,6 @@
       flex-wrap: wrap;
       align-items: center;
       backdrop-filter: blur(10px);
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
       transition: all 0.3s ease;
     }
 
@@ -1502,42 +1501,40 @@
 
     .data-table {
       width: 100%;
-      border-collapse: separate;
-      border-spacing: 0;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 13px;
     }
 
     .data-table thead {
-      background: var(--row-hover) !important;
-      box-shadow: 0 0 20px var(--accent-glow);
+      background: transparent !important;
     }
 
     .data-table th {
-      padding: 0.6rem 0.5rem;
-      text-align: left;
-      font-weight: 700;
+      padding: 12px 16px;
       color: var(--table-th-color) !important;
+      font-weight: 600;
       border-bottom: 2px solid var(--border-color) !important;
+      border-left: none !important;
+      border-right: none !important;
+      border-top: none !important;
+      font-family: 'Outfit', sans-serif;
       text-transform: uppercase;
-      font-size: 0.8rem;
-      letter-spacing: 0.05em;
+      font-size: 11px;
+      letter-spacing: 0.5px;
       position: sticky;
       top: 0;
-      background: var(--topbar-bg) !important;
+      background: var(--solid-bg) !important;
       z-index: 10;
-      transition: all 0.3s ease;
     }
 
     .data-table tbody tr {
-      transition: all 0.3s ease;
+      transition: background-color 0.2s;
       border-bottom: 1px solid var(--border-color) !important;
     }
 
-    .data-table tbody tr:nth-child(even) {
-      background: var(--row-hover) !important;
-    }
-
     .data-table tbody tr:hover {
-      background: var(--row-hover) !important;
+      background-color: var(--row-hover) !important;
     }
 
     .data-table tbody tr.selected {
@@ -1547,10 +1544,13 @@
     }
 
     .data-table td {
-      padding: 0.6rem 0.5rem;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-color) !important;
+      border-left: none !important;
+      border-right: none !important;
+      border-top: none !important;
       color: var(--text-color) !important;
-      font-size: 0.825rem;
-      transition: all 0.3s ease;
+      transition: background 0.2s;
     }
 
     .status-badge {
@@ -1628,20 +1628,17 @@
       text-shadow: 0 0 6px rgba(249, 115, 22, 0.5);
     }
     
-    /* Table borders & Grid lines */
+    /* Table borders: horizontal only, matching Laporan Penggajian style */
     .data-table th,
     .data-table td {
-      border-right: 1px solid var(--border-color) !important;
       border-bottom: 1px solid var(--border-color) !important;
+      border-left: none !important;
+      border-right: none !important;
+      border-top: none !important;
     }
-    
-    .data-table th:first-child,
-    .data-table td:first-child {
-      border-left: 1px solid var(--border-color) !important;
-    }
-    
-    .data-table thead th {
-      border-top: 1px solid var(--border-color) !important;
+
+    .data-table th {
+      border-bottom: 2px solid var(--border-color) !important;
     }
 
     .table-container {
