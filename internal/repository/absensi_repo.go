@@ -57,6 +57,7 @@ type AbsensiRepository interface {
 	GetAttendanceStats(ctx context.Context) (model.AbsensiStatistik, error)
 	GetIndividualStats(ctx context.Context, idUserKaryawan int) (model.KaryawanKehadiranIndividu, error)
 	GetLateRules(ctx context.Context, tenantID int) ([]model.AbsensiLateRule, error)
+	UpdateLateRule(ctx context.Context, rule model.AbsensiLateRule) error
 }
 
 type EmployeeMaster struct {
@@ -110,6 +111,11 @@ func (r *absensiRepository) GetLateRules(ctx context.Context, tenantID int) ([]m
 		return nil, err
 	}
 	return rules, nil
+}
+func (r *absensiRepository) UpdateLateRule(ctx context.Context, rule model.AbsensiLateRule) error {
+	query := `UPDATE absensi_late_rules SET min_minutes = ?, max_minutes = ?, deduction_base = ?, deduction_percent = ? WHERE id = ? AND tenant_id = ?`
+	_, err := r.db.ExecContext(ctx, query, rule.MinMinutes, rule.MaxMinutes, rule.DeductionBase, rule.DeductionPercent, rule.ID, rule.TenantID)
+	return err
 }
 func (r *absensiRepository) GetAll(ctx context.Context, page int, limit int, per_page int, date_from string, date_to string, nameSearch string, id_leader int, activeFilters string, hide_dup bool) ([]model.Absensi, int, error) {
 	tenantID, _ := ctx.Value("tenantID").(int)

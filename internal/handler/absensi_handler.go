@@ -1345,3 +1345,75 @@ func (h *AbsensiHandler) HandleADMSDeviceCmd(c *gin.Context) {
 	c.String(http.StatusOK, "OK")
 }
 
+func (h *AbsensiHandler) GetLateRulesAPI(c *gin.Context) {
+	tid, exists := utils.GetTenantID(c)
+	if !exists || tid == 0 {
+		tid = 1
+	}
+
+	rules, err := h.AbsensiService.GetLateRules(c.Request.Context(), tid)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve late rules: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, rules)
+}
+
+func (h *AbsensiHandler) UpdateLateRuleAPI(c *gin.Context) {
+	tid, exists := utils.GetTenantID(c)
+	if !exists || tid == 0 {
+		tid = 1
+	}
+
+	idStr := c.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid rule ID"})
+		return
+	}
+
+	var req struct {
+		MinMinutes       int     `json:"min_minutes"`
+		MaxMinutes       int     `json:"max_minutes"`
+		DeductionBase    string  `json:"deduction_base"`
+		DeductionPercent float64 `json:"deduction_percent"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body: " + err.Error()})
+		return
+	}
+
+	// Basic validation
+	if req.MinMinutes < 0 || req.MaxMinutes < req.MinMinutes {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Batas minimal/maksimal menit tidak valid"})
+		return
+	}
+	if req.DeductionBase != "none" && req.DeductionBase != "uang_makan" && req.DeductionBase != "uang_harian" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Dasar potongan tidak valid"})
+		return
+	}
+	if req.DeductionPercent < 0 || req.DeductionPercent > 100 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Persentase potongan harus berada di antara 0 dan 100"})
+		return
+	}
+
+	rule := model.AbsensiLateRule{
+		ID:               id,
+		MinMinutes:       req.MinMinutes,
+		MaxMinutes:       req.MaxMinutes,
+		DeductionBase:    req.DeductionBase,
+		DeductionPercent: req.DeductionPercent,
+		TenantID:         tid,
+	}
+
+	err = h.AbsensiService.UpdateLateRule(c.Request.Context(), rule)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update late rule: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Late rule updated successfully"})
+}
+

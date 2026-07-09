@@ -210,6 +210,10 @@ func main() {
 		auth.PUT("/setup/users/:id", userHandler.UpdateUserAccount)
 		auth.DELETE("/setup/users/:id", userHandler.DeleteUserAccount)
 
+		// Late Rules Setup endpoints
+		auth.GET("/setup/late-rules", absensiHandler.GetLateRulesAPI)
+		auth.PUT("/setup/late-rules/:id", absensiHandler.UpdateLateRuleAPI)
+
 		auth.GET("/absensi", absensiHandler.GetAll)
 		auth.GET("/dashboard/stats", absensiHandler.GetDashboardStats)
 		auth.GET("/absensi/statistik", absensiHandler.GetAttendanceStats)
@@ -270,6 +274,7 @@ func main() {
 		"/setup/user_karyawan":          "setup_user_karyawan.html",
 		"/setup/leaders":                "setup_leaders.html",
 		"/setup/users":                  "setup_users.html",
+		"/setup/late-rules":             "setup_late_rules.html",
 		"/absensi_statistik":            "absensi_statistik.html",
 		"/laporan_penggajian":           "laporan_penggajian.html",
 	}

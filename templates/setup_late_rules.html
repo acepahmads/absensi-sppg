@@ -3,7 +3,7 @@
  <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Setup - Karyawan Management</title>
+  <title>Setup - Aturan Keterlambatan</title>
   <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
   <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -54,8 +54,8 @@
       height: 100%;
       opacity: 0.05;
       background-image: 
-        linear-gradient(0deg, transparent 24%, rgba(0, 212, 255, 0.08) 25%, rgba(0, 212, 255, 0.08) 26%, transparent 27%, transparent 74%, rgba(0, 212, 255, 0.08) 75%, rgba(0, 212, 255, 0.08) 76%, transparent 77%, transparent),
-        linear-gradient(90deg, transparent 24%, rgba(0, 212, 255, 0.08) 25%, rgba(0, 212, 255, 0.08) 26%, transparent 27%, transparent 74%, rgba(0, 212, 255, 0.08) 75%, rgba(0, 212, 255, 0.08) 76%, transparent 77%, transparent);
+      linear-gradient(0deg, transparent 24%, rgba(0, 212, 255, 0.08) 25%, rgba(0, 212, 255, 0.08) 26%, transparent 27%, transparent 74%, rgba(0, 212, 255, 0.08) 75%, rgba(0, 212, 255, 0.08) 76%, transparent 77%, transparent),
+      linear-gradient(90deg, transparent 24%, rgba(0, 212, 255, 0.08) 25%, rgba(0, 212, 255, 0.08) 26%, transparent 27%, transparent 74%, rgba(0, 212, 255, 0.08) 75%, rgba(0, 212, 255, 0.08) 76%, transparent 77%, transparent);
       background-size: 100px 100px;
       pointer-events: none;
     }
@@ -299,81 +299,34 @@
       pointer-events: auto;
     }
 
-    .modal-content {
-      width: 100%;
-      max-width: 500px;
-      transform: scale(0.9);
-      transition: transform 0.3s ease;
+    .glow-button {
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      background: linear-gradient(135deg, #1e4a7f, #4a7bc8);
+      border: 1px solid rgba(0, 212, 255, 0.4);
+      box-shadow: 0 0 15px rgba(74, 123, 200, 0.3);
     }
 
-    .modal-overlay.show .modal-content {
-      transform: scale(1);
+    .glow-button:hover {
+      box-shadow: 0 0 25px rgba(0, 212, 255, 0.6);
+      transform: translateY(-1px);
     }
 
-    /* Light Theme overrides */
-    .theme-light {
-      --bg-color: #f3f4f6;
-      --surface-color: #ffffff;
-      --text-color: #1f2937;
-      --primary-color: #3b82f6;
-      --accent-color: #2563eb;
-      --card-bg: rgba(255, 255, 255, 0.9);
-      --border-color: rgba(59, 130, 246, 0.2);
-
-      /* Sidebar Match Variables */
-      --sidebar-bg: rgba(255, 255, 255, 0.9);
-      --sidebar-accent: #0066ff;
-      --sidebar-glow: rgba(0, 102, 255, 0.2);
-      --sidebar-border: rgba(0, 102, 255, 0.15);
-      --sidebar-text-muted: #64748b;
-      --sidebar-row-hover: rgba(0, 102, 255, 0.06);
-      --sidebar-row-selected: rgba(0, 102, 255, 0.12);
+    /* Custom scrollbar for cyber/dark theme */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
     }
-
-    .theme-light .form-input {
-      background: #f9fafb;
-      color: #1f2937;
-      border-color: #d1d5db;
+    ::-webkit-scrollbar-track {
+      background: #0a0e1a;
     }
-
-    /* Theme Matrix overrides */
-    .theme-matrix {
-      --bg-color: #020202;
-      --surface-color: #070707;
-      --text-color: #00ff66;
-      --primary-color: #008833;
-      --accent-color: #00cc55;
-      --card-bg: rgba(5, 5, 5, 0.95);
-      --border-color: rgba(0, 255, 102, 0.3);
-
-      /* Sidebar Match Variables */
-      --sidebar-bg: rgba(5, 15, 5, 0.85);
-      --sidebar-accent: #00ff41;
-      --sidebar-glow: rgba(0, 255, 65, 0.4);
-      --sidebar-border: rgba(0, 255, 65, 0.2);
-      --sidebar-text-muted: #4e9a4e;
-      --sidebar-row-hover: rgba(0, 255, 65, 0.08);
-      --sidebar-row-selected: rgba(0, 255, 65, 0.15);
+    ::-webkit-scrollbar-thumb {
+      background: #1e4a7f;
+      border-radius: 4px;
     }
-
-    /* Theme Synthwave overrides */
-    .theme-synthwave {
-      --bg-color: #1a0826;
-      --surface-color: #240b36;
-      --text-color: #ff007f;
-      --primary-color: #8c005b;
-      --accent-color: #ff007f;
-      --card-bg: rgba(36, 11, 54, 0.85);
-      --border-color: rgba(255, 0, 127, 0.3);
-
-      /* Sidebar Match Variables */
-      --sidebar-bg: rgba(25, 10, 40, 0.85);
-      --sidebar-accent: #ff007f;
-      --sidebar-glow: rgba(255, 0, 127, 0.4);
-      --sidebar-border: rgba(255, 0, 127, 0.2);
-      --sidebar-text-muted: #c084fc;
-      --sidebar-row-hover: rgba(255, 0, 127, 0.08);
-      --sidebar-row-selected: rgba(255, 0, 127, 0.15);
+    ::-webkit-scrollbar-thumb:hover {
+      background: #4a7bc8;
     }
   </style>
  </head>
@@ -387,7 +340,7 @@
         <aside class="sidebar" :class="{ 'collapsed': !sidebarOpen }" :style="{ width: sidebarOpen ? sidebarWidth + 'px' : '0px', minWidth: sidebarOpen ? sidebarWidth + 'px' : '0px', maxWidth: sidebarOpen ? sidebarWidth + 'px' : '0px' }">
           <div class="sidebar-resizer" @mousedown="startResize"></div>
           <div class="logo-section">
-            <h1 id="company-name">{{ configState.company_name || 'ENTERPRISE' }}</h1>
+            <h1 id="company-name">{{ configState.company_name }}</h1>
           </div>
           <nav class="nav-menu">
             <!-- Dashboard -->
@@ -414,19 +367,11 @@
                   <div class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="2"></circle></svg></div>
                   <span>Absensi</span>
                 </div>
-                <div class="nav-item nav-child" @click="navigatePage('input_absensi')" v-show="false">
-                  <div class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="2"></circle></svg></div>
-                  <span>Input Absensi</span>
-                </div>
-                <div class="nav-item nav-child" @click="navigatePage('absensi_saya')" v-show="false">
-                  <div class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="2"></circle></svg></div>
-                  <span>Absensi Saya</span>
-                </div>
                 <div class="nav-item nav-child" @click="navigatePage('absensi_perhitungan')" v-show="isMenuVisible('absensi_perhitungan')">
                   <div class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="2"></circle></svg></div>
                   <span>Perhitungan Absensi</span>
                 </div>
-                <div class="nav-item nav-child" :class="{ 'active': activePage === 'absensi_statistik' }" @click="navigatePage('absensi_statistik')" v-show="isMenuVisible('absensi_statistik')">
+                <div class="nav-item nav-child" @click="navigatePage('absensi_statistik')" v-show="isMenuVisible('absensi_statistik')">
                   <div class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="2"></circle></svg></div>
                   <span>Statistik Kehadiran</span>
                 </div>
@@ -445,7 +390,7 @@
                 </div>
               </div>
               <div class="nav-group-children" :class="{ 'hidden': !groupExpanded['group-laporan'] }">
-                <div class="nav-item nav-child" :class="{ 'active': activePage === 'laporan_penggajian' }" @click="navigatePage('laporan_penggajian')" v-show="isMenuVisible('laporan_penggajian')">
+                <div class="nav-item nav-child" @click="navigatePage('laporan_penggajian')" v-show="isMenuVisible('laporan_penggajian')">
                   <div class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2" ry="2"></rect><line x1="12" y1="4" x2="12" y2="20"></line><line x1="2" y1="12" x2="22" y2="12"></line></svg></div>
                   <span>Penggajian</span>
                 </div>
@@ -464,19 +409,19 @@
                 </div>
               </div>
               <div class="nav-group-children" :class="{ 'hidden': !groupExpanded['group-setup'] }">
-                <div class="nav-item nav-child" :class="{ 'active': activePage === 'setup_user_karyawan' }" @click="navigatePage('setup_user_karyawan')" v-show="isMenuVisible('setup_user_karyawan')">
+                <div class="nav-item nav-child" @click="navigatePage('setup_user_karyawan')" v-show="isMenuVisible('setup_user_karyawan')">
                   <div class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></div>
                   <span>User Karyawan</span>
                 </div>
-                <div class="nav-item nav-child" :class="{ 'active': activePage === 'setup_leaders' }" @click="navigatePage('setup_leaders')" v-show="isMenuVisible('setup_leaders')">
+                <div class="nav-item nav-child" @click="navigatePage('setup_leaders')" v-show="isMenuVisible('setup_leaders')">
                   <div class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></div>
                   <span>Leader</span>
                 </div>
-                <div class="nav-item nav-child" :class="{ 'active': activePage === 'setup_users' }" @click="navigatePage('setup_users')" v-show="isMenuVisible('setup_users')">
+                <div class="nav-item nav-child" @click="navigatePage('setup_users')" v-show="isMenuVisible('setup_users')">
                   <div class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></div>
                   <span>User Management</span>
                 </div>
-                <div class="nav-item nav-child" :class="{ 'active': activePage === 'setup_late_rules' }" @click="navigatePage('setup_late_rules')" v-show="isMenuVisible('setup_late_rules')">
+                <div class="nav-item nav-child active" @click="navigatePage('setup_late_rules')" v-show="isMenuVisible('setup_late_rules')">
                   <div class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg></div>
                   <span>Aturan Keterlambatan</span>
                 </div>
@@ -484,210 +429,131 @@
             </div>
           </nav>
         </aside>
-        
-        <main style="display: flex; flex-direction: column; flex: 1; height: 100%; overflow: hidden;">
-          <!-- Top Bar -->
-          <header class="top-bar flex items-center justify-between px-6">
-            <div class="flex items-center gap-3">
-              <button @click="toggleSidebar" class="p-1.5 text-cyan-400 hover:text-cyan-300 transition-colors focus:outline-none border border-cyan-500/30 rounded bg-cyan-950/20 hover:bg-cyan-500/10 flex items-center justify-center" title="Toggle Sidebar">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <line x1="3" y1="12" x2="21" y2="12"></line>
-                  <line x1="3" y1="6" x2="21" y2="6"></line>
-                  <line x1="3" y1="18" x2="21" y2="18"></line>
-                </svg>
-              </button>
-              <h2 class="text-lg font-bold text-cyan-400">Setup User Karyawan</h2>
-            </div>
-            
+
+        <!-- Right Side Main Window -->
+        <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
+          <!-- Top Header Bar -->
+          <header class="top-bar flex items-center justify-between px-6 py-4">
+            <button class="text-[#00d4ff] hover:text-[#4a7bc8] transition-colors" @click="toggleSidebar">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            </button>
             <div class="flex items-center gap-4">
-              <div class="theme-switcher">
-                <select v-model="currentTheme" class="theme-select-control border border-cyan-500/30 bg-slate-900 text-cyan-400 px-3 py-1.5 rounded text-sm outline-none" @change="saveTheme">
-                  <option value="theme-cyber">🌐 Cyber Mode (Dark)</option>
-                  <option value="theme-light">☀️ Day Mode (Light)</option>
-                </select>
-              </div>
-              <div class="profile-section flex items-center gap-3">
-                <div class="w-8 h-8 rounded-full bg-cyan-600 flex items-center justify-center font-bold text-xs text-white">
+              <!-- Theme Selector -->
+              <select v-model="currentTheme" @change="saveTheme" class="bg-slate-900 border border-slate-700 text-xs px-3 py-1.5 rounded-lg text-slate-300 focus:outline-none">
+                <option value="theme-cyber">Cyber Mode (Dark)</option>
+                <option value="theme-light">Day Mode (Light)</option>
+              </select>
+              <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-full bg-[#1e4a7f] flex items-center justify-center text-xs font-bold text-[#e8f1ff]">
                   {{ initials }}
                 </div>
-                <div class="flex flex-col">
-                  <span class="text-xs font-semibold">{{ userProfile ? userProfile.name : 'User' }}</span>
-                  <button @click="handleLogout" class="text-[10px] text-red-400 hover:underline text-left">Logout</button>
+                <div class="text-xs text-right">
+                  <div class="font-bold text-[#e8f1ff]">{{ userProfile?.name || 'Admin' }}</div>
+                  <div class="text-slate-400 text-[10px]">{{ userProfile?.role || 'SuperAdmin' }}</div>
                 </div>
               </div>
+              <button @click="handleLogout" class="text-rose-500 hover:text-rose-400 text-xs font-bold transition-colors">
+                Logout
+              </button>
             </div>
           </header>
-          
-          <!-- Content Area -->
-          <div class="content-area">
-            <div class="max-w-6xl mx-auto space-y-6">
-              
-              <!-- Filter & Actions Card -->
-              <div class="glass-card p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div class="flex flex-1 flex-col sm:flex-row gap-4 items-stretch sm:items-center">
-                  <input type="text" v-model="search" placeholder="Search by name, position..." class="form-input flex-1 px-4 py-2 text-sm max-w-sm" />
-                  <select v-model="statusFilter" class="form-input px-4 py-2 text-sm">
-                    <option value="all">All Status</option>
-                    <option value="active">Active Only</option>
-                    <option value="inactive">Inactive Only</option>
-                  </select>
-                </div>
-                
-                <div class="flex gap-2">
-                  <a href="/user_registration" class="px-5 py-2.5 text-sm font-semibold rounded bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold transition-all shadow shadow-emerald-500/20 hover:shadow-emerald-500/40 flex items-center gap-2">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M20 8v6M23 11h-6"/></svg>
-                    Daftar Karyawan (Face ID)
-                  </a>
-                  <button @click="openAddModal" class="px-5 py-2.5 text-sm font-semibold rounded bg-cyan-500 hover:bg-cyan-600 text-slate-950 font-bold transition-all shadow shadow-cyan-500/20 hover:shadow-cyan-500/40 flex items-center gap-2">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                    Add Employee
+
+          <!-- Content Space -->
+          <main class="content-area">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+              <div>
+                <h2 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                  <svg class="text-[#00d4ff]" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                  Aturan Keterlambatan (Late Rules)
+                </h2>
+                <p class="text-sm text-slate-400 mt-1">Konfigurasikan pembagian waktu terlambat beserta persentase potongan uang makan / harian.</p>
+              </div>
+            </div>
+
+            <!-- Rules Card Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+              <div v-for="rule in rules" :key="rule.id" class="glass-card flex flex-col p-6 border-l-4" :style="{ borderLeftColor: rule.code === 'T1' ? '#10B981' : rule.code === 'T2' ? '#F59E0B' : rule.code === 'T3' ? '#EF4444' : '#B91C1C' }">
+                <div class="flex justify-between items-start mb-4">
+                  <span class="px-3 py-1 text-xs font-black rounded-lg text-white" :style="{ backgroundColor: rule.code === 'T1' ? '#10B981' : rule.code === 'T2' ? '#F59E0B' : rule.code === 'T3' ? '#EF4444' : '#B91C1C' }">
+                    {{ rule.code }}
+                  </span>
+                  <button @click="openEditModal(rule)" class="text-[#00d4ff] hover:text-white transition-colors text-xs font-semibold flex items-center gap-1">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4Z"></path></svg>
+                    Edit Aturan
                   </button>
                 </div>
-              </div>
-              
-              <!-- Table List -->
-              <div class="glass-card overflow-hidden">
-                <div class="overflow-x-auto">
-                  <table class="w-full text-left text-sm">
-                    <thead>
-                      <tr class="border-b border-cyan-500/20 bg-cyan-950/20 text-cyan-400 text-xs uppercase tracking-wider font-bold">
-                        <th class="px-6 py-4">No</th>
-                        <th class="px-6 py-4">Nama Mesin Absen</th>
-                        <th class="px-6 py-4">PIN Mesin</th>
-                        <th class="px-6 py-4">Jabatan</th>
-                        <th class="px-6 py-4">Leader / Supervisor</th>
-                        <th class="px-6 py-4">Uang Makan</th>
-                        <th class="px-6 py-4">Uang Harian</th>
-                        <th class="px-6 py-4">Status</th>
-                        <th class="px-6 py-4 text-right">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody class="divide-y divide-cyan-500/10">
-                      <tr v-for="(k, index) in filteredKaryawan" :key="k.id" class="hover:bg-cyan-500/5 transition-colors">
-                        <td class="px-6 py-4 text-xs font-semibold text-slate-400">{{ index + 1 }}</td>
-                        <td class="px-6 py-4 font-semibold text-cyan-300">{{ k.nama_mesin_absen }}</td>
-                        <td class="px-6 py-4 font-mono text-cyan-400">{{ k.pin_mesin || '-' }}</td>
-                        <td class="px-6 py-4">{{ k.jabatan || '-' }}</td>
-                        <td class="px-6 py-4">{{ k.leader_nama || '-' }}</td>
-                        <td class="px-6 py-4">{{ formatCurrency(k.uang_makan) }}</td>
-                        <td class="px-6 py-4">{{ formatCurrency(k.uang_harian) }}</td>
-                        <td class="px-6 py-4">
-                          <span :class="k.status === 1 ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/15 text-rose-400 border border-rose-500/30'" class="px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
-                            {{ k.status === 1 ? 'Active' : 'Inactive' }}
-                          </span>
-                        </td>
-                        <td class="px-6 py-4 text-right">
-                          <div class="flex items-center justify-end gap-3">
-                            <button @click="openEditModal(k)" class="text-cyan-400 hover:text-cyan-300 font-medium text-xs border border-cyan-500/30 rounded px-2.5 py-1.5 bg-cyan-950/20 hover:bg-cyan-500/10 transition-colors">
-                              Edit
-                            </button>
-                            <button @click="confirmDelete(k.id, k.nama_mesin_absen)" class="text-rose-400 hover:text-rose-300 font-medium text-xs border border-rose-500/30 rounded px-2.5 py-1.5 bg-rose-950/20 hover:bg-rose-500/10 transition-colors">
-                              Delete
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                      <tr v-if="filteredKaryawan.length === 0">
-                        <td colspan="9" class="px-6 py-12 text-center text-slate-400">
-                          No employees found. Try expanding your search filters.
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
+                
+                <div class="mb-4">
+                  <label class="text-[10px] text-slate-400 block uppercase font-bold tracking-wider mb-1">Rentang Waktu</label>
+                  <div class="text-xl font-bold text-white">
+                    {{ rule.min_minutes }} s.d. {{ rule.max_minutes >= 99999 ? '∞' : rule.max_minutes }} menit
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2 mt-auto pt-4 border-t border-slate-800">
+                  <div>
+                    <label class="text-[10px] text-slate-400 block uppercase font-bold tracking-wider mb-0.5">Potongan</label>
+                    <span class="text-xs font-semibold uppercase text-slate-200">
+                      {{ formatBaseName(rule.deduction_base) }}
+                    </span>
+                  </div>
+                  <div>
+                    <label class="text-[10px] text-slate-400 block uppercase font-bold tracking-wider mb-0.5">Persentase</label>
+                    <span class="text-xs font-semibold text-slate-200">
+                      {{ rule.deduction_percent }}%
+                    </span>
+                  </div>
                 </div>
               </div>
-              
             </div>
-          </div>
-        </main>
+          </main>
+        </div>
       </div>
     </div>
 
-    <!-- Add/Edit Modal -->
+    <!-- Edit Modal -->
     <div class="modal-overlay" :class="{ 'show': modalVisible }" @click.self="closeModal">
-      <div class="modal-content glass-card p-6 w-full max-w-md">
-        <div class="flex items-center justify-between border-b border-cyan-500/20 pb-4 mb-6">
-          <h3 class="text-lg font-bold text-cyan-400">{{ modalMode === 'add' ? 'Add Employee' : 'Edit Employee' }}</h3>
-          <button @click="closeModal" class="text-slate-400 hover:text-white">&times;</button>
-        </div>
+      <div class="glass-card w-full max-w-md p-6 m-4 text-left relative">
+        <h3 class="text-lg font-bold text-white mb-6 flex items-center gap-2">
+          <svg class="text-[#00d4ff]" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4Z"></path></svg>
+          Edit Aturan Keterlambatan {{ form.code }}
+        </h3>
         
-        <form @submit.prevent="saveEmployee" class="space-y-4">
-          <div>
-            <label class="block text-xs font-bold text-slate-400 mb-2 uppercase">Nama Mesin Absen</label>
-            <input type="text" v-model="form.nama_mesin_absen" required class="form-input w-full px-4 py-2 text-sm" placeholder="e.g. Erwin Widianto" />
-          </div>
-          
-          <div>
-            <label class="block text-xs font-bold text-slate-400 mb-2 uppercase">PIN Mesin (ZK ADMS)</label>
-            <input type="text" v-model="form.pin_mesin" class="form-input w-full px-4 py-2 text-sm" placeholder="e.g. 23" />
-          </div>
-          
-          <div>
-            <label class="block text-xs font-bold text-slate-400 mb-2 uppercase">Jabatan</label>
-            <input type="text" v-model="form.jabatan" required class="form-input w-full px-4 py-2 text-sm" placeholder="e.g. Operator, Supervisor" />
-          </div>
-          
-          <div>
-            <label class="block text-xs font-bold text-slate-400 mb-2 uppercase">Leader / Supervisor</label>
-            <select v-model="form.id_leader" required class="form-input w-full px-4 py-2 text-sm">
-              <option value="">Select Leader</option>
-              <option :value="0">No Leader / None</option>
-              <option v-for="l in leaders" :value="l.id">{{ l.nama }}</option>
-            </select>
-          </div>
-          
+        <form @submit.prevent="saveRule" class="space-y-4">
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="block text-xs font-bold text-slate-400 mb-2 uppercase">Uang Makan</label>
-              <input type="number" v-model.number="form.uang_makan" required class="form-input w-full px-4 py-2 text-sm" />
+              <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Batas Minimal (Menit)</label>
+              <input type="number" min="0" required v-model.number="form.min_minutes" class="form-input w-full px-3 py-2 text-sm focus:outline-none">
             </div>
             <div>
-              <label class="block text-xs font-bold text-slate-400 mb-2 uppercase">Uang Harian</label>
-              <input type="number" v-model.number="form.uang_harian" required class="form-input w-full px-4 py-2 text-sm" />
+              <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Batas Maksimal (Menit)</label>
+              <input type="number" min="0" required v-model.number="form.max_minutes" class="form-input w-full px-3 py-2 text-sm focus:outline-none">
             </div>
           </div>
-          
+
           <div>
-            <label class="block text-xs font-bold text-slate-400 mb-2 uppercase">Status</label>
-            <select v-model.number="form.status" required class="form-input w-full px-4 py-2 text-sm">
-              <option :value="1">Active</option>
-              <option :value="0">Inactive</option>
+            <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Dasar Pemotongan</label>
+            <select v-model="form.deduction_base" class="form-input w-full px-3 py-2 text-sm focus:outline-none bg-slate-900">
+              <option value="none">Tidak Ada Potongan</option>
+              <option value="uang_makan">Uang Makan</option>
+              <option value="uang_harian">Uang Harian</option>
             </select>
           </div>
-          
-          <div class="flex items-center justify-end gap-3 pt-4 border-t border-cyan-500/20 mt-6">
-            <button type="button" @click="closeModal" class="px-4 py-2 text-sm font-semibold rounded border border-cyan-500/30 text-cyan-400 bg-cyan-950/20 hover:bg-cyan-500/10 transition-colors">
-              Cancel
+
+          <div>
+            <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Persentase Potongan (%)</label>
+            <input type="number" min="0" max="100" step="0.1" required v-model.number="form.deduction_percent" class="form-input w-full px-3 py-2 text-sm focus:outline-none">
+          </div>
+
+          <div class="flex justify-end gap-3 pt-4 border-t border-slate-800">
+            <button type="button" @click="closeModal" class="px-4 py-2 text-xs font-bold text-slate-300 hover:text-white transition-colors bg-slate-900 border border-slate-800 rounded-lg">
+              Batal
             </button>
-            <button type="submit" class="px-5 py-2 rounded bg-cyan-500 hover:bg-cyan-600 text-slate-950 font-bold transition-colors shadow shadow-cyan-500/25">
-              {{ modalMode === 'add' ? 'Create' : 'Save' }}
+            <button type="submit" class="glow-button px-5 py-2 text-xs font-black text-white rounded-lg">
+              Simpan Perubahan
             </button>
           </div>
         </form>
-      </div>
-    </div>
-
-    <!-- Delete Confirmation Modal -->
-    <div class="modal-overlay" :class="{ 'show': deleteModalVisible }" @click.self="closeDeleteModal">
-      <div class="modal-content glass-card p-6 w-full max-w-sm">
-        <div class="text-center">
-          <div class="w-12 h-12 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center mx-auto mb-4 text-xl border border-rose-500/30">
-            ⚠️
-          </div>
-          <h3 class="text-lg font-bold text-rose-400 mb-2">Delete Employee</h3>
-          <p class="text-sm text-slate-400 mb-6">
-            Are you sure you want to delete <strong class="text-slate-200">"{{ deleteTargetName }}"</strong>? This action cannot be undone and will delete all references to this user.
-          </p>
-          
-          <div class="flex items-center justify-center gap-3">
-            <button @click="closeDeleteModal" class="px-4 py-2 text-sm font-semibold rounded border border-cyan-500/30 text-cyan-400 bg-cyan-950/20 hover:bg-cyan-500/10 transition-colors">
-              Cancel
-            </button>
-            <button @click="deleteEmployee" class="px-5 py-2 rounded bg-rose-500 hover:bg-rose-600 text-slate-950 font-bold transition-colors shadow shadow-rose-500/25">
-              Confirm Delete
-            </button>
-          </div>
-        </div>
       </div>
     </div>
   </div>
@@ -710,37 +576,23 @@
           'group-setup': true
         });
 
-        // User profile & Auth cookies
+        // Auth & Profile
         const userProfile = ref(null);
         const authToken = ref('');
         const userID = ref('');
+        const activePage = ref('setup_late_rules');
 
-        const employees = ref([]);
-        const leaders = ref([]);
-        const activePage = ref('setup_user_karyawan');
-
-        // Search & Filters
-        const search = ref('');
-        const statusFilter = ref('all');
-
-        // Modal states
+        // Rules data
+        const rules = ref([]);
         const modalVisible = ref(false);
-        const modalMode = ref('add'); // 'add' or 'edit'
         const form = reactive({
           id: 0,
-          nama_mesin_absen: '',
-          pin_mesin: '',
-          jabatan: '',
-          id_leader: '',
-          uang_makan: 0,
-          uang_harian: 0,
-          status: 1
+          code: '',
+          min_minutes: 0,
+          max_minutes: 0,
+          deduction_base: 'none',
+          deduction_percent: 0.0
         });
-
-        // Delete confirmation states
-        const deleteModalVisible = ref(false);
-        const deleteTargetId = ref(0);
-        const deleteTargetName = ref('');
 
         const configState = reactive({
           company_name: "PT. Cakrawala Bima Instrument",
@@ -790,10 +642,7 @@
         const navigatePage = (page) => {
           const routes = {
             'dashboard': '/dashboard',
-            'complain': '/complain_handling',
             'absensi': '/rekapan_absensi',
-            'input_absensi': '/input_absensi',
-            'absensi_saya': '/absensi_karyawan',
             'absensi_perhitungan': '/absensi_perhitungan',
             'setup_user_karyawan': '/setup/user_karyawan',
             'setup_leaders': '/setup/leaders',
@@ -817,8 +666,6 @@
 
           const permissions = {
             'absensi': ['SupervisorIT', 'SupervisorRND', 'SupervisorInventory', 'ManagerMarketing'],
-            'input_absensi': [],
-            'absensi_saya': [],
             'absensi_perhitungan': ['HRDAdmin', 'SupervisorIT', 'SupervisorRND', 'SupervisorInventory', 'ManagerMarketing'],
             'laporan_penggajian': ['HRDAdmin', 'SupervisorIT', 'SupervisorRND', 'SupervisorInventory', 'ManagerMarketing'],
             'setup_user_karyawan': ['HRDAdmin', 'SupervisorIT', 'SupervisorRND'],
@@ -854,57 +701,26 @@
           }
         };
 
-        // CRUD Fetch
-        const fetchKaryawan = async () => {
+        const fetchLateRules = async () => {
           try {
-            const response = await fetch('/auth/user-karyawan', {
+            const response = await fetch('/auth/setup/late-rules', {
               headers: { 'Authorization': `Bearer ${authToken.value}` }
             });
             if (response.ok) {
-              employees.value = await response.json();
+              rules.value = await response.json();
             }
           } catch (error) {
-            console.error("Failed to fetch user karyawan list:", error);
+            console.error("Failed to fetch late rules:", error);
           }
         };
 
-        const fetchLeaders = async () => {
-          try {
-            const response = await fetch('/auth/leaders-list', {
-              headers: { 'Authorization': `Bearer ${authToken.value}` }
-            });
-            if (response.ok) {
-              leaders.value = await response.json();
-            }
-          } catch (error) {
-            console.error("Failed to fetch leaders list:", error);
-          }
-        };
-
-        // Form handlers
-        const openAddModal = () => {
-          modalMode.value = 'add';
-          form.id = 0;
-          form.nama_mesin_absen = '';
-          form.pin_mesin = '';
-          form.jabatan = 'Operator';
-          form.id_leader = '';
-          form.uang_makan = 25000;
-          form.uang_harian = 100000;
-          form.status = 1;
-          modalVisible.value = true;
-        };
-
-        const openEditModal = (k) => {
-          modalMode.value = 'edit';
-          form.id = k.id;
-          form.nama_mesin_absen = k.nama_mesin_absen;
-          form.pin_mesin = k.pin_mesin || '';
-          form.jabatan = k.jabatan;
-          form.id_leader = k.id_leader;
-          form.uang_makan = k.uang_makan;
-          form.uang_harian = k.uang_harian;
-          form.status = k.status;
+        const openEditModal = (rule) => {
+          form.id = rule.id;
+          form.code = rule.code;
+          form.min_minutes = rule.min_minutes;
+          form.max_minutes = rule.max_minutes;
+          form.deduction_base = rule.deduction_base;
+          form.deduction_percent = rule.deduction_percent;
           modalVisible.value = true;
         };
 
@@ -912,97 +728,46 @@
           modalVisible.value = false;
         };
 
-        const saveEmployee = async () => {
+        const saveRule = async () => {
           try {
-            const url = modalMode.value === 'add' ? '/auth/user-karyawan' : `/auth/user-karyawan/${form.id}`;
-            const method = modalMode.value === 'add' ? 'POST' : 'PUT';
-            
-            const response = await fetch(url, {
-              method: method,
+            const response = await fetch(`/auth/setup/late-rules/${form.id}`, {
+              method: 'PUT',
               headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${authToken.value}`
               },
-              body: JSON.stringify(form)
+              body: JSON.stringify({
+                min_minutes: form.min_minutes,
+                max_minutes: form.max_minutes,
+                deduction_base: form.deduction_base,
+                deduction_percent: form.deduction_percent
+              })
             });
-            
+
             if (response.ok) {
-              showToast(modalMode.value === 'add' ? 'Employee added successfully' : 'Employee details updated', 'success');
+              showToast(`Konfigurasi aturan ${form.code} berhasil diperbarui`, 'success');
               closeModal();
-              fetchKaryawan();
+              fetchLateRules();
             } else {
               const res = await response.json();
-              showToast(res.error || 'Failed to save employee record', 'error');
+              showToast(res.error || 'Gagal menyimpan konfigurasi', 'error');
             }
           } catch (error) {
-            showToast('Network error while saving data', 'error');
+            showToast('Koneksi jaringan bermasalah', 'error');
           }
         };
 
-        // Delete Handler
-        const confirmDelete = (id, name) => {
-          deleteTargetId.value = id;
-          deleteTargetName.value = name;
-          deleteModalVisible.value = true;
+        const formatBaseName = (base) => {
+          if (base === 'uang_makan') return 'Uang Makan';
+          if (base === 'uang_harian') return 'Uang Harian';
+          return 'Tidak Ada Potongan';
         };
 
-        const closeDeleteModal = () => {
-          deleteModalVisible.value = false;
-        };
-
-        const deleteEmployee = async () => {
-          try {
-            const response = await fetch(`/auth/user-karyawan/${deleteTargetId.value}`, {
-              method: 'DELETE',
-              headers: { 'Authorization': `Bearer ${authToken.value}` }
-            });
-            
-            if (response.ok) {
-              showToast('Employee deleted successfully', 'success');
-              closeDeleteModal();
-              fetchKaryawan();
-            } else {
-              const res = await response.json();
-              showToast(res.error || 'Failed to delete record', 'error');
-            }
-          } catch (error) {
-            showToast('Network error while deleting data', 'error');
-          }
-        };
-
-        // Filter and Search Computing
-        const filteredKaryawan = computed(() => {
-          let list = employees.value || [];
-          
-          if (search.value.trim() !== '') {
-            const q = search.value.toLowerCase().trim();
-            list = list.filter(k => 
-              (k.nama_mesin_absen && k.nama_mesin_absen.toLowerCase().includes(q)) ||
-              (k.jabatan && k.jabatan.toLowerCase().includes(q)) ||
-              (k.leader_nama && k.leader_nama.toLowerCase().includes(q))
-            );
-          }
-          
-          if (statusFilter.value === 'active') {
-            list = list.filter(k => k.status === 1);
-          } else if (statusFilter.value === 'inactive') {
-            list = list.filter(k => k.status === 0);
-          }
-          
-          return list;
-        });
-
-        // Helpers
         const initials = computed(() => {
           if (!userProfile.value) return 'U';
           const name = userProfile.value.name || userProfile.value.role || 'User';
           return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
         });
-
-        const formatCurrency = (val) => {
-          if (val === null || val === undefined) return 'Rp 0';
-          return 'Rp ' + Number(val).toLocaleString('id-ID');
-        };
 
         const showToast = (message, type = 'success') => {
           const toast = document.createElement('div');
@@ -1035,17 +800,7 @@
           }
           
           await fetchUserProfile();
-          await fetchKaryawan();
-          await fetchLeaders();
-          
-          if (window.elementSdk) {
-            window.elementSdk.init({
-              defaultConfig: configState,
-              onConfigChange: (newConfig) => {
-                Object.assign(configState, newConfig);
-              }
-            });
-          }
+          await fetchLateRules();
         });
 
         return {
@@ -1055,15 +810,9 @@
           isResizing,
           groupExpanded,
           userProfile,
-          employees,
-          leaders,
-          search,
-          statusFilter,
+          rules,
           modalVisible,
-          modalMode,
           form,
-          deleteModalVisible,
-          deleteTargetName,
           configState,
           initials,
           toggleSidebar,
@@ -1073,16 +822,10 @@
           isMenuVisible,
           saveTheme,
           handleLogout,
-          openAddModal,
           openEditModal,
           closeModal,
-          saveEmployee,
-          confirmDelete,
-          closeDeleteModal,
-          deleteEmployee,
-          filteredKaryawan,
-          formatCurrency,
-          activePage
+          saveRule,
+          formatBaseName
         };
       }
     }).mount('#app');

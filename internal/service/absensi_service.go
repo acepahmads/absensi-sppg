@@ -626,3 +626,11 @@ func (s *AbsensiService) GetIndividualStats(ctx context.Context, idUserKaryawan 
 	return s.repo.GetIndividualStats(ctx, idUserKaryawan)
 }
 
+func (s *AbsensiService) GetLateRules(ctx context.Context, tenantID int) ([]model.AbsensiLateRule, error) {
+	return s.repo.GetLateRules(ctx, tenantID)
+}
+
+func (s *AbsensiService) UpdateLateRule(ctx context.Context, rule model.AbsensiLateRule) error {
+	return s.repo.UpdateLateRule(ctx, rule)
+}
+
