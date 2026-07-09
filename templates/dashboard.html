@@ -392,58 +392,129 @@
       text-shadow: 0 0 15px rgba(0, 212, 255, 0.5), 0 0 30px rgba(0, 212, 255, 0.2);
     }
 
+    .action-btn {
+      padding: 6px 12px;
+      background: rgba(0, 212, 255, 0.05);
+      border: 1px solid rgba(0, 212, 255, 0.2);
+      border-radius: 8px;
+      color: #00d4ff;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.3s ease;
+    }
+    
+    .action-btn:hover {
+      border-color: #00d4ff;
+      box-shadow: 0 0 15px rgba(0, 212, 255, 0.4);
+      background: rgba(0, 212, 255, 0.1);
+    }
+
+    .normal-mode .action-btn {
+      background: rgba(0, 102, 255, 0.05);
+      border-color: rgba(0, 102, 255, 0.2);
+      color: #0066ff;
+    }
+    
+    .normal-mode .action-btn:hover {
+      border-color: #0066ff;
+      box-shadow: 0 0 15px rgba(0, 102, 255, 0.2);
+      background: rgba(0, 102, 255, 0.1);
+    }
+
     .profile-section {
       display: flex;
       align-items: center;
-      gap: 8px;
-      padding: 6px 12px;
-      background: rgba(0, 212, 255, 0.1);
-      border: 1px solid rgba(0, 212, 255, 0.4);
-      border-radius: 8px;
-      box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);
-      transition: all 0.3s ease;
+      gap: 10px;
+      padding: 6px 14px;
+      background: rgba(10, 14, 26, 0.6) !important;
+      border: 1px solid rgba(0, 212, 255, 0.2) !important;
+      border-radius: 20px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15), 0 0 10px rgba(0, 212, 255, 0.05);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .profile-section:hover {
-      background: rgba(0, 212, 255, 0.15);
-      box-shadow: 0 0 25px rgba(0, 212, 255, 0.3);
+      background: rgba(10, 14, 26, 0.85) !important;
+      border-color: #00d4ff !important;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25), 0 0 15px rgba(0, 212, 255, 0.4);
+      transform: translateY(-1px);
     }
 
     .avatar {
       width: 28px;
       height: 28px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #00d4ff, #0066ff);
+      background: linear-gradient(135deg, #00d4ff, #0066ff) !important;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: 700;
+      font-weight: 800;
       font-size: 11px;
-      color: #fff;
-      box-shadow: 0 0 15px rgba(0, 212, 255, 0.5), inset 0 0 10px rgba(255, 255, 255, 0.2);
+      color: #ffffff;
+      box-shadow: 0 0 10px rgba(0, 212, 255, 0.4) !important;
+      border: 1px solid rgba(255, 255, 255, 0.2);
     }
 
     .profile-info {
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      gap: 1px;
     }
 
     .profile-name {
       font-size: 11px;
-      font-weight: 600;
-      color: #e0e7ff;
+      font-weight: 700;
+      color: #e0e7ff !important;
+      letter-spacing: 0.5px;
     }
 
     .logout-btn {
-      font-size: 10px;
-      color: #8b9dc3;
+      font-size: 9px;
+      color: #8b9dc3 !important;
+      font-weight: 600;
       cursor: pointer;
-      transition: color 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      transition: all 0.2s ease;
     }
 
     .logout-btn:hover {
-      color: #ff4757;
+      color: #ff4757 !important;
+      text-shadow: 0 0 8px rgba(255, 71, 87, 0.4);
+    }
+
+    .normal-mode .profile-section {
+      background: rgba(255, 255, 255, 0.8) !important;
+      border-color: rgba(0, 102, 255, 0.15) !important;
+      box-shadow: 0 4px 15px rgba(0, 102, 255, 0.05);
+    }
+    
+    .normal-mode .profile-section:hover {
+      background: #ffffff !important;
+      border-color: #0066ff !important;
+      box-shadow: 0 6px 20px rgba(0, 102, 255, 0.1), 0 0 10px rgba(0, 102, 255, 0.1);
+    }
+
+    .normal-mode .avatar {
+      background: linear-gradient(135deg, #0066ff, #00d4ff) !important;
+      box-shadow: 0 0 8px rgba(0, 102, 255, 0.2) !important;
+    }
+
+    .normal-mode .profile-name {
+      color: #1e293b !important;
+    }
+
+    .normal-mode .logout-btn {
+      color: #64748b !important;
+    }
+
+    .normal-mode .logout-btn:hover {
+      color: #ef4444 !important;
     }
 
     .content-area {

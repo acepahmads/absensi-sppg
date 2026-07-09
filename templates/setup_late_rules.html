@@ -336,6 +336,134 @@
     ::-webkit-scrollbar-thumb:hover {
       background: #4a7bc8;
     }
+
+    .theme-select-control {
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      padding: 6px 32px 6px 12px;
+      background: rgba(10, 14, 26, 0.8) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2300d4ff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") no-repeat right 10px center;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      color: var(--accent-color);
+      font-size: 11px;
+      font-weight: 600;
+      font-family: inherit;
+      outline: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 10px rgba(0, 212, 255, 0.05);
+    }
+
+    .theme-select-control:hover, .theme-select-control:focus {
+      border-color: var(--accent-color);
+      box-shadow: 0 0 15px var(--accent-glow);
+      background-color: rgba(10, 14, 26, 0.95);
+    }
+
+    .theme-light .theme-select-control {
+      background: rgba(255, 255, 255, 0.9) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%230066ff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") no-repeat right 10px center;
+      border-color: rgba(0, 102, 255, 0.2);
+      color: #0066ff;
+      box-shadow: 0 0 10px rgba(0, 102, 255, 0.05);
+    }
+    .theme-light .theme-select-control:hover, .theme-light .theme-select-control:focus {
+      border-color: #0066ff;
+      box-shadow: 0 0 15px rgba(0, 102, 255, 0.15);
+      background-color: #ffffff;
+    }
+
+    .profile-section {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 14px;
+      background: rgba(10, 14, 26, 0.6) !important;
+      border: 1px solid var(--border-color) !important;
+      border-radius: 20px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15), 0 0 10px rgba(0, 212, 255, 0.05);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .profile-section:hover {
+      background: rgba(10, 14, 26, 0.85) !important;
+      border-color: var(--accent-color) !important;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25), 0 0 15px var(--accent-glow);
+      transform: translateY(-1px);
+    }
+
+    .avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent-color), #0066ff) !important;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 11px;
+      color: #ffffff;
+      box-shadow: 0 0 10px var(--accent-glow) !important;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .profile-info {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+
+    .profile-name {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-color) !important;
+      letter-spacing: 0.5px;
+    }
+
+    .logout-btn {
+      font-size: 9px;
+      color: var(--text-muted) !important;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      transition: all 0.2s ease;
+    }
+
+    .logout-btn:hover {
+      color: #ff4757 !important;
+      text-shadow: 0 0 8px rgba(255, 71, 87, 0.4);
+    }
+
+    .theme-light .profile-section {
+      background: rgba(255, 255, 255, 0.8) !important;
+      border-color: rgba(0, 102, 255, 0.15) !important;
+      box-shadow: 0 4px 15px rgba(0, 102, 255, 0.05);
+    }
+    
+    .theme-light .profile-section:hover {
+      background: #ffffff !important;
+      border-color: #0066ff !important;
+      box-shadow: 0 6px 20px rgba(0, 102, 255, 0.1), 0 0 10px rgba(0, 102, 255, 0.1);
+    }
+
+    .theme-light .avatar {
+      background: linear-gradient(135deg, #0066ff, #00d4ff) !important;
+      box-shadow: 0 0 8px rgba(0, 102, 255, 0.2) !important;
+    }
+
+    .theme-light .profile-name {
+      color: #1e293b !important;
+    }
+
+    .theme-light .logout-btn {
+      color: #64748b !important;
+    }
+
+    .theme-light .logout-btn:hover {
+      color: #ef4444 !important;
+    }
   </style>
  </head>
  <body class="h-full">
@@ -448,23 +576,25 @@
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
             </button>
             <div class="flex items-center gap-4">
-              <!-- Theme Selector -->
-              <select v-model="currentTheme" @change="saveTheme" class="bg-slate-900 border border-slate-700 text-xs px-3 py-1.5 rounded-lg text-slate-300 focus:outline-none">
-                <option value="theme-cyber">Cyber Mode (Dark)</option>
-                <option value="theme-light">Day Mode (Light)</option>
-              </select>
-              <div class="flex items-center gap-2">
-                <div class="w-8 h-8 rounded-full bg-[#1e4a7f] flex items-center justify-center text-xs font-bold text-[#e8f1ff]">
+              <div class="theme-switcher">
+                <select v-model="currentTheme" @change="saveTheme" class="theme-select-control">
+                  <option value="theme-cyber">🌐 Cyber Mode (Dark)</option>
+                  <option value="theme-light">☀️ Day Mode (Light)</option>
+                </select>
+              </div>
+              <div class="profile-section">
+                <div class="avatar">
                   {{ initials }}
                 </div>
-                <div class="text-xs text-right">
-                  <div class="font-bold text-[#e8f1ff]">{{ userProfile?.name || 'Admin' }}</div>
-                  <div class="text-slate-400 text-[10px]">{{ userProfile?.role || 'SuperAdmin' }}</div>
+                <div class="profile-info">
+                  <div class="profile-name">
+                    {{ userProfile?.name || 'Admin' }}
+                  </div>
+                  <div class="logout-btn" @click="handleLogout">
+                    Logout →
+                  </div>
                 </div>
               </div>
-              <button @click="handleLogout" class="text-rose-500 hover:text-rose-400 text-xs font-bold transition-colors">
-                Logout
-              </button>
             </div>
           </header>
 
