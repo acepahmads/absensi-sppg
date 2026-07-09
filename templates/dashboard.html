@@ -48,9 +48,8 @@
       box-shadow: none;
     }
 
-    .normal-mode .logo-vendor-container {
-      box-shadow: 0 0 15px rgba(0, 102, 255, 0.15);
-      border: 1px solid rgba(0, 102, 255, 0.1);
+    .normal-mode .logo-vendor-img {
+      filter: invert(1);
     }
 
     .normal-mode .nav-item {
@@ -288,13 +287,10 @@
     .logo-vendor-container {
       width: 100%;
       height: 40px;
-      background: #ffffff;
-      border-radius: 6px;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 6px 12px;
-      box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);
+      padding: 4px 6px;
     }
 
     .logo-vendor-img {
@@ -1464,7 +1460,7 @@
       <div class="sidebar-resizer" @mousedown="startResize"></div>
       <div class="logo-section">
         <div class="logo-vendor-container">
-          <img src="/static/LOGO-CBI.png" alt="Logo Vendor" class="logo-vendor-img">
+          <img src="/static/LOGO-CBI-HORIZONTAL.png" alt="Logo Vendor" class="logo-vendor-img">
         </div>
       </div>
       <nav class="nav-menu">
