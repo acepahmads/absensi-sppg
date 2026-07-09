@@ -1737,7 +1737,7 @@
               <line x1="3" y1="18" x2="21" y2="18"></line>
             </svg>
           </button>
-          <h2 class="page-title-top">{{ configState.dashboard_title || defaultConfig.dashboard_title }}</h2>
+          <h2 class="page-title-top">{{ configState.dashboard_title || defaultConfig.dashboard_title }} <span style="font-size: 13px; font-weight: 500; color: var(--text-muted); margin-left: 12px; font-family: 'Outfit', sans-serif;">({{ formatPeriodLong(periodDates) }})</span></h2>
         </div>
         <div style="display: flex; align-items: center; gap: 20px;">
           <div class="theme-switcher">
@@ -1764,18 +1764,7 @@
       <div class="content-area">
        <div class="main-content">
     <!-- Period Selection & Filter Section in 1 Row -->
-    <div class="filter-section" style="margin-bottom: 12px; padding: 12px 16px;" :style="filterSectionStyle">
-     <!-- Period Info Row at the top of Filter Card -->
-     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; width: 100%; font-size: 11px;">
-       <div>
-         <span style="color: var(--text-muted); font-weight: 500;">{{ configState.company_name || defaultConfig.company_name }}</span>
-       </div>
-       <div>
-         <span style="color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">{{ configState.period_label || defaultConfig.period_label }}:</span>
-         <span style="color: var(--accent-color); font-weight: 700; margin-left: 4px;">{{ formatPeriodLong(periodDates) }}</span>
-       </div>
-     </div>
-
+    <div class="filter-section" style="margin-bottom: 12px; padding: 10px 16px;" :style="filterSectionStyle">
      <div style="display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; width: 100%;">
       <!-- Cari Karyawan -->
       <div class="filter-group" style="flex: 2 1 180px; min-width: 150px;">
