@@ -250,8 +250,8 @@
     }
 
     .top-bar {
-      height: 70px;
-      padding: 0 32px;
+      height: 50px;
+      padding: 0 20px;
       background: rgba(13, 20, 32, 0.5);
       border-bottom: 1px solid var(--border-color);
       display: flex;
@@ -262,7 +262,7 @@
 
     .page-content {
       flex: 1;
-      padding: 24px 32px;
+      padding: 14px 20px;
       overflow-y: auto;
     }
 
@@ -272,8 +272,8 @@
       border: 1px solid var(--border-color);
       box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
       backdrop-filter: blur(8px);
-      border-radius: 12px;
-      padding: 20px;
+      border-radius: 10px;
+      padding: 12px;
       transition: all 0.3s ease;
       position: relative;
       overflow: hidden;
@@ -293,15 +293,15 @@
     }
 
     .card-title-lbl {
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 1.5px;
       color: var(--sidebar-text-muted);
-      margin-bottom: 10px;
+      margin-bottom: 6px;
     }
     .card-value-lbl {
-      font-size: 2.25rem;
+      font-size: 1.75rem;
       font-weight: 800;
       color: #fff;
       display: flex;
@@ -309,9 +309,9 @@
       gap: 6px;
     }
     .card-subvalue-lbl {
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       color: var(--sidebar-text-muted);
-      margin-top: 8px;
+      margin-top: 4px;
     }
 
     /* Progress bar design */
@@ -320,7 +320,7 @@
       height: 4px;
       background: rgba(255, 255, 255, 0.1);
       border-radius: 2px;
-      margin-top: 14px;
+      margin-top: 10px;
       overflow: hidden;
     }
     .bar-fill {
@@ -337,20 +337,20 @@
       border: 1px solid var(--border-color);
       box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
       backdrop-filter: blur(8px);
-      border-radius: 12px;
-      padding: 24px;
+      border-radius: 10px;
+      padding: 16px;
       position: relative;
     }
     .panel-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 20px;
+      margin-bottom: 12px;
       border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-      padding-bottom: 12px;
+      padding-bottom: 8px;
     }
     .panel-title {
-      font-size: 1.1rem;
+      font-size: 1rem;
       font-weight: 600;
       letter-spacing: 0.5px;
       color: #fff;
@@ -361,13 +361,13 @@
 
     /* Role Progress Row */
     .role-row {
-      margin-bottom: 18px;
+      margin-bottom: 10px;
     }
     .role-header {
       display: flex;
       justify-content: space-between;
-      font-size: 0.9rem;
-      margin-bottom: 6px;
+      font-size: 0.85rem;
+      margin-bottom: 4px;
     }
     .role-name {
       color: var(--sidebar-text-muted);
@@ -383,13 +383,13 @@
       justify-content: space-around;
       align-items: center;
       flex-wrap: wrap;
-      gap: 20px;
+      gap: 12px;
       position: relative;
     }
     .gauge-item {
       position: relative;
-      width: 140px;
-      height: 140px;
+      width: 100px;
+      height: 100px;
     }
     .gauge-text {
       position: absolute;
@@ -400,12 +400,12 @@
       justify-content: center;
     }
     .gauge-value {
-      font-size: 1.25rem;
+      font-size: 1.1rem;
       font-weight: 800;
       color: #fff;
     }
     .gauge-label {
-      font-size: 0.65rem;
+      font-size: 0.6rem;
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.5px;
@@ -418,8 +418,8 @@
       border: 1px solid var(--border-color);
       color: #fff;
       border-radius: 8px;
-      padding: 8px 16px;
-      font-size: 0.9rem;
+      padding: 6px 12px;
+      font-size: 0.85rem;
       outline: none;
       cursor: pointer;
       transition: all 0.3s ease;
@@ -433,14 +433,14 @@
     .geofence-alert {
       background: rgba(245, 158, 11, 0.1);
       border: 1px solid rgba(245, 158, 11, 0.2);
-      border-radius: 8px;
-      padding: 12px 16px;
-      margin-top: 20px;
-      font-size: 0.8rem;
+      border-radius: 6px;
+      padding: 8px 12px;
+      margin-top: 10px;
+      font-size: 0.75rem;
       color: #f59e0b;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
     }
 
     /* Theme Styles overrides */
@@ -651,24 +651,24 @@
           <!-- Scrollable Page Area -->
           <main class="page-content">
             <!-- Header section -->
-            <div class="mb-8 flex justify-between items-start">
+            <div class="mb-4 flex justify-between items-start">
               <div>
                 <div class="flex items-center gap-3 mb-1">
-                  <h2 class="text-2xl font-bold text-white">Analisis & Statistik Kehadiran</h2>
-                  <span class="text-xs font-semibold px-2 py-0.5 rounded bg-blue-500/20 text-blue-400 border border-blue-500/30">Analytics & Charts</span>
+                  <h2 class="text-xl font-bold text-white">Analisis & Statistik Kehadiran</h2>
+                  <span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-blue-500/20 text-blue-400 border border-blue-500/30">Analytics & Charts</span>
                 </div>
-                <p class="text-sm text-gray-400">Analisis mendalam kehadiran relawan, rasio ketepatan waktu, kepatuhan geofence, dan tren harian.</p>
+                <p class="text-xs text-gray-400">Analisis mendalam kehadiran relawan, rasio ketepatan waktu, kepatuhan geofence, dan tren harian.</p>
               </div>
             </div>
 
             <!-- Top Cards Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
               <!-- Card 1: Total Absensi Hari Ini -->
               <div class="metric-card">
                 <div class="card-title-lbl">Total Absensi Hari Ini</div>
                 <div class="card-value-lbl">
                   {{ generalStats.total_hadir_today }}
-                  <span class="text-sm font-medium text-gray-400">kehadiran</span>
+                  <span class="text-xs font-medium text-gray-400">kehadiran</span>
                 </div>
                 <div class="card-subvalue-lbl">Dari total roster {{ generalStats.total_karyawan }} relawan</div>
               </div>
@@ -676,7 +676,7 @@
               <!-- Card 2: Rasio Kehadiran Roster -->
               <div class="metric-card">
                 <div class="card-title-lbl">Rasio Kehadiran Roster</div>
-                <div class="card-value-lbl">{{ generalStats.attendance_rate_today }}% <span class="text-sm font-medium text-gray-400">aktif</span></div>
+                <div class="card-value-lbl">{{ generalStats.attendance_rate_today }}% <span class="text-xs font-medium text-gray-400">aktif</span></div>
                 <div class="bar-container">
                   <div class="bar-fill" :style="{ width: generalStats.attendance_rate_today + '%' }"></div>
                 </div>
@@ -685,7 +685,7 @@
               <!-- Card 3: Tepat Waktu Rate -->
               <div class="metric-card">
                 <div class="card-title-lbl">Tepat Waktu Rate</div>
-                <div class="card-value-lbl">{{ generalStats.tepat_waktu_rate_today }}% <span class="text-sm font-medium text-gray-400">tepat waktu</span></div>
+                <div class="card-value-lbl">{{ generalStats.tepat_waktu_rate_today }}% <span class="text-xs font-medium text-gray-400">tepat waktu</span></div>
                 <div class="bar-container">
                   <div class="bar-fill" :style="{ width: generalStats.tepat_waktu_rate_today + '%', backgroundColor: '#10b981' }"></div>
                 </div>
@@ -694,7 +694,7 @@
               <!-- Card 4: Geofence Compliance -->
               <div class="metric-card">
                 <div class="card-title-lbl">Geofence Compliance</div>
-                <div class="card-value-lbl">{{ generalStats.geofence_rate_today }}% <span class="text-sm font-medium text-gray-400">aman</span></div>
+                <div class="card-value-lbl">{{ generalStats.geofence_rate_today }}% <span class="text-xs font-medium text-gray-400">aman</span></div>
                 <div class="bar-container">
                   <div class="bar-fill" :style="{ width: generalStats.geofence_rate_today + '%', backgroundColor: '#f59e0b' }"></div>
                 </div>
@@ -702,20 +702,20 @@
             </div>
 
             <!-- Charts Section (Middle Grid) -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
               <!-- Tren Kehadiran 7 Hari Terakhir -->
               <div class="glass-panel">
                 <div class="panel-header">
                   <h3 class="panel-title">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
                     Tren Kehadiran 7 Hari Terakhir
                   </h3>
                   <span class="text-xs text-gray-400">7 Hari terakhir</span>
                 </div>
-                <div style="position: relative; height: 300px; width: 100%;">
+                <div style="position: relative; height: 180px; width: 100%;">
                   <canvas id="trendChart"></canvas>
                 </div>
-                <div class="text-center text-xs text-gray-500 mt-4 uppercase tracking-wider font-bold">
+                <div class="text-center text-[10px] text-gray-500 mt-2 uppercase tracking-wider font-bold">
                   Grafik Perkembangan Kehadiran Relawan (7 Hari Terakhir)
                 </div>
               </div>
@@ -724,12 +724,12 @@
               <div class="glass-panel">
                 <div class="panel-header">
                   <h3 class="panel-title">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
                     Kepatuhan & Ketepatan Relawan
                   </h3>
                   <span class="text-xs text-gray-400">Kepatuhan GPS & Waktu</span>
                 </div>
-                <div class="gauge-wrapper py-6">
+                <div class="gauge-wrapper py-2">
                   <!-- Doughnut Gauge 1: ON-TIME -->
                   <div class="gauge-item">
                     <canvas id="onTimeGauge"></canvas>
@@ -748,17 +748,17 @@
                   </div>
                 </div>
                 <!-- Labels legend -->
-                <div class="grid grid-cols-2 gap-4 text-center text-sm border-t border-white/5 pt-4">
+                <div class="grid grid-cols-2 gap-4 text-center text-xs border-t border-white/5 pt-2">
                   <div>
-                    <div class="text-xs text-gray-400 mb-1">Status Kehadiran Today</div>
-                    <div class="flex justify-center gap-4 font-semibold">
+                    <div class="text-[10px] text-gray-400 mb-0.5">Status Kehadiran Today</div>
+                    <div class="flex justify-center gap-3 font-semibold">
                       <span class="text-green-400">&bull; Tepat Waktu: {{ generalStats.tepat_waktu_count }}</span>
                       <span class="text-blue-400">&bull; Terlambat: {{ generalStats.terlambat_count }}</span>
                     </div>
                   </div>
                   <div>
-                    <div class="text-xs text-gray-400 mb-1">Status Geofence Today</div>
-                    <div class="flex justify-center gap-4 font-semibold">
+                    <div class="text-[10px] text-gray-400 mb-0.5">Status Geofence Today</div>
+                    <div class="flex justify-center gap-3 font-semibold">
                       <span class="text-yellow-400">&bull; Dalam Geofence: {{ generalStats.safe_geofence_count }}</span>
                       <span class="text-red-400">&bull; Luar Geofence: {{ generalStats.unsafe_geofence_count }}</span>
                     </div>
@@ -766,44 +766,44 @@
                 </div>
                 <!-- Warning Text -->
                 <div class="geofence-alert">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
                   <span>Absensi di luar Geofence (radius 50m) akan memicu status alarm visual "Luar Geofence" pada sistem.</span>
                 </div>
               </div>
             </div>
 
             <!-- Bottom Section (Role distribution & Individual Stats) -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <!-- Peran Relawan Distribution -->
               <div class="glass-panel">
                 <div class="panel-header">
                   <h3 class="panel-title">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                    Distribusi Kehadiran Berdasarkan Peran Relawan
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                    Distribusi Kehadiran Peran Relawan
                   </h3>
                 </div>
-                <div class="py-2">
+                <div class="py-1">
                   <div class="role-row" v-for="role in generalStats.distribusi_peran" :key="role.peran">
                     <div class="role-header">
-                      <span class="role-name">{{ role.peran }}</span>
-                      <span class="role-stats">{{ role.hadir_count }} Hadir / {{ role.total_count }} Terdaftar ({{ role.percentage }}%)</span>
+                      <span class="role-name text-xs">{{ role.peran }}</span>
+                      <span class="role-stats text-xs">{{ role.hadir_count }} Hadir / {{ role.total_count }} Terdaftar ({{ role.percentage }}%)</span>
                     </div>
                     <div class="bar-container">
                       <div class="bar-fill" :style="{ width: role.percentage + '%', backgroundColor: '#3b82f6' }"></div>
                     </div>
                   </div>
-                  <div v-if="!generalStats.distribusi_peran || generalStats.distribusi_peran.length === 0" class="text-center text-gray-500 py-6">
+                  <div v-if="!generalStats.distribusi_peran || generalStats.distribusi_peran.length === 0" class="text-center text-gray-500 py-4 text-xs">
                     Belum ada data distribusi peran terdaftar hari ini.
                   </div>
                 </div>
-                <div class="text-xs text-gray-500 mt-6">* Data dihitung berdasarkan kehadiran hari ini.</div>
+                <div class="text-[10px] text-gray-500 mt-4">* Data dihitung berdasarkan kehadiran hari ini.</div>
               </div>
 
               <!-- Individual statistics graph -->
               <div class="glass-panel">
                 <div class="panel-header">
                   <h3 class="panel-title">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="9" x2="15" y2="9"></line><line x1="9" y1="13" x2="15" y2="13"></line><line x1="9" y1="17" x2="13" y2="17"></line></svg>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="9" x2="15" y2="9"></line><line x1="9" y1="13" x2="15" y2="13"></line><line x1="9" y1="17" x2="13" y2="17"></line></svg>
                     Grafik Kehadiran per Individu
                   </h3>
                   <!-- Dropdown list of employees -->
@@ -813,11 +813,11 @@
                   </select>
                 </div>
                 <!-- Chart area -->
-                <div style="position: relative; height: 260px; width: 100%;">
+                <div style="position: relative; height: 180px; width: 100%;">
                   <canvas id="individualChart"></canvas>
                 </div>
                 <!-- Custom Legend -->
-                <div class="flex justify-center gap-6 text-xs mt-6 font-semibold">
+                <div class="flex justify-center gap-4 text-[10px] mt-4 font-semibold">
                   <span class="text-green-500">&bull; Hadir</span>
                   <span class="text-yellow-500">&bull; Sakit</span>
                   <span class="text-blue-500">&bull; Izin</span>
