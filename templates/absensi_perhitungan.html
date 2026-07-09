@@ -170,19 +170,30 @@
       cursor: col-resize !important;
     }
 
-    .logo-section-sidebar {
+    .logo-section {
       padding: 16px 14px;
-      text-align: center;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-bottom: 1px solid rgba(0, 212, 255, 0.1);
     }
 
-    .logo-section-sidebar h1 {
-      font-family: 'Orbitron', sans-serif !important;
-      font-size: 15px;
-      font-weight: 800;
-      color: var(--accent-color) !important;
-      text-shadow: 0 0 15px var(--accent-glow);
-      letter-spacing: 2px;
-      transition: all 0.3s;
+    .logo-vendor-container {
+      width: 100%;
+      height: 40px;
+      background: #ffffff;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px 12px;
+      box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);
+    }
+
+    .logo-vendor-img {
+      max-height: 100%;
+      max-width: 100%;
+      object-fit: contain;
     }
 
     .theme-switcher {
@@ -1633,8 +1644,10 @@
    <div style="display: flex; width: 100%; height: 100%;">
     <aside class="sidebar" :class="{ 'collapsed': !sidebarOpen }" :style="{ width: sidebarOpen ? sidebarWidth + 'px' : '0px', minWidth: sidebarOpen ? sidebarWidth + 'px' : '0px', maxWidth: sidebarOpen ? sidebarWidth + 'px' : '0px' }">
       <div class="sidebar-resizer" @mousedown="startResize"></div>
-      <div class="logo-section-sidebar">
-        <h1>{{ configState.company_name || 'ENTERPRISE' }}</h1>
+      <div class="logo-section">
+        <div class="logo-vendor-container">
+          <img src="/static/LOGO-CBI.png" alt="Logo Vendor" class="logo-vendor-img">
+        </div>
       </div>
       <nav class="nav-menu">
         <!-- Dashboard -->
