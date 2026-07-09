@@ -289,7 +289,7 @@ func (r *userRepository) GetAllUserKaryawan(ctx context.Context) ([]model.UserKa
 		WHERE uk.tenant_id = ?
 		ORDER BY uk.id DESC
 	`
-	var list []model.UserKaryawan
+	list := []model.UserKaryawan{}
 	err := r.db.SelectContext(ctx, &list, query, tenantID)
 	if err != nil {
 		return nil, err
@@ -340,7 +340,7 @@ func (r *userRepository) GetLeadersList(ctx context.Context) ([]model.KaryawanLe
 		tenantID = 1
 	}
 	query := `SELECT id, nama, divisi, status FROM karyawan_leader WHERE tenant_id = ? ORDER BY id ASC`
-	var list []model.KaryawanLeader
+	list := []model.KaryawanLeader{}
 	err := r.db.SelectContext(ctx, &list, query, tenantID)
 	if err != nil {
 		return nil, err
@@ -355,7 +355,7 @@ func (r *userRepository) GetAllLeaders(ctx context.Context) ([]model.KaryawanLea
 		tenantID = 1
 	}
 	query := `SELECT id, nama, divisi, status FROM karyawan_leader WHERE tenant_id = ? ORDER BY id DESC`
-	var list []model.KaryawanLeader
+	list := []model.KaryawanLeader{}
 	err := r.db.SelectContext(ctx, &list, query, tenantID)
 	return list, err
 }
@@ -407,7 +407,7 @@ func (r *userRepository) GetAllUserAccounts(ctx context.Context) ([]model.UserAc
 		WHERE ua.tenant_id = ?
 		ORDER BY ua.created_at DESC
 	`
-	var list []model.UserAccountCRUD
+	list := []model.UserAccountCRUD{}
 	err := r.db.SelectContext(ctx, &list, query, tenantID)
 	return list, err
 }

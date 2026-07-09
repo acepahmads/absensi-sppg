@@ -966,12 +966,12 @@
 
         // Filter and Search Computing
         const filteredKaryawan = computed(() => {
-          let list = employees.value;
+          let list = employees.value || [];
           
           if (search.value.trim() !== '') {
             const q = search.value.toLowerCase().trim();
             list = list.filter(k => 
-              k.nama_mesin_absen.toLowerCase().includes(q) ||
+              (k.nama_mesin_absen && k.nama_mesin_absen.toLowerCase().includes(q)) ||
               (k.jabatan && k.jabatan.toLowerCase().includes(q)) ||
               (k.leader_nama && k.leader_nama.toLowerCase().includes(q))
             );
