@@ -1763,32 +1763,20 @@
       </header>
       <div class="content-area">
        <div class="main-content">
-    <!-- Header Section -->
-    <div class="header-section" :style="headerSectionStyle">
-     <!-- Logo Section -->
-     <div class="logo-section">
-      <svg width="50" height="50" viewbox="0 0 100 100" style="filter: drop-shadow(0 4px 12px rgba(74, 123, 200, 0.4));"><defs>
-        <lineargradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-         <stop offset="0%" style="stop-color:#4a7bc8;stop-opacity:1" />
-         <stop offset="100%" style="stop-color:#1e4a7f;stop-opacity:1" />
-        </lineargradient>
-       </defs> <circle cx="50" cy="50" r="45" fill="url(#logoGradient)" stroke="#5b8dc9" stroke-width="2" /> <path d="M 30 50 L 45 65 L 70 35" stroke="#e8f1ff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none" /> <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1" />
-      </svg>
-     </div>
-     <div class="header-grid">
-      <div class="company-info">
-       <h1 id="dashboard-title" :style="dashboardTitleStyle">{{ configState.dashboard_title || defaultConfig.dashboard_title }}</h1>
-       <p id="company-name" :style="companyNameStyle">{{ configState.company_name || defaultConfig.company_name }}</p>
-      </div>
-      <div class="period-info" :style="headerSectionStyle">
-       <p class="period-label" id="period-label" :style="periodLabelStyle">{{ configState.period_label || defaultConfig.period_label }}</p>
-       <p class="period-value" id="period-value">{{ formatPeriodLong(periodDates) }}</p>
-      </div>
-     </div>
-    </div>
-    
     <!-- Period Selection & Filter Section in 1 Row -->
-    <div class="filter-section" style="margin-bottom: 16px;" :style="filterSectionStyle">
+    <div class="filter-section" style="margin-bottom: 16px; padding: 20px;" :style="filterSectionStyle">
+     <!-- Period Info Row at the top of Filter Card -->
+     <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 16px; width: 100%;">
+       <div style="display: flex; align-items: center; gap: 8px;">
+         <span style="font-size: 16px; font-weight: 700; color: var(--accent-color);">{{ configState.dashboard_title || defaultConfig.dashboard_title }}</span>
+         <span style="font-size: 12px; color: var(--text-muted);">| {{ configState.company_name || defaultConfig.company_name }}</span>
+       </div>
+       <div style="text-align: right;">
+         <span style="font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 2px;">{{ configState.period_label || defaultConfig.period_label }}</span>
+         <span style="font-size: 14px; font-weight: 700; color: var(--text-color);">{{ formatPeriodLong(periodDates) }}</span>
+       </div>
+     </div>
+
      <div style="display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; width: 100%;">
       <!-- Cari Karyawan -->
       <div class="filter-group" style="flex: 2 1 180px; min-width: 150px;">
