@@ -101,8 +101,10 @@ type SummaryAbsensi struct {
 	TotalPotongan  float64 `json:"totalPotongan"`
 	TotalUangMakan float64 `json:"totalUangMakan"`
 	JumlahHari     float64 `json:"jumlahHari"`
-	TotalBayar     float64 `json:"totalBayar"`
-	JumlahLembur   float64 `json:"jumlahLembur"`
+	TotalBayar      float64 `json:"totalBayar"`
+	JumlahLembur    float64 `json:"jumlahLembur"`
+	TotalUangHarian float64 `json:"totalUangHarian"`
+	UangBawaPulang  float64 `json:"uangBawaPulang"`
 }
 
 type DayLog struct {

@@ -1884,6 +1884,7 @@
           <th class="col-summary col-summary-uang-makan">Jumlah Uang Makan</th>
           <th class="col-summary col-summary-uang-makan-bayar">Uang Makan THP</th>
           <th class="col-summary col-summary-uang-lembur">Jumlah Lembur</th>
+          <th class="col-summary col-summary-uang-bawa-pulang" style="background-color: #0f3661; color: #00d4ff; font-weight: bold; border-left: 2px solid var(--border-color);">Uang Bawa Pulang</th>
         </tr>
        </thead>
        <tbody>
@@ -1977,6 +1978,9 @@
           </td>
           <td class="col-summary col-summary-uang-lembur">
             <span class="summary-value-total">{{ formatNumber(getEmployeeSummary(emp).jumlahLembur) }}</span>
+          </td>
+          <td class="col-summary col-summary-uang-bawa-pulang" style="background-color: rgba(30, 86, 150, 0.15); font-weight: bold; border-left: 2px solid var(--border-color); color: #00d4ff;">
+            <span class="summary-value-total">{{ formatNumber(getEmployeeSummary(emp).uangBawaPulang) }}</span>
           </td>
         </tr>
        </tbody>
@@ -2712,7 +2716,9 @@
             totalPotongan: 0,
             totalUangMakan: 0,
             totalBayar: 0,
-            jumlahLembur: 0
+            jumlahLembur: 0,
+            totalUangHarian: 0,
+            uangBawaPulang: 0
           };
           
           const records = this.attendanceData[employeeId];
@@ -2742,6 +2748,7 @@
           });
           
           summary.jumlahHariTA = summary.terlambat1 + summary.terlambat2 + summary.terlambat3 + summary.terlambat4;
+          summary.uangBawaPulang = summary.totalBayar + summary.jumlahLembur;
           return summary;
         },
         toggleRowSelection(employeeId) {
@@ -3177,6 +3184,8 @@
                     <th style="background-color: #70AD47; font-weight: bold;">Jum.Potongan</th>
                     <th style="background-color: #70AD47; font-weight: bold;">Jum.Makan</th>
                     <th style="background-color: #70AD47; font-weight: bold;">Jum.MakanTHP</th>
+                    <th style="background-color: #70AD47; font-weight: bold;">Jum.Lembur</th>
+                    <th style="background-color: #70AD47; font-weight: bold;">Uang Bawa Pulang</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -3222,6 +3231,8 @@
             html += `<td class="summary-col" style="background-color: #BDD7EE; font-weight: bold;">${Number(summary.totalPotongan).toLocaleString('id-ID')}</td>`;
             html += `<td class="summary-col" style="background-color: #BDD7EE; font-weight: bold;">${Number(summary.totalUangMakan).toLocaleString('id-ID')}</td>`;
             html += `<td class="summary-col" style="background-color: #BDD7EE; font-weight: bold;">${Number(summary.totalBayar).toLocaleString('id-ID')}</td>`;
+            html += `<td class="summary-col" style="background-color: #BDD7EE; font-weight: bold;">${Number(summary.jumlahLembur || 0).toLocaleString('id-ID')}</td>`;
+            html += `<td class="summary-col" style="background-color: #BDD7EE; font-weight: bold;">${Number(summary.uangBawaPulang || 0).toLocaleString('id-ID')}</td>`;
             
             html += '</tr>';
           });

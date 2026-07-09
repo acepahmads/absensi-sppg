@@ -123,10 +123,13 @@ func (s *AbsensiService) RekapAbsensi(ctx context.Context, start, end string, id
 		summary.JumlahHari = 0
 		summary.JumlahHariTA = 0
 		summary.JumlahLembur = 0
+		summary.TotalUangHarian = 0
+		summary.UangBawaPulang = 0
 
 		resp.Attendance[idStr] = map[string]model.DayLog{}
 		// fmt.Println("nama", emp.Name, "ID", emp.ID, "absensi", absensi[emp.ID])
 		uangMakan, _ := s.repo.GetUangMakan(ctx, emp.Name)
+		uangHarian, _ := s.repo.GetUangHarian(ctx, emp.Name)
 		for _, tgl := range dates {
 			// fmt.Println("Nama0", emp.Name, "tgl", tgl, "absensi", tgl, "uang makan", uangMakan, "AttendanceType", absensi[emp.ID][tgl].AttendanceType, "JHari", summary.Total)
 			if day, ok := absensi[emp.ID][tgl]; ok {
@@ -233,7 +236,12 @@ func (s *AbsensiService) RekapAbsensi(ctx context.Context, start, end string, id
 			}
 			// fmt.Println("nama1", emp.Name, "tgl", tgl, "absensi", tgl, "uang makan", uangMakan, "AttendanceType", absensi[emp.ID][tgl].AttendanceType, "JHari", summary.Total, "JumlahHariTA", summary.JumlahHariTA)
 		}
+		
+		// Present days (hari hadir) = Kantor + WFH + Dinas + Terlambat 1-4
+		presentDays := summary.Kantor + summary.WFH + summary.Terlambat1 + summary.Terlambat2 + summary.Terlambat3 + summary.Terlambat4 + summary.Dinas
+		summary.TotalUangHarian = float64(presentDays) * uangHarian
 		summary.TotalBayar = summary.TotalUangMakan - summary.TotalPotongan
+		summary.UangBawaPulang = summary.TotalUangHarian + summary.TotalBayar + summary.JumlahLembur
 
 		resp.Employees = append(resp.Employees, model.EmployeeRekap{
 			ID:       emp.ID,

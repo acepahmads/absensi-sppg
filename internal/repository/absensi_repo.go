@@ -35,6 +35,7 @@ type AbsensiRepository interface {
 	GetAbsensiByKaryawan(ctx context.Context, nama string, fromDate string, toDate string) ([]model.Absensi, error)
 	InputLembur(ctx context.Context, absensiLembur model.AbsensiLembur) error
 	GetUangMakan(ctx context.Context, nama string) (float64, error)
+	GetUangHarian(ctx context.Context, nama string) (float64, error)
 	InputAbsensiLeader(ctx context.Context, req model.AbsensiInputLeader) error
 	DeleteAbsensiLeader(ctx context.Context, absensiLeader model.AbsensiInputLeader) error
 	UpdateAbsensiLeader(ctx context.Context, req model.AbsensiInputLeader) error
@@ -1457,6 +1458,17 @@ func (r *absensiRepository) GetUangMakan(ctx context.Context, nama string) (floa
 	var uangMakan float64
 	err := r.db.GetContext(ctx, &uangMakan, query, nama, tenantID)
 	return uangMakan, err
+}
+func (r *absensiRepository) GetUangHarian(ctx context.Context, nama string) (float64, error) {
+	tenantID, _ := ctx.Value("tenantID").(int)
+	if tenantID == 0 {
+		tenantID = r.getTenantIDByKaryawanName(nama)
+	}
+	query := `
+		SELECT uang_harian FROM user_karyawan WHERE nama_mesin_absen = ? AND tenant_id = ?`
+	var uangHarian float64
+	err := r.db.GetContext(ctx, &uangHarian, query, nama, tenantID)
+	return uangHarian, err
 }
 func (r *absensiRepository) InputAbsensiLeader(ctx context.Context, absensiLeader model.AbsensiInputLeader) error {
 	tenantID, _ := ctx.Value("tenantID").(int)
