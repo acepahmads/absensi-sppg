@@ -531,7 +531,7 @@
         </header>
 
         <!-- Content Area -->
-        <div class="content-area flex-1 overflow-y-auto p-6" :class="currentTheme">
+        <div class="content-area flex-1 overflow-y-auto p-4" :class="currentTheme">
           <!-- Print Only Header -->
           <div class="hidden print:block text-center mb-6">
             <h1 class="text-2xl font-bold uppercase">Laporan Penggajian 2 Mingguan</h1>
@@ -540,7 +540,7 @@
           </div>
 
           <!-- Filters Section -->
-          <div class="glass-card p-4 mb-6 flex flex-wrap gap-4 items-end no-print">
+          <div class="glass-card p-3 mb-3 flex flex-wrap gap-3 items-end no-print">
             <div class="flex-1 min-w-[200px]">
               <label class="block text-xs font-bold text-slate-400 mb-1 uppercase">Pilih Periode 2 Minggu</label>
               <div class="flex gap-2">
@@ -588,47 +588,47 @@
 
           <div v-else>
             <!-- Summary Dashboard Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-              <div class="glass-card p-5 relative overflow-hidden">
-                <div class="absolute top-0 right-0 w-24 h-24 bg-cyan-500/5 rounded-full -mr-8 -mt-8"></div>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-3">
+              <div class="glass-card p-3 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-16 h-16 bg-cyan-500/5 rounded-full -mr-4 -mt-4"></div>
                 <p class="text-xs font-bold text-slate-400 uppercase">Total Gaji Netto</p>
-                <h3 class="text-2xl font-bold text-cyan-400 mt-2">{{ formatCurrency(totals.netPay) }}</h3>
-                <p class="text-[10px] text-slate-500 mt-1">Total pengeluaran gaji bersih</p>
+                <h3 class="text-xl font-bold text-cyan-400 mt-1">{{ formatCurrency(totals.netPay) }}</h3>
+                <p class="text-[10px] text-slate-500">Total pengeluaran gaji bersih</p>
               </div>
 
-              <div class="glass-card p-5 relative overflow-hidden">
-                <div class="absolute top-0 right-0 w-24 h-24 bg-red-500/5 rounded-full -mr-8 -mt-8"></div>
+              <div class="glass-card p-3 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-16 h-16 bg-red-500/5 rounded-full -mr-4 -mt-4"></div>
                 <p class="text-xs font-bold text-slate-400 uppercase">Potongan Keterlambatan</p>
-                <h3 class="text-2xl font-bold text-red-400 mt-2">{{ formatCurrency(totals.deductions) }}</h3>
-                <p class="text-[10px] text-slate-500 mt-1">Total denda keterlambatan berdasarkan aturan</p>
+                <h3 class="text-xl font-bold text-red-400 mt-1">{{ formatCurrency(totals.deductions) }}</h3>
+                <p class="text-[10px] text-slate-500">Total denda keterlambatan berdasarkan aturan</p>
               </div>
 
-              <div class="glass-card p-5 relative overflow-hidden">
-                <div class="absolute top-0 right-0 w-24 h-24 bg-green-500/5 rounded-full -mr-8 -mt-8"></div>
+              <div class="glass-card p-3 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-16 h-16 bg-green-500/5 rounded-full -mr-4 -mt-4"></div>
                 <p class="text-xs font-bold text-slate-400 uppercase">Total Uang Lembur</p>
-                <h3 class="text-2xl font-bold text-green-400 mt-2">{{ formatCurrency(totals.lembur) }}</h3>
-                <p class="text-[10px] text-slate-500 mt-1">Total lembur terbayar periode ini</p>
+                <h3 class="text-xl font-bold text-green-400 mt-1">{{ formatCurrency(totals.lembur) }}</h3>
+                <p class="text-[10px] text-slate-500">Total lembur terbayar periode ini</p>
               </div>
 
-              <div class="glass-card p-5 relative overflow-hidden">
-                <div class="absolute top-0 right-0 w-24 h-24 bg-blue-500/5 rounded-full -mr-8 -mt-8"></div>
+              <div class="glass-card p-3 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-16 h-16 bg-blue-500/5 rounded-full -mr-4 -mt-4"></div>
                 <p class="text-xs font-bold text-slate-400 uppercase">Rata-rata Gaji Karyawan</p>
-                <h3 class="text-2xl font-bold text-purple-400 mt-2">{{ formatCurrency(totals.netPay / processedPayroll.length) }}</h3>
-                <p class="text-[10px] text-slate-500 mt-1">Nilai rata-rata dari {{ processedPayroll.length }} orang</p>
+                <h3 class="text-xl font-bold text-purple-400 mt-1">{{ formatCurrency(totals.netPay / processedPayroll.length) }}</h3>
+                <p class="text-[10px] text-slate-500">Nilai rata-rata dari {{ processedPayroll.length }} orang</p>
               </div>
             </div>
 
             <!-- Denomination Summary Table -->
-            <div class="glass-card p-6 mb-6">
-              <h3 class="text-sm font-bold text-cyan-400 uppercase mb-4 flex items-center gap-2">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"></rect><circle cx="12" cy="12" r="2"></circle><path d="M6 12h.01M18 12h.01"></path></svg>
+            <div class="glass-card p-3 mb-3">
+              <h3 class="text-xs font-bold text-cyan-400 uppercase mb-2 flex items-center gap-2">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"></rect><circle cx="12" cy="12" r="2"></circle><path d="M6 12h.01M18 12h.01"></path></svg>
                 Daftar Tarik Tunai Pecahan Bank (Estimasi Penarikan Tunai)
               </h3>
-              <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-4">
-                <div v-for="(count, denom) in totals.denominations" :key="denom" class="p-3 bg-slate-950/40 border border-cyan-500/10 rounded-lg text-center">
-                  <p class="text-[11px] font-bold text-slate-400">Rp {{ formatNumber(denom) }}</p>
-                  <p class="text-xl font-bold text-cyan-400 mt-1">{{ count }} <span class="text-xs text-slate-500 font-normal">lembar</span></p>
-                  <p class="text-[10px] text-slate-500 mt-0.5">Subtotal: {{ formatCurrency(count * denom) }}</p>
+              <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-2">
+                <div v-for="(count, denom) in totals.denominations" :key="denom" class="p-2 bg-slate-950/40 border border-cyan-500/10 rounded-lg text-center">
+                  <p class="text-[10px] font-bold text-slate-400">Rp {{ formatNumber(denom) }}</p>
+                  <p class="text-base font-bold text-cyan-400">{{ count }} <span class="text-[10px] text-slate-500 font-normal">lembar</span></p>
+                  <p class="text-[9px] text-slate-500">Subtotal: {{ formatCurrency(count * denom) }}</p>
                 </div>
               </div>
             </div>

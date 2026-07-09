@@ -1429,22 +1429,17 @@
     }
 
     .filter-chip {
-      transition: all 0.3s ease;
+      transition: all 0.2s ease;
     }
 
 
     .filter-chip:hover {
-      transform: translateY(-2px);
-      box-shadow: 
-        0 0 20px var(--accent-glow),
-        0 0 40px var(--accent-glow) !important;
+      box-shadow: 0 0 8px var(--accent-glow) !important;
     }
 
     .filter-chip.active {
       background: linear-gradient(135deg, var(--row-selected), var(--row-hover)) !important;
-      box-shadow: 
-        0 0 25px var(--accent-glow),
-        0 0 50px var(--accent-glow) !important;
+      box-shadow: 0 0 12px var(--accent-glow) !important;
     }
 
     .metric-card {
@@ -1899,17 +1894,17 @@
       background: var(--panel-bg) !important;
       border: 1px solid var(--border-color) !important;
       color: var(--text-color) !important;
-      border-radius: 9999px;
-      padding: 0.5rem 1rem;
-      font-size: 0.875rem;
+      border-radius: 6px;
+      padding: 0.35rem 0.65rem;
+      font-size: 11px;
       font-weight: 500;
-      transition: all 0.3s ease;
+      transition: all 0.2s ease;
       cursor: pointer;
     }
 
     .filter-chip:hover {
       border-color: var(--accent-color) !important;
-      box-shadow: 0 0 10px var(--accent-glow) !important;
+      box-shadow: 0 0 8px var(--accent-glow) !important;
       color: var(--accent-color) !important;
     }
 
@@ -1917,7 +1912,7 @@
       background: var(--row-selected) !important;
       border-color: var(--accent-color) !important;
       color: var(--accent-color) !important;
-      box-shadow: 0 0 15px var(--accent-glow) !important;
+      box-shadow: 0 0 12px var(--accent-glow) !important;
     }
 
     .metric-card {
@@ -2359,36 +2354,36 @@
       <div class="holographic-mesh absolute inset-0"></div><!-- Main Panel Container -->
       <div class="relative w-full">
         <div class="w-full"><!-- Panel Content -->
-        <div class="panel-card-content backdrop-blur-sm rounded-2xl neon-glow p-6 space-y-6"><!-- Filter Section -->
-          <section class="flex flex-wrap items-center gap-4 w-full">
+        <div class="panel-card-content backdrop-blur-sm rounded-2xl neon-glow p-4 space-y-4"><!-- Filter Section -->
+          <section class="flex flex-wrap items-center gap-3 w-full">
             <!-- Search Bar -->
-            <div class="relative min-w-[200px] flex-grow">
-              <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-              <input v-model="searchTerm" type="text" :placeholder="configState.search_placeholder || 'Cari nama karyawan...'" class="search-input w-full rounded-lg pl-10 pr-4 py-3 focus:outline-none">
+            <div class="relative min-w-[200px] max-w-xs flex-grow">
+              <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+              <input v-model="searchTerm" type="text" :placeholder="configState.search_placeholder || 'Cari nama karyawan...'" class="search-input w-full rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none">
             </div>
             <!-- From Date -->
-            <div class="relative min-w-[130px] flex-grow">
-              <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-              <input v-model="dateFrom" type="date" placeholder="Dari" class="search-input w-full rounded-lg pl-10 pr-4 py-3 focus:outline-none" style="color-scheme: dark;">
-              <label class="input-field-label absolute -top-2 left-8 px-2 text-xs">Dari</label>
+            <div class="relative min-w-[130px] max-w-[150px] flex-grow">
+              <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+              <input v-model="dateFrom" type="date" placeholder="Dari" class="search-input w-full rounded-lg pl-9 pr-2 py-2 text-sm focus:outline-none" style="color-scheme: dark;">
+              <label class="input-field-label absolute -top-2.5 left-7 px-1 text-[10px]">Dari</label>
             </div>
             <!-- To Date -->
-            <div class="relative min-w-[130px] flex-grow">
-              <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-              <input v-model="dateTo" type="date" placeholder="Sampai" class="search-input w-full rounded-lg pl-10 pr-4 py-3 focus:outline-none" style="color-scheme: dark;">
-              <label class="input-field-label absolute -top-2 left-8 px-2 text-xs">Sampai</label>
+            <div class="relative min-w-[130px] max-w-[150px] flex-grow">
+              <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+              <input v-model="dateTo" type="date" placeholder="Sampai" class="search-input w-full rounded-lg pl-9 pr-2 py-2 text-sm focus:outline-none" style="color-scheme: dark;">
+              <label class="input-field-label absolute -top-2.5 left-7 px-1 text-[10px]">Sampai</label>
             </div>
             <!-- Filter Chips -->
-            <div class="flex flex-wrap gap-2 items-center flex-grow">
-              <button type="button" @click="toggleFilter('filter-late')" :class="{ 'active': activeFilters.includes('filter-late') }" class="filter-chip flex-grow text-center"> {{ configState.filter_late || 'Terlambat' }} </button> 
-              <button @click="toggleFilter('filter-present')" :class="{ 'active': activeFilters.includes('filter-present') }" class="filter-chip flex-grow text-center"> {{ configState.filter_present || 'Kantor' }} </button> 
-              <button @click="toggleFilter('filter-site')" :class="{ 'active': activeFilters.includes('filter-site') }" class="filter-chip flex-grow text-center"> {{ configState.filter_site || 'Dinas' }} </button>
-              <button @click="toggleFilter('filter-permission')" :class="{ 'active': activeFilters.includes('filter-permission') }" class="filter-chip flex-grow text-center"> {{ configState.filter_permission || 'Cuti Thn' }} </button> 
-              <button @click="toggleFilter('filter-permission-site')" :class="{ 'active': activeFilters.includes('filter-permission-site') }" class="filter-chip flex-grow text-center"> {{ configState.filter_permission_site || 'Cuti Lap' }} </button> 
-              <button @click="toggleFilter('filter-absent')" :class="{ 'active': activeFilters.includes('filter-absent') }" class="filter-chip flex-grow text-center"> {{ configState.filter_absent || 'Alpa' }} </button> 
-              <button @click="toggleFilter('filter-wfh')" :class="{ 'active': activeFilters.includes('filter-wfh') }" class="filter-chip flex-grow text-center"> {{ configState.filter_wfh || 'WFH' }} </button>
-              <button @click="toggleFilter('filter-sick')" :class="{ 'active': activeFilters.includes('filter-sick') }" class="filter-chip flex-grow text-center"> {{ configState.filter_sick || 'Sakit' }} </button>
-              <button @click="toggleFilter('filter-hide-duplicate')" :class="{ 'active': activeFilters.includes('filter-hide-duplicate') }" class="filter-chip flex-grow text-center"> {{ configState.filter_hide_duplicate || 'No Duplikat' }} </button>
+            <div class="flex flex-wrap gap-1.5 items-center">
+              <button type="button" @click="toggleFilter('filter-late')" :class="{ 'active': activeFilters.includes('filter-late') }" class="filter-chip text-center"> {{ configState.filter_late || 'Terlambat' }} </button> 
+              <button @click="toggleFilter('filter-present')" :class="{ 'active': activeFilters.includes('filter-present') }" class="filter-chip text-center"> {{ configState.filter_present || 'Kantor' }} </button> 
+              <button @click="toggleFilter('filter-site')" :class="{ 'active': activeFilters.includes('filter-site') }" class="filter-chip text-center"> {{ configState.filter_site || 'Dinas' }} </button>
+              <button @click="toggleFilter('filter-permission')" :class="{ 'active': activeFilters.includes('filter-permission') }" class="filter-chip text-center"> {{ configState.filter_permission || 'Cuti Thn' }} </button> 
+              <button @click="toggleFilter('filter-permission-site')" :class="{ 'active': activeFilters.includes('filter-permission-site') }" class="filter-chip text-center"> {{ configState.filter_permission_site || 'Cuti Lap' }} </button> 
+              <button @click="toggleFilter('filter-absent')" :class="{ 'active': activeFilters.includes('filter-absent') }" class="filter-chip text-center"> {{ configState.filter_absent || 'Alpa' }} </button> 
+              <button @click="toggleFilter('filter-wfh')" :class="{ 'active': activeFilters.includes('filter-wfh') }" class="filter-chip text-center"> {{ configState.filter_wfh || 'WFH' }} </button>
+              <button @click="toggleFilter('filter-sick')" :class="{ 'active': activeFilters.includes('filter-sick') }" class="filter-chip text-center"> {{ configState.filter_sick || 'Sakit' }} </button>
+              <button @click="toggleFilter('filter-hide-duplicate')" :class="{ 'active': activeFilters.includes('filter-hide-duplicate') }" class="filter-chip text-center"> {{ configState.filter_hide_duplicate || 'No Duplikat' }} </button>
             </div>
           </section>
 
