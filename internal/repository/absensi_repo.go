@@ -1498,6 +1498,12 @@ func (r *absensiRepository) InputAbsensiLeader(ctx context.Context, absensiLeade
 	} else if absensiLeader.Status == "Dinas Lapangan" {
 		attendanceType = "dinas_lapangan"
 		status = "Dinas Lapangan"
+	} else if absensiLeader.Status == "Sakit" {
+		attendanceType = "sakit"
+		status = "Sakit"
+	} else if absensiLeader.Status == "Cuti" {
+		attendanceType = "cuti"
+		status = "Cuti"
 	}
 	var id_user_karyawan int64
 	err = r.db.GetContext(ctx, &id_user_karyawan, "SELECT id FROM user_karyawan WHERE nama_mesin_absen = ? AND tenant_id = ?", absensiLeader.Name, tenantID)
@@ -1559,6 +1565,10 @@ func (r *absensiRepository) UpdateAbsensiLeader(ctx context.Context, absensiLead
 	} else if absensiLeader.Status == "Dinas" {
 		AttendanceType = "dinas_lapangan"
 		absensiLeader.Status = "Dinas Lapangan"
+	} else if absensiLeader.Status == "Sakit" {
+		AttendanceType = "sakit"
+	} else if absensiLeader.Status == "Cuti" {
+		AttendanceType = "cuti"
 	}
 
 	query := `
