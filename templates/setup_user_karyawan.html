@@ -511,6 +511,20 @@
     .theme-light .logout-btn:hover {
       color: #ef4444 !important;
     }
+
+    .sidebar-footer {
+      padding: 16px;
+      border-top: 1px solid rgba(0, 212, 255, 0.1);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 100%;
+      margin-top: auto;
+    }
+
+    .theme-light .sidebar-footer {
+      border-top-color: rgba(0, 102, 255, 0.1);
+    }
   </style>
  </head>
  <body class="h-full">
@@ -621,6 +635,27 @@
               </div>
             </div>
           </nav>
+          <div class="sidebar-footer" v-show="sidebarOpen">
+            <div class="theme-switcher">
+              <select v-model="currentTheme" class="theme-select-control" @change="saveTheme" style="width: 100%;">
+                <option value="theme-cyber">🌐 Cyber Mode (Dark)</option>
+                <option value="theme-light">☀️ Day Mode (Light)</option>
+              </select>
+            </div>
+            <div class="profile-section">
+              <div class="avatar">
+                {{ initials }}
+              </div>
+              <div class="profile-info">
+                <div class="profile-name">
+                  {{ userProfile ? userProfile.name : 'User' }}
+                </div>
+                <div class="logout-btn" @click="handleLogout">
+                  Logout →
+                </div>
+              </div>
+            </div>
+          </div>
         </aside>
         
         <main style="display: flex; flex-direction: column; flex: 1; height: 100%; overflow: hidden;">
@@ -635,28 +670,6 @@
                 </svg>
               </button>
               <h2 class="text-lg font-bold text-cyan-400">Setup User Karyawan</h2>
-            </div>
-            
-            <div class="flex items-center gap-4">
-              <div class="theme-switcher">
-                <select v-model="currentTheme" class="theme-select-control" @change="saveTheme">
-                  <option value="theme-cyber">🌐 Cyber Mode (Dark)</option>
-                  <option value="theme-light">☀️ Day Mode (Light)</option>
-                </select>
-              </div>
-              <div class="profile-section">
-                <div class="avatar">
-                  {{ initials }}
-                </div>
-                <div class="profile-info">
-                  <div class="profile-name">
-                    {{ userProfile ? userProfile.name : 'User' }}
-                  </div>
-                  <div class="logout-btn" @click="handleLogout">
-                    Logout →
-                  </div>
-                </div>
-              </div>
             </div>
           </header>
           

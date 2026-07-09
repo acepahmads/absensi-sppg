@@ -478,6 +478,20 @@
       color: #ef4444 !important;
     }
 
+    .sidebar-footer {
+      padding: 16px;
+      border-top: 1px solid rgba(0, 212, 255, 0.1);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 100%;
+      margin-top: auto;
+    }
+
+    .theme-light .sidebar-footer {
+      border-top-color: rgba(0, 102, 255, 0.1);
+    }
+
     .content-area {
       flex: 1;
       padding: 20px;
@@ -2147,44 +2161,42 @@
             </div>
           </div>
         </div>
-      
       </nav>
-    </aside>
-    <main class="main-layout">
-     <header class="top-bar">
-      <div style="display: flex; align-items: center; gap: 12px;">
-        <button @click="toggleSidebar" class="p-1.5 text-cyan-400 hover:text-cyan-300 transition-colors focus:outline-none border border-cyan-500/30 rounded bg-cyan-950/20 hover:bg-cyan-500/10 flex items-center justify-center" title="Toggle Sidebar">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="3" y1="12" x2="21" y2="12"></line>
-            <line x1="3" y1="6" x2="21" y2="6"></line>
-            <line x1="3" y1="18" x2="21" y2="18"></line>
-          </svg>
-        </button>
-        <h2 class="page-title">{{ activePage === 'dashboard' ? (configState.dashboard_title || 'System Dashboard') : (configState.panel_title || 'Rekapan Absensi') }}</h2>
-      </div>
-      <div style="display: flex; align-items: center; gap: 20px;">
+      <div class="sidebar-footer" v-show="sidebarOpen">
         <div class="theme-switcher">
-          <select v-model="currentTheme" class="theme-select-control" @change="saveTheme">
+          <select v-model="currentTheme" class="theme-select-control" @change="saveTheme" style="width: 100%;">
             <option value="theme-cyber">🌐 Cyber Mode (Dark)</option>
             <option value="theme-light">☀️ Day Mode (Light)</option>
           </select>
         </div>
-
-       <div class="profile-section">
-        <div class="avatar">
-         {{ initials }}
+        <div class="profile-section">
+          <div class="avatar">
+            {{ initials }}
+          </div>
+          <div class="profile-info">
+            <div class="profile-name">
+              {{ userProfile ? userProfile.name : '' }}
+            </div>
+            <div class="logout-btn" @click="handleLogout">
+              Logout →
+            </div>
+          </div>
         </div>
-        <div class="profile-info">
-         <div class="profile-name">
-          {{ userProfile ? userProfile.name : '' }}
-         </div>
-         <div class="logout-btn" @click="handleLogout">
-          Logout →
-         </div>
-        </div>
-       </div>
       </div>
-     </header>
+    </aside>
+    <main class="main-layout">
+      <header class="top-bar">
+       <div style="display: flex; align-items: center; gap: 12px;">
+         <button @click="toggleSidebar" class="p-1.5 text-cyan-400 hover:text-cyan-300 transition-colors focus:outline-none border border-cyan-500/30 rounded bg-cyan-950/20 hover:bg-cyan-500/10 flex items-center justify-center" title="Toggle Sidebar">
+           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+             <line x1="3" y1="12" x2="21" y2="12"></line>
+             <line x1="3" y1="6" x2="21" y2="6"></line>
+             <line x1="3" y1="18" x2="21" y2="18"></line>
+           </svg>
+         </button>
+         <h2 class="page-title">{{ activePage === 'dashboard' ? (configState.dashboard_title || 'System Dashboard') : (configState.panel_title || 'Rekapan Absensi') }}</h2>
+       </div>
+      </header>
      <div class="content-area">
       <div id="dashboard-page" v-show="activePage === 'dashboard'">
        <div class="welcome-banner">

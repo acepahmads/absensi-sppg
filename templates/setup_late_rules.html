@@ -464,6 +464,20 @@
     .theme-light .logout-btn:hover {
       color: #ef4444 !important;
     }
+
+    .sidebar-footer {
+      padding: 16px;
+      border-top: 1px solid rgba(0, 212, 255, 0.1);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 100%;
+      margin-top: auto;
+    }
+
+    .theme-light .sidebar-footer {
+      border-top-color: rgba(0, 102, 255, 0.1);
+    }
   </style>
  </head>
  <body class="h-full">
@@ -566,6 +580,27 @@
               </div>
             </div>
           </nav>
+          <div class="sidebar-footer" v-show="sidebarOpen">
+            <div class="theme-switcher">
+              <select v-model="currentTheme" @change="saveTheme" class="theme-select-control" style="width: 100%;">
+                <option value="theme-cyber">🌐 Cyber Mode (Dark)</option>
+                <option value="theme-light">☀️ Day Mode (Light)</option>
+              </select>
+            </div>
+            <div class="profile-section">
+              <div class="avatar">
+                {{ initials }}
+              </div>
+              <div class="profile-info">
+                <div class="profile-name">
+                  {{ userProfile?.name || 'Admin' }}
+                </div>
+                <div class="logout-btn" @click="handleLogout">
+                  Logout →
+                </div>
+              </div>
+            </div>
+          </div>
         </aside>
 
         <!-- Right Side Main Window -->
@@ -575,27 +610,6 @@
             <button class="text-[#00d4ff] hover:text-[#4a7bc8] transition-colors" @click="toggleSidebar">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
             </button>
-            <div class="flex items-center gap-4">
-              <div class="theme-switcher">
-                <select v-model="currentTheme" @change="saveTheme" class="theme-select-control">
-                  <option value="theme-cyber">🌐 Cyber Mode (Dark)</option>
-                  <option value="theme-light">☀️ Day Mode (Light)</option>
-                </select>
-              </div>
-              <div class="profile-section">
-                <div class="avatar">
-                  {{ initials }}
-                </div>
-                <div class="profile-info">
-                  <div class="profile-name">
-                    {{ userProfile?.name || 'Admin' }}
-                  </div>
-                  <div class="logout-btn" @click="handleLogout">
-                    Logout →
-                  </div>
-                </div>
-              </div>
-            </div>
           </header>
 
           <!-- Content Space -->
