@@ -439,22 +439,22 @@
 
     .content-area {
       flex: 1;
-      padding: 20px;
+      padding: 12px 16px;
       overflow-y: auto;
     }
 
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 16px;
-      margin-bottom: 20px;
+      gap: 12px;
+      margin-bottom: 12px;
     }
 
     .stat-card {
       background: linear-gradient(135deg, rgba(15, 22, 41, 0.95), rgba(26, 31, 58, 0.95));
       border: 1px solid rgba(0, 212, 255, 0.4);
-      border-radius: 12px;
-      padding: 16px;
+      border-radius: 8px;
+      padding: 10px 12px;
       box-shadow: 0 8px 32px rgba(0, 212, 255, 0.15);
       transition: all 0.4s ease;
       position: relative;
@@ -503,23 +503,23 @@
     }
 
     .stat-card:hover {
-      transform: translateY(-6px) scale(1.02);
-      box-shadow: 0 12px 40px rgba(0, 212, 255, 0.3);
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: 0 8px 24px rgba(0, 212, 255, 0.2);
       border-color: rgba(0, 212, 255, 0.6);
     }
 
     .stat-label {
-      font-size: 10px;
+      font-size: 9px;
       color: #8b9dc3;
       text-transform: uppercase;
       letter-spacing: 1px;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
       position: relative;
       z-index: 1;
     }
 
     .stat-value {
-      font-size: 24px;
+      font-size: 18px;
       font-weight: 700;
       color: #00d4ff;
       text-shadow: 0 0 15px rgba(0, 212, 255, 0.5);
@@ -528,9 +528,9 @@
     }
 
     .stat-trend {
-      font-size: 10px;
+      font-size: 9px;
       color: #4ade80;
-      margin-top: 6px;
+      margin-top: 4px;
       position: relative;
       z-index: 1;
     }
@@ -968,14 +968,14 @@
     .welcome-banner {
       background: linear-gradient(135deg, rgba(0, 212, 255, 0.15), rgba(0, 102, 255, 0.1));
       border: 1px solid rgba(0, 212, 255, 0.4);
-      border-radius: 20px;
-      padding: 30px 40px;
-      margin-bottom: 30px;
+      border-radius: 12px;
+      padding: 12px 20px;
+      margin-bottom: 14px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       backdrop-filter: blur(10px);
-      box-shadow: 0 8px 32px rgba(0, 212, 255, 0.2);
+      box-shadow: 0 6px 24px rgba(0, 212, 255, 0.15);
       position: relative;
       overflow: hidden;
     }
@@ -1007,10 +1007,10 @@
     }
 
     .welcome-title {
-      font-size: 28px;
+      font-size: 18px;
       font-weight: 700;
       color: #e0e7ff;
-      margin-bottom: 8px;
+      margin-bottom: 4px;
     }
 
     .welcome-title span {
@@ -1019,7 +1019,7 @@
     }
 
     .welcome-subtitle {
-      font-size: 15px;
+      font-size: 11px;
       color: #8b9dc3;
     }
 
@@ -1051,9 +1051,9 @@
     }
 
     .stat-icon {
-      width: 48px;
-      height: 48px;
-      border-radius: 12px;
+      width: 36px;
+      height: 36px;
+      border-radius: 6px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -1065,49 +1065,49 @@
     .stat-primary .stat-icon {
       background: linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(0, 212, 255, 0.1));
       border: 1px solid rgba(0, 212, 255, 0.4);
-      box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+      box-shadow: 0 0 12px rgba(0, 212, 255, 0.2);
     }
 
     .stat-primary .stat-icon svg {
       stroke: #00d4ff;
-      width: 24px;
-      height: 24px;
+      width: 18px;
+      height: 18px;
     }
 
     .stat-success .stat-icon {
       background: linear-gradient(135deg, rgba(74, 222, 128, 0.2), rgba(74, 222, 128, 0.1));
       border: 1px solid rgba(74, 222, 128, 0.4);
-      box-shadow: 0 0 20px rgba(74, 222, 128, 0.3);
+      box-shadow: 0 0 12px rgba(74, 222, 128, 0.2);
     }
 
     .stat-success .stat-icon svg {
       stroke: #4ade80;
-      width: 24px;
-      height: 24px;
+      width: 18px;
+      height: 18px;
     }
 
     .stat-warning .stat-icon {
       background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(251, 191, 36, 0.1));
       border: 1px solid rgba(251, 191, 36, 0.4);
-      box-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
+      box-shadow: 0 0 12px rgba(251, 191, 36, 0.2);
     }
 
     .stat-warning .stat-icon svg {
       stroke: #fbbf24;
-      width: 24px;
-      height: 24px;
+      width: 18px;
+      height: 18px;
     }
 
     .stat-info .stat-icon {
       background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(59, 130, 246, 0.1));
       border: 1px solid rgba(59, 130, 246, 0.4);
-      box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+      box-shadow: 0 0 12px rgba(59, 130, 246, 0.2);
     }
 
     .stat-info .stat-icon svg {
       stroke: #3b82f6;
-      width: 24px;
-      height: 24px;
+      width: 18px;
+      height: 18px;
     }
 
     .stat-content {
@@ -1140,25 +1140,25 @@
     .dashboard-row {
       display: grid;
       grid-template-columns: 2fr 1fr;
-      gap: 24px;
-      margin-bottom: 30px;
+      gap: 14px;
+      margin-bottom: 14px;
     }
 
     .large-card {
       background: rgba(15, 22, 41, 0.95);
       border: 1px solid rgba(0, 212, 255, 0.3);
-      border-radius: 16px;
-      padding: 24px;
+      border-radius: 10px;
+      padding: 14px 16px;
       backdrop-filter: blur(10px);
       box-shadow: 0 8px 32px rgba(0, 212, 255, 0.15);
     }
 
     .card-header {
-      margin-bottom: 24px;
+      margin-bottom: 12px;
     }
 
     .card-title {
-      font-size: 18px;
+      font-size: 14px;
       font-weight: 700;
       color: #e0e7ff;
       display: flex;
@@ -1173,24 +1173,26 @@
     .performance-grid {
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      gap: 8px;
     }
 
     .performance-item {
       display: flex;
-      flex-direction: column;
-      gap: 8px;
+      align-items: center;
+      gap: 12px;
     }
 
     .perf-label {
-      font-size: 14px;
+      font-size: 12px;
       color: #8b9dc3;
       font-weight: 600;
+      width: 130px;
+      flex-shrink: 0;
     }
 
     .progress-bar {
-      width: 100%;
-      height: 12px;
+      flex: 1;
+      height: 6px;
       background: rgba(0, 212, 255, 0.1);
       border-radius: 20px;
       overflow: hidden;
@@ -1229,25 +1231,28 @@
     }
 
     .perf-value {
-      font-size: 16px;
+      font-size: 13px;
       font-weight: 700;
       color: #00d4ff;
-      text-shadow: 0 0 10px rgba(0, 212, 255, 0.4);
+      text-shadow: 0 0 8px rgba(0, 212, 255, 0.4);
+      width: 40px;
+      text-align: right;
+      flex-shrink: 0;
     }
 
     .small-cards {
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 12px;
     }
 
     .mini-card {
       background: rgba(15, 22, 41, 0.95);
       border: 1px solid rgba(0, 212, 255, 0.3);
-      border-radius: 16px;
-      padding: 20px;
+      border-radius: 10px;
+      padding: 10px 12px;
       display: flex;
-      gap: 16px;
+      gap: 10px;
       align-items: center;
       backdrop-filter: blur(10px);
       box-shadow: 0 4px 20px rgba(0, 212, 255, 0.1);
@@ -1261,9 +1266,9 @@
     }
 
     .mini-icon {
-      width: 48px;
-      height: 48px;
-      border-radius: 12px;
+      width: 36px;
+      height: 36px;
+      border-radius: 6px;
       background: linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(0, 212, 255, 0.1));
       border: 1px solid rgba(0, 212, 255, 0.4);
       display: flex;
@@ -1274,6 +1279,8 @@
 
     .mini-icon svg {
       stroke: #00d4ff;
+      width: 18px;
+      height: 18px;
     }
 
     .mini-content {
@@ -1281,23 +1288,23 @@
     }
 
     .mini-label {
-      font-size: 12px;
+      font-size: 10px;
       color: #8b9dc3;
-      margin-bottom: 6px;
+      margin-bottom: 2px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
 
     .mini-value {
-      font-size: 24px;
+      font-size: 16px;
       font-weight: 700;
       color: #00d4ff;
       text-shadow: 0 0 10px rgba(0, 212, 255, 0.4);
-      margin-bottom: 4px;
+      margin-bottom: 2px;
     }
 
     .mini-subtitle {
-      font-size: 11px;
+      font-size: 9px;
       color: #4ade80;
     }
 
@@ -1305,8 +1312,8 @@
     .activity-section {
       background: rgba(15, 22, 41, 0.95);
       border: 1px solid rgba(0, 212, 255, 0.3);
-      border-radius: 16px;
-      padding: 24px;
+      border-radius: 10px;
+      padding: 14px 16px;
       backdrop-filter: blur(10px);
       box-shadow: 0 8px 32px rgba(0, 212, 255, 0.15);
     }
@@ -1314,17 +1321,17 @@
     .activity-list {
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 8px;
     }
 
     .activity-item {
       display: flex;
       align-items: flex-start;
-      gap: 16px;
-      padding: 16px;
+      gap: 10px;
+      padding: 8px 10px;
       background: rgba(0, 212, 255, 0.03);
       border: 1px solid rgba(0, 212, 255, 0.15);
-      border-radius: 12px;
+      border-radius: 8px;
       transition: all 0.3s ease;
     }
 
@@ -1335,10 +1342,10 @@
     }
 
     .activity-dot {
-      width: 12px;
-      height: 12px;
+      width: 10px;
+      height: 10px;
       border-radius: 50%;
-      margin-top: 4px;
+      margin-top: 3px;
       flex-shrink: 0;
       box-shadow: 0 0 10px currentColor;
     }
@@ -1364,14 +1371,14 @@
     }
 
     .activity-title {
-      font-size: 14px;
+      font-size: 12px;
       color: #e0e7ff;
       font-weight: 600;
       margin-bottom: 4px;
     }
 
     .activity-time {
-      font-size: 12px;
+      font-size: 10px;
       color: #8b9dc3;
     }
 
@@ -1582,14 +1589,14 @@
          <p class="welcome-subtitle">Here's what's happening with your systems today</p>
         </div>
         <div class="welcome-icon">
-         <svg width="60" height="60" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5z"></path> <path d="M2 17l10 5 10-5M2 12l10 5 10-5"></path>
+         <svg width="36" height="36" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5z"></path> <path d="M2 17l10 5 10-5M2 12l10 5 10-5"></path>
          </svg>
         </div>
        </div>
        <div class="stats-grid">
          <div class="stat-card stat-primary">
           <div class="stat-icon">
-           <svg width="32" height="32" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect> <line x1="8" y1="21" x2="16" y2="21"></line> <line x1="12" y1="17" x2="12" y2="21"></line>
+           <svg width="20" height="20" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect> <line x1="8" y1="21" x2="16" y2="21"></line> <line x1="12" y1="17" x2="12" y2="21"></line>
            </svg>
           </div>
           <div class="stat-content">
@@ -1606,7 +1613,7 @@
          </div>
          <div class="stat-card stat-success">
           <div class="stat-icon">
-           <svg width="32" height="32" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path> <circle cx="9" cy="7" r="4"></circle> <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path> <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+           <svg width="20" height="20" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path> <circle cx="9" cy="7" r="4"></circle> <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path> <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
            </svg>
           </div>
           <div class="stat-content">
@@ -1623,7 +1630,7 @@
          </div>
          <div class="stat-card stat-warning">
           <div class="stat-icon">
-           <svg width="32" height="32" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path> <polyline points="14 2 14 8 20 8"></polyline> <line x1="12" y1="18" x2="12" y2="12"></line> <line x1="12" y1="9" x2="12.01" y2="9"></line>
+           <svg width="20" height="20" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path> <polyline points="14 2 14 8 20 8"></polyline> <line x1="12" y1="18" x2="12" y2="12"></line> <line x1="12" y1="9" x2="12.01" y2="9"></line>
            </svg>
           </div>
           <div class="stat-content">
@@ -1640,7 +1647,7 @@
          </div>
          <div class="stat-card stat-info">
           <div class="stat-icon">
-           <svg width="32" height="32" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle> <polyline points="12 6 12 12 16 14"></polyline>
+           <svg width="20" height="20" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle> <polyline points="12 6 12 12 16 14"></polyline>
            </svg>
           </div>
           <div class="stat-content">
@@ -1713,7 +1720,7 @@
          <div class="small-cards">
           <div class="mini-card">
            <div class="mini-icon">
-            <svg width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+            <svg width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
             </svg>
            </div>
            <div class="mini-content">
@@ -1730,7 +1737,7 @@
           </div>
           <div class="mini-card">
            <div class="mini-icon">
-            <svg width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path> <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+            <svg width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path> <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
             </svg>
            </div>
            <div class="mini-content">
@@ -1747,7 +1754,7 @@
           </div>
           <div class="mini-card">
            <div class="mini-icon">
-            <svg width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect> <line x1="16" y1="2" x2="16" y2="6"></line> <line x1="8" y1="2" x2="8" y2="6"></line> <line x1="3" y1="10" x2="21" y2="10"></line>
+            <svg width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect> <line x1="16" y1="2" x2="16" y2="6"></line> <line x1="8" y1="2" x2="8" y2="6"></line> <line x1="3" y1="10" x2="21" y2="10"></line>
             </svg>
            </div>
            <div class="mini-content">
