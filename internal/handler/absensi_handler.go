@@ -1313,15 +1313,12 @@ func (h *AbsensiHandler) HandleADMSUpload(c *gin.Context) {
 			timestamp := strings.TrimSpace(fields[1])
 			statusCode := strings.TrimSpace(fields[2])
 
-			// Auto-correct machine timestamp if hardware clock is ~1 hour ahead (+45m to +75m offset)
-			parsedTime, parseErr := time.Parse("2006-01-02 15:04:05", timestamp)
+			// Always auto-correct machine timestamp by -1 hour to match server WIB time
+			parsedTime, parseErr := time.ParseInLocation("2006-01-02 15:04:05", timestamp, time.Local)
 			if parseErr == nil {
-				diff := parsedTime.Sub(time.Now())
-				if diff >= 45*time.Minute && diff <= 75*time.Minute {
-					adjustedTime := parsedTime.Add(-1 * time.Hour)
-					log.Printf("[ADMS AUTO-CORRECT] Adjusted PIN %s timestamp from %s (-1h) to %s to match WIB server time", pin, timestamp, adjustedTime.Format("2006-01-02 15:04:05"))
-					timestamp = adjustedTime.Format("2006-01-02 15:04:05")
-				}
+				adjustedTime := parsedTime.Add(-1 * time.Hour)
+				log.Printf("[ADMS AUTO-CORRECT] Adjusted PIN %s timestamp from %s (-1h) to %s for DB insert", pin, timestamp, adjustedTime.Format("2006-01-02 15:04:05"))
+				timestamp = adjustedTime.Format("2006-01-02 15:04:05")
 			}
 
 			// ZK status codes: 0 = Masuk, 1 = Pulang, 4 = Lembur-Masuk, 5 = Lembur-Pulang
