@@ -45,6 +45,7 @@ func EnsureSchema(db *sqlx.DB) error {
 		"ALTER TABLE inventory_masuk ADD COLUMN tenant_id INT NOT NULL DEFAULT 1",
 		"ALTER TABLE inventory_keluar ADD COLUMN tenant_id INT NOT NULL DEFAULT 1",
 		"ALTER TABLE karyawan_holidays ADD COLUMN tenant_id INT NOT NULL DEFAULT 1",
+		"ALTER TABLE user_accounts ADD COLUMN sn_mesin TEXT NULL",
 	}
 	for _, q := range alterQueries {
 		_, err := db.Exec(q)
