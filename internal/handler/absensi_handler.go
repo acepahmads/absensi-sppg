@@ -1379,11 +1379,11 @@ func (h *AbsensiHandler) HandleADMSGetRequest(c *gin.Context) {
 		if sn != "" {
 			h.lastDeviceSync.Store(sn, time.Now())
 		}
-		// ZK firmware adds +1 hour offset to ADMS SetTime, so subtract 1 hour to match exact server local time
+		nowStr := time.Now().Format("2006-01-02 15:04:05")
 		adjustedTime := time.Now().Add(-1 * time.Hour)
-		nowStr := adjustedTime.Format("2006-01-02 15:04:05")
-		cmd := fmt.Sprintf("C:101:SET OPTION SetTime=%s\r\nC:102:SET OPTION DaylightSavingTime=0\r\nC:103:SET OPTION DSTF=0\r\nC:104:SET OPTION TimeZone=7\r\nC:105:SET OPTION DateTime=%s\r\n", nowStr, nowStr)
-		log.Printf("[ADMS] Sending periodic 1-min SetTime (compensated) & Disable DST commands to SN %s", sn)
+		adjStr := adjustedTime.Format("2006-01-02 15:04:05")
+		cmd := fmt.Sprintf("C:101:CONTROL DEVICE SetTime %s\r\nC:102:SET OPTION SetTime=%s\r\nC:103:SET OPTION DaylightSavingTime=0\r\nC:104:SET OPTION DSTF=0\r\nC:105:SET OPTION TimeZone=7\r\nC:106:CONTROL DEVICE SetTime %s\r\n", nowStr, adjStr, adjStr)
+		log.Printf("[ADMS] Sending periodic 1-min CONTROL DEVICE SetTime & SetTime commands to SN %s", sn)
 		c.String(http.StatusOK, cmd)
 		return
 	}
