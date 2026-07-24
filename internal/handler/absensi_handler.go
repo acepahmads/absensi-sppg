@@ -1248,7 +1248,7 @@ func (h *AbsensiHandler) HandleADMSHandshake(c *gin.Context) {
 	log.Printf("[ADMS] GET handshake/ping from SN: %s, options: %s", sn, options)
 
 	c.Header("Content-Type", "text/plain")
-	c.Header("Date", time.Now().Add(-1*time.Hour).UTC().Format(http.TimeFormat))
+	c.Header("Date", time.Now().Add(-2*time.Hour).UTC().Format(http.TimeFormat))
 	if options == "all" {
 		nowStr := time.Now().Format("2006-01-02 15:04:05")
 		// Respond with standard ZK configuration options
@@ -1351,13 +1351,13 @@ func (h *AbsensiHandler) HandleADMSUpload(c *gin.Context) {
 	}
 
 	c.Header("Content-Type", "text/plain")
-	c.Header("Date", time.Now().Add(-1*time.Hour).UTC().Format(http.TimeFormat))
+	c.Header("Date", time.Now().Add(-2*time.Hour).UTC().Format(http.TimeFormat))
 	c.String(http.StatusOK, "OK")
 }
 
 func (h *AbsensiHandler) HandleADMSGetRequest(c *gin.Context) {
 	c.Header("Content-Type", "text/plain")
-	c.Header("Date", time.Now().Add(-1*time.Hour).UTC().Format(http.TimeFormat))
+	c.Header("Date", time.Now().Add(-2*time.Hour).UTC().Format(http.TimeFormat))
 	sn := c.Query("SN")
 	info := c.Query("INFO")
 
@@ -1382,7 +1382,7 @@ func (h *AbsensiHandler) HandleADMSGetRequest(c *gin.Context) {
 		if sn != "" {
 			h.lastDeviceSync.Store(sn, time.Now())
 		}
-		adjustedTime := time.Now().Add(-1 * time.Hour)
+		adjustedTime := time.Now().Add(-2 * time.Hour)
 		adjStr := adjustedTime.Format("2006-01-02 15:04:05")
 		cmd := fmt.Sprintf("C:101:CONTROL DEVICE SetTime %s\r\n", adjStr)
 		log.Printf("[ADMS] Sending periodic 1-min CONTROL DEVICE SetTime (%s) to SN %s", adjStr, sn)
@@ -1398,7 +1398,7 @@ func (h *AbsensiHandler) HandleADMSDeviceCmd(c *gin.Context) {
 	bodyBytes, _ := io.ReadAll(c.Request.Body)
 	log.Printf("[ADMS] DeviceCmd Result from SN %s: %s", sn, strings.TrimSpace(string(bodyBytes)))
 	c.Header("Content-Type", "text/plain")
-	c.Header("Date", time.Now().Add(-1*time.Hour).UTC().Format(http.TimeFormat))
+	c.Header("Date", time.Now().Add(-2*time.Hour).UTC().Format(http.TimeFormat))
 	c.String(http.StatusOK, "OK")
 }
 
