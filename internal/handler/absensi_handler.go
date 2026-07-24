@@ -1379,10 +1379,10 @@ func (h *AbsensiHandler) HandleADMSGetRequest(c *gin.Context) {
 		if sn != "" {
 			h.lastDeviceSync.Store(sn, time.Now())
 		}
-		adjustedTime := time.Now().Add(-1 * time.Hour)
+		adjustedTime := time.Now().Add(-2 * time.Hour)
 		adjStr := adjustedTime.Format("2006-01-02 15:04:05")
 		cmd := fmt.Sprintf("C:101:CONTROL DEVICE SetTime %s\r\n", adjStr)
-		log.Printf("[ADMS] Sending periodic 1-min CONTROL DEVICE SetTime (%s) to SN %s", adjStr, sn)
+		log.Printf("[ADMS] Sending periodic 1-min CONTROL DEVICE SetTime (-2h compensated: %s) to SN %s", adjStr, sn)
 		c.String(http.StatusOK, cmd)
 		return
 	}
