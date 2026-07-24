@@ -1250,7 +1250,7 @@ func (h *AbsensiHandler) HandleADMSHandshake(c *gin.Context) {
 	c.Header("Content-Type", "text/plain")
 	if options == "all" {
 		nowStr := time.Now().Format("2006-01-02 15:04:05")
-		// Respond with standard ZK configuration options
+		// Respond with standard ZK configuration options matching standalone software behavior
 		response := "RegistryCode=\r\n" +
 			"RequestDelay=30\r\n" +
 			"ResponseDelay=30\r\n" +
@@ -1258,8 +1258,7 @@ func (h *AbsensiHandler) HandleADMSHandshake(c *gin.Context) {
 			"TransFlag=1111111111\r\n" +
 			"Realtime=1\r\n" +
 			"SessionID=1\r\n" +
-			"ServerTime=" + nowStr + "\r\n" +
-			"ServerTZ=8\r\n"
+			"ServerTime=" + nowStr + "\r\n"
 		c.String(http.StatusOK, response)
 		return
 	}
@@ -1380,11 +1379,9 @@ func (h *AbsensiHandler) HandleADMSGetRequest(c *gin.Context) {
 		if sn != "" {
 			h.lastDeviceSync.Store(sn, time.Now())
 		}
-		// ZK firmware adds +1 hour offset to CONTROL DEVICE SetTime value, so send serverTime - 1 hour
-		adjustedTime := time.Now().Add(-1 * time.Hour)
-		nowStr := adjustedTime.Format("2006-01-02 15:04:05")
+		nowStr := time.Now().Format("2006-01-02 15:04:05")
 		cmd := fmt.Sprintf("C:101:CONTROL DEVICE SetTime %s\r\n", nowStr)
-		log.Printf("[ADMS] Sending periodic 1-min CONTROL DEVICE SetTime (-1h compensated: %s) to SN %s", nowStr, sn)
+		log.Printf("[ADMS] Sending periodic 1-min CONTROL DEVICE SetTime (%s) to SN %s", nowStr, sn)
 		c.String(http.StatusOK, cmd)
 		return
 	}
