@@ -903,7 +903,13 @@ func (r *absensiRepository) InputAbsenMesin(ctx context.Context, nama string, ti
 		TenantID       int     `db:"tenant_id"`
 	}
 	var uk UserKaryawan
-	err := r.db.GetContext(ctx, &uk, "SELECT id, uang_makan, uang_harian, nama_mesin_absen, tenant_id FROM user_karyawan WHERE LOWER(REPLACE(nama_mesin_absen, ' ', '')) = LOWER(REPLACE(?, ' ', '')) LIMIT 1", nama)
+	var err error
+	tenantID, _ := ctx.Value("tenantID").(int)
+	if tenantID > 0 {
+		err = r.db.GetContext(ctx, &uk, "SELECT id, uang_makan, uang_harian, nama_mesin_absen, tenant_id FROM user_karyawan WHERE LOWER(REPLACE(nama_mesin_absen, ' ', '')) = LOWER(REPLACE(?, ' ', '')) AND tenant_id = ? LIMIT 1", nama, tenantID)
+	} else {
+		err = r.db.GetContext(ctx, &uk, "SELECT id, uang_makan, uang_harian, nama_mesin_absen, tenant_id FROM user_karyawan WHERE LOWER(REPLACE(nama_mesin_absen, ' ', '')) = LOWER(REPLACE(?, ' ', '')) LIMIT 1", nama)
+	}
 	if err != nil {
 		return fmt.Errorf("user_karyawan not found for name %s: %v", nama, err)
 	}
@@ -1050,8 +1056,14 @@ func (r *absensiRepository) InputAbsenMesin(ctx context.Context, nama string, ti
 	return nil
 }
 func (r *absensiRepository) GetKaryawanNameByPin(ctx context.Context, pin string) (string, error) {
+	tenantID, _ := ctx.Value("tenantID").(int)
 	var name string
-	err := r.db.GetContext(ctx, &name, "SELECT nama_mesin_absen FROM user_karyawan WHERE pin_mesin = ? AND status = 1 LIMIT 1", pin)
+	var err error
+	if tenantID > 0 {
+		err = r.db.GetContext(ctx, &name, "SELECT nama_mesin_absen FROM user_karyawan WHERE pin_mesin = ? AND tenant_id = ? AND status = 1 LIMIT 1", pin, tenantID)
+	} else {
+		err = r.db.GetContext(ctx, &name, "SELECT nama_mesin_absen FROM user_karyawan WHERE pin_mesin = ? AND status = 1 LIMIT 1", pin)
+	}
 	return name, err
 }
 func (r *absensiRepository) GetLastAbsensi(ctx context.Context, id_karyawan int64, date string) (model.AbsensiKeterlambatan, error) {
