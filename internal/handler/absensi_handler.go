@@ -1254,7 +1254,8 @@ func (h *AbsensiHandler) HandleADMSHandshake(c *gin.Context) {
 			"TransInterval=10\r\n" +
 			"TransFlag=1111111111\r\n" +
 			"Realtime=1\r\n" +
-			"SessionID=1\r\n"
+			"SessionID=1\r\n" +
+			"ServerTZ=7\r\n"
 		c.String(http.StatusOK, response)
 		return
 	}
