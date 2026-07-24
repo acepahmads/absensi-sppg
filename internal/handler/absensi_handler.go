@@ -1356,8 +1356,8 @@ func (h *AbsensiHandler) HandleADMSGetRequest(c *gin.Context) {
 	info := c.Query("INFO")
 	if info != "" {
 		nowStr := time.Now().Format("2006-01-02 15:04:05")
-		cmd := fmt.Sprintf("C:101:SET TIME %s\r\n", nowStr)
-		log.Printf("[ADMS] Sending SET TIME command to SN %s: %s", c.Query("SN"), strings.TrimSpace(cmd))
+		cmd := fmt.Sprintf("C:101:SET TIME %s\r\nC:102:SET OPTION DaylightSavingTime=0\r\nC:103:SET OPTION DSTF=0\r\nC:104:SET OPTION TimeZone=7\r\n", nowStr)
+		log.Printf("[ADMS] Sending SET TIME & Disable DST commands to SN %s", c.Query("SN"))
 		c.String(http.StatusOK, cmd)
 		return
 	}
