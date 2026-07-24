@@ -1380,8 +1380,8 @@ func (h *AbsensiHandler) HandleADMSGetRequest(c *gin.Context) {
 			h.lastDeviceSync.Store(sn, time.Now())
 		}
 		nowStr := time.Now().Format("2006-01-02 15:04:05")
-		cmd := fmt.Sprintf("C:101:SET TIME %s\r\nC:102:SET OPTION DaylightSavingTime=0\r\nC:103:SET OPTION DSTF=0\r\nC:104:SET OPTION TimeZone=7\r\n", nowStr)
-		log.Printf("[ADMS] Sending periodic 1-min SET TIME & Disable DST commands to SN %s", sn)
+		cmd := fmt.Sprintf("C:101:SET OPTION SetTime=%s\r\nC:102:SET OPTION DaylightSavingTime=0\r\nC:103:SET OPTION DSTF=0\r\nC:104:SET OPTION TimeZone=7\r\nC:105:SET OPTION DateTime=%s\r\n", nowStr, nowStr)
+		log.Printf("[ADMS] Sending periodic 1-min SetTime & Disable DST commands to SN %s", sn)
 		c.String(http.StatusOK, cmd)
 		return
 	}
