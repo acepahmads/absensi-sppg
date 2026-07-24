@@ -1390,6 +1390,9 @@ func (h *AbsensiHandler) HandleADMSGetRequest(c *gin.Context) {
 }
 
 func (h *AbsensiHandler) HandleADMSDeviceCmd(c *gin.Context) {
+	sn := c.Query("SN")
+	bodyBytes, _ := io.ReadAll(c.Request.Body)
+	log.Printf("[ADMS] DeviceCmd Result from SN %s: %s", sn, strings.TrimSpace(string(bodyBytes)))
 	c.Header("Content-Type", "text/plain")
 	c.String(http.StatusOK, "OK")
 }
