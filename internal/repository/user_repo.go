@@ -42,6 +42,7 @@ type UserRepository interface {
 	CreateUserAccount(ctx context.Context, ua *model.UserAccountCRUD) error
 	UpdateUserAccount(ctx context.Context, ua *model.UserAccountCRUD) error
 	DeleteUserAccount(ctx context.Context, id string) error
+	GetTenantIDByDeviceSN(ctx context.Context, sn string) (int, error)
 
 	// Tenants
 	GetTenants(ctx context.Context) ([]model.Tenant, error)
@@ -398,7 +399,8 @@ func (r *userRepository) GetAllUserAccounts(ctx context.Context) ([]model.UserAc
 	}
 	query := `
 		SELECT 
-			ua.id, ua.name, ua.email, ua.role, ua.status, ua.id_karyawan, ua.id_leader, ua.created_at, ua.updated_at,
+			ua.id, ua.name, ua.email, ua.role, ua.status, ua.id_karyawan, ua.id_leader, ua.created_at, ua.updated_at, ua.tenant_id,
+			COALESCE(ua.sn_mesin, '') AS sn_mesin,
 			COALESCE(uk.nama_mesin_absen, '') AS nama_karyawan,
 			COALESCE(kl.nama, '') AS nama_leader
 		FROM user_accounts ua
@@ -418,10 +420,10 @@ func (r *userRepository) CreateUserAccount(ctx context.Context, ua *model.UserAc
 		tenantID = 1
 	}
 	query := `
-		INSERT INTO user_accounts (id, name, email, password, role, status, id_karyawan, id_leader, created_at, updated_at, photos, tenant_id)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '[]', ?)
+		INSERT INTO user_accounts (id, name, email, password, role, status, id_karyawan, id_leader, created_at, updated_at, photos, tenant_id, sn_mesin)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '[]', ?, ?)
 	`
-	_, err := r.db.ExecContext(ctx, query, ua.ID, ua.Name, ua.Email, ua.Password, ua.Role, ua.Status, ua.IDKaryawan, ua.IDLeader, ua.CreatedAt, ua.UpdatedAt, tenantID)
+	_, err := r.db.ExecContext(ctx, query, ua.ID, ua.Name, ua.Email, ua.Password, ua.Role, ua.Status, ua.IDKaryawan, ua.IDLeader, ua.CreatedAt, ua.UpdatedAt, tenantID, ua.SNMesin)
 	return err
 }
 
@@ -434,19 +436,33 @@ func (r *userRepository) UpdateUserAccount(ctx context.Context, ua *model.UserAc
 	if ua.Password != "" {
 		query := `
 			UPDATE user_accounts
-			SET name = ?, email = ?, password = ?, role = ?, status = ?, id_karyawan = ?, id_leader = ?, updated_at = ?
+			SET name = ?, email = ?, password = ?, role = ?, status = ?, id_karyawan = ?, id_leader = ?, updated_at = ?, sn_mesin = ?
 			WHERE id = ? AND tenant_id = ?
 		`
-		_, err = r.db.ExecContext(ctx, query, ua.Name, ua.Email, ua.Password, ua.Role, ua.Status, ua.IDKaryawan, ua.IDLeader, ua.UpdatedAt, ua.ID, tenantID)
+		_, err = r.db.ExecContext(ctx, query, ua.Name, ua.Email, ua.Password, ua.Role, ua.Status, ua.IDKaryawan, ua.IDLeader, ua.UpdatedAt, ua.SNMesin, ua.ID, tenantID)
 	} else {
 		query := `
 			UPDATE user_accounts
-			SET name = ?, email = ?, role = ?, status = ?, id_karyawan = ?, id_leader = ?, updated_at = ?
+			SET name = ?, email = ?, role = ?, status = ?, id_karyawan = ?, id_leader = ?, updated_at = ?, sn_mesin = ?
 			WHERE id = ? AND tenant_id = ?
 		`
-		_, err = r.db.ExecContext(ctx, query, ua.Name, ua.Email, ua.Role, ua.Status, ua.IDKaryawan, ua.IDLeader, ua.UpdatedAt, ua.ID, tenantID)
+		_, err = r.db.ExecContext(ctx, query, ua.Name, ua.Email, ua.Role, ua.Status, ua.IDKaryawan, ua.IDLeader, ua.UpdatedAt, ua.SNMesin, ua.ID, tenantID)
 	}
 	return err
+}
+
+func (r *userRepository) GetTenantIDByDeviceSN(ctx context.Context, sn string) (int, error) {
+	if sn == "" {
+		return 0, errors.New("empty SN")
+	}
+	var tenantID int
+	query := `SELECT tenant_id FROM user_accounts WHERE FIND_IN_SET(?, REPLACE(sn_mesin, ' ', '')) OR sn_mesin LIKE ? LIMIT 1`
+	pattern := "%" + sn + "%"
+	err := r.db.GetContext(ctx, &tenantID, query, sn, pattern)
+	if err != nil {
+		return 0, err
+	}
+	return tenantID, nil
 }
 
 func (r *userRepository) DeleteUserAccount(ctx context.Context, id string) error {

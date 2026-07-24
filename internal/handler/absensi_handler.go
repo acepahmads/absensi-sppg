@@ -3,6 +3,7 @@ package handler
 import (
 	"absensi-sppg/internal/model"
 	"absensi-sppg/internal/service"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -41,11 +42,13 @@ type AbsensiResponse struct {
 
 type AbsensiHandler struct {
 	AbsensiService service.AbsensiService
+	UserService    service.UserService
 }
 
-func NewAbsensiHandler(service service.AbsensiService) *AbsensiHandler {
+func NewAbsensiHandler(service service.AbsensiService, userService service.UserService) *AbsensiHandler {
 	return &AbsensiHandler{
 		AbsensiService: service,
+		UserService:    userService,
 	}
 }
 
@@ -1264,6 +1267,17 @@ func (h *AbsensiHandler) HandleADMSUpload(c *gin.Context) {
 	table := c.Query("table")
 	log.Printf("[ADMS] POST upload for SN: %s, table: %s", sn, table)
 
+	reqCtx := c.Request.Context()
+	if sn != "" {
+		tenantID, err := h.UserService.GetTenantIDByDeviceSN(reqCtx, sn)
+		if err == nil && tenantID > 0 {
+			reqCtx = context.WithValue(reqCtx, "tenantID", tenantID)
+			log.Printf("[ADMS] Mapped SN %s to Tenant ID: %d", sn, tenantID)
+		} else {
+			log.Printf("[ADMS] SN %s not explicitly mapped to any tenant, using default context", sn)
+		}
+	}
+
 	bodyBytes, err := io.ReadAll(c.Request.Body)
 	if err != nil {
 		log.Printf("[ADMS] Failed to read body: %v", err)
@@ -1312,14 +1326,14 @@ func (h *AbsensiHandler) HandleADMSUpload(c *gin.Context) {
 			}
 
 			// Look up employee name by pin_mesin
-			employeeName, err := h.AbsensiService.GetKaryawanNameByPin(c.Request.Context(), pin)
+			employeeName, err := h.AbsensiService.GetKaryawanNameByPin(reqCtx, pin)
 			if err != nil {
 				log.Printf("[ADMS] Employee not found for PIN: %s (error: %v)", pin, err)
 				continue
 			}
 
 			// Call InputAbsenMesin using service
-			err = h.AbsensiService.InputAbsenMesin(c.Request.Context(), employeeName, timestamp, status)
+			err = h.AbsensiService.InputAbsenMesin(reqCtx, employeeName, timestamp, status)
 			if err != nil {
 				log.Printf("[ADMS] Failed to save attendance for %s: %v", employeeName, err)
 				continue

@@ -706,6 +706,7 @@
                         <th class="px-6 py-4">Nama</th>
                         <th class="px-6 py-4">Email</th>
                         <th class="px-6 py-4">Role</th>
+                        <th class="px-6 py-4">SN Mesin Absen</th>
                         <th class="px-6 py-4">Karyawan Linked</th>
                         <th class="px-6 py-4">Leader</th>
                         <th class="px-6 py-4">Status</th>
@@ -721,6 +722,12 @@
                           <span class="px-2 py-0.5 rounded text-xs bg-cyan-950/30 text-cyan-400 border border-cyan-500/30 font-medium">
                             {{ u.role }}
                           </span>
+                        </td>
+                        <td class="px-6 py-4">
+                          <span class="font-mono text-xs text-amber-300 bg-amber-950/20 border border-amber-500/20 px-2 py-0.5 rounded" v-if="u.sn_mesin">
+                            {{ u.sn_mesin }}
+                          </span>
+                          <span v-else class="text-slate-500">-</span>
                         </td>
                         <td class="px-6 py-4">{{ u.nama_karyawan || '-' }}</td>
                         <td class="px-6 py-4">{{ u.nama_leader || '-' }}</td>
@@ -741,7 +748,7 @@
                         </td>
                       </tr>
                       <tr v-if="filteredUsers.length === 0">
-                        <td colspan="8" class="px-6 py-12 text-center text-slate-400">
+                        <td colspan="9" class="px-6 py-12 text-center text-slate-400">
                           No user accounts found. Try expanding your search filters.
                         </td>
                       </tr>
@@ -820,12 +827,18 @@
             </div>
           </div>
           
-          <div>
-            <label class="block text-xs font-bold text-slate-400 mb-2 uppercase">Status</label>
-            <select v-model.number="form.status" required class="form-input w-full px-4 py-2 text-sm">
-              <option :value="1">Active</option>
-              <option :value="0">Inactive</option>
-            </select>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-400 mb-2 uppercase">Status</label>
+              <select v-model.number="form.status" required class="form-input w-full px-4 py-2 text-sm">
+                <option :value="1">Active</option>
+                <option :value="0">Inactive</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-400 mb-2 uppercase">SN Mesin Absen</label>
+              <input type="text" v-model="form.sn_mesin" class="form-input w-full px-4 py-2 text-sm" placeholder="Contoh: ZTC8261600086, ZTC8261600087" />
+            </div>
           </div>
           
           <div class="flex items-center justify-end gap-3 pt-4 border-t border-cyan-500/20 mt-6">
@@ -908,7 +921,8 @@
           role: '',
           id_karyawan: null,
           id_leader: null,
-          status: 1
+          status: 1,
+          sn_mesin: ''
         });
 
         // Delete confirmation states
@@ -1078,6 +1092,7 @@
           form.id_karyawan = null;
           form.id_leader = null;
           form.status = 1;
+          form.sn_mesin = '';
           modalVisible.value = true;
         };
 
@@ -1091,6 +1106,7 @@
           form.id_karyawan = u.id_karyawan;
           form.id_leader = u.id_leader;
           form.status = u.status;
+          form.sn_mesin = u.sn_mesin || '';
           modalVisible.value = true;
         };
 
@@ -1171,6 +1187,7 @@
               u.name.toLowerCase().includes(q) ||
               u.email.toLowerCase().includes(q) ||
               u.role.toLowerCase().includes(q) ||
+              (u.sn_mesin && u.sn_mesin.toLowerCase().includes(q)) ||
               (u.nama_karyawan && u.nama_karyawan.toLowerCase().includes(q))
             );
           }

@@ -46,7 +46,7 @@ func main() {
 
 	absensiRepo := repository.NewAbsensiRepository(db)
 	absensiService := service.NewAbsensiService(absensiRepo)
-	absensiHandler := handler.NewAbsensiHandler(absensiService)
+	absensiHandler := handler.NewAbsensiHandler(absensiService, userService)
 
 	// ===============================
 	// GIN SETUP

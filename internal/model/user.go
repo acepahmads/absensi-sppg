@@ -30,6 +30,7 @@ type UserAccount struct {
 	Photos       string         `json:"photos" db:"photos"`
 	IDLeader     int            `json:"id_leader" db:"id_leader"`
 	TenantID     int            `json:"tenant_id" db:"tenant_id" gorm:"default:1;not null"`
+	SNMesin      string         `json:"sn_mesin" db:"sn_mesin" gorm:"type:text"`
 }
 
 type UserInfo struct {
@@ -115,6 +116,7 @@ type UserAccountCRUD struct {
 	CreatedAt    time.Time `json:"created_at" db:"created_at"`
 	UpdatedAt    time.Time `json:"updated_at" db:"updated_at"`
 	TenantID     int       `json:"tenant_id" db:"tenant_id"`
+	SNMesin      string    `json:"sn_mesin" db:"sn_mesin"`
 }
 
 type RegisterTenantRequest struct {

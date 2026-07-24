@@ -212,3 +212,8 @@ func (s *UserService) ResetPassword(email, newPassword string) error {
 	return s.repo.ResetPassword(email, hashed)
 }
 
+func (s *UserService) GetTenantIDByDeviceSN(ctx context.Context, sn string) (int, error) {
+	return s.repo.GetTenantIDByDeviceSN(ctx, sn)
+}
+
+
