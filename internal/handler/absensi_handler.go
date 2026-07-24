@@ -1249,8 +1249,7 @@ func (h *AbsensiHandler) HandleADMSHandshake(c *gin.Context) {
 
 	c.Header("Content-Type", "text/plain")
 	if options == "all" {
-		adjustedTime := time.Now().Add(-1 * time.Hour)
-		nowStr := adjustedTime.Format("2006-01-02 15:04:05")
+		nowStr := time.Now().Format("2006-01-02 15:04:05")
 		// Respond with standard ZK configuration options
 		response := "RegistryCode=\r\n" +
 			"RequestDelay=30\r\n" +
@@ -1260,7 +1259,7 @@ func (h *AbsensiHandler) HandleADMSHandshake(c *gin.Context) {
 			"Realtime=1\r\n" +
 			"SessionID=1\r\n" +
 			"ServerTime=" + nowStr + "\r\n" +
-			"ServerTZ=7\r\n"
+			"ServerTZ=8\r\n"
 		c.String(http.StatusOK, response)
 		return
 	}
