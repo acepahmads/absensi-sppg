@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"absensi-sppg/pkg/utils"
@@ -43,6 +44,7 @@ type AbsensiResponse struct {
 type AbsensiHandler struct {
 	AbsensiService service.AbsensiService
 	UserService    service.UserService
+	lastDeviceSync sync.Map
 }
 
 func NewAbsensiHandler(service service.AbsensiService, userService service.UserService) *AbsensiHandler {
@@ -1353,14 +1355,37 @@ func (h *AbsensiHandler) HandleADMSUpload(c *gin.Context) {
 
 func (h *AbsensiHandler) HandleADMSGetRequest(c *gin.Context) {
 	c.Header("Content-Type", "text/plain")
+	sn := c.Query("SN")
 	info := c.Query("INFO")
+
+	shouldSync := false
 	if info != "" {
+		shouldSync = true
+	} else if sn != "" {
+		if val, ok := h.lastDeviceSync.Load(sn); ok {
+			if lastTime, ok := val.(time.Time); ok {
+				if time.Since(lastTime) >= 1*time.Minute {
+					shouldSync = true
+				}
+			} else {
+				shouldSync = true
+			}
+		} else {
+			shouldSync = true
+		}
+	}
+
+	if shouldSync {
+		if sn != "" {
+			h.lastDeviceSync.Store(sn, time.Now())
+		}
 		nowStr := time.Now().Format("2006-01-02 15:04:05")
 		cmd := fmt.Sprintf("C:101:SET TIME %s\r\nC:102:SET OPTION DaylightSavingTime=0\r\nC:103:SET OPTION DSTF=0\r\nC:104:SET OPTION TimeZone=7\r\n", nowStr)
-		log.Printf("[ADMS] Sending SET TIME & Disable DST commands to SN %s", c.Query("SN"))
+		log.Printf("[ADMS] Sending periodic 1-min SET TIME & Disable DST commands to SN %s", sn)
 		c.String(http.StatusOK, cmd)
 		return
 	}
+
 	c.String(http.StatusOK, "OK")
 }
 
