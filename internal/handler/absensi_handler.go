@@ -1247,6 +1247,7 @@ func (h *AbsensiHandler) HandleADMSHandshake(c *gin.Context) {
 
 	c.Header("Content-Type", "text/plain")
 	if options == "all" {
+		nowStr := time.Now().Format("2006-01-02 15:04:05")
 		// Respond with standard ZK configuration options
 		response := "RegistryCode=\r\n" +
 			"RequestDelay=30\r\n" +
@@ -1255,7 +1256,7 @@ func (h *AbsensiHandler) HandleADMSHandshake(c *gin.Context) {
 			"TransFlag=1111111111\r\n" +
 			"Realtime=1\r\n" +
 			"SessionID=1\r\n" +
-			"ServerTZ=7\r\n"
+			"ServerTime=" + nowStr + "\r\n"
 		c.String(http.StatusOK, response)
 		return
 	}
@@ -1352,6 +1353,14 @@ func (h *AbsensiHandler) HandleADMSUpload(c *gin.Context) {
 
 func (h *AbsensiHandler) HandleADMSGetRequest(c *gin.Context) {
 	c.Header("Content-Type", "text/plain")
+	info := c.Query("INFO")
+	if info != "" {
+		nowStr := time.Now().Format("2006-01-02 15:04:05")
+		cmd := fmt.Sprintf("C:101:SET TIME %s\r\n", nowStr)
+		log.Printf("[ADMS] Sending SET TIME command to SN %s: %s", c.Query("SN"), strings.TrimSpace(cmd))
+		c.String(http.StatusOK, cmd)
+		return
+	}
 	c.String(http.StatusOK, "OK")
 }
 
