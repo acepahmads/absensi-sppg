@@ -1245,7 +1245,7 @@ func (h *AbsensiHandler) GetIndividualStats(c *gin.Context) {
 func (h *AbsensiHandler) HandleADMSHandshake(c *gin.Context) {
 	sn := c.Query("SN")
 	options := c.Query("options")
-	log.Printf("[ADMS] GET handshake/ping from SN: %s, options: %s", sn, options)
+	log.Printf("[ADMS TRACE] GET handshake/ping from SN: %s, options: %s", sn, options)
 
 	c.Header("Content-Type", "text/plain")
 	if options == "all" {
@@ -1257,10 +1257,12 @@ func (h *AbsensiHandler) HandleADMSHandshake(c *gin.Context) {
 			"TransFlag=1111111111\r\n" +
 			"Realtime=1\r\n" +
 			"SessionID=1\r\n"
+		log.Printf("[ADMS TRACE] Handshake response sent to SN %s (No ServerTime option included): %q", sn, response)
 		c.String(http.StatusOK, response)
 		return
 	}
 
+	log.Printf("[ADMS TRACE] Handshake response sent to SN %s: OK", sn)
 	c.String(http.StatusOK, "OK")
 }
 
@@ -1352,6 +1354,10 @@ func (h *AbsensiHandler) HandleADMSUpload(c *gin.Context) {
 }
 
 func (h *AbsensiHandler) HandleADMSGetRequest(c *gin.Context) {
+	sn := c.Query("SN")
+	info := c.Query("INFO")
+	log.Printf("[ADMS TRACE] Heartbeat GET /iclock/getrequest from SN: %s (INFO: %s)", sn, info)
+	log.Printf("[ADMS TRACE] Responding with OK (No SET TIME command sent to SN: %s)", sn)
 	c.Header("Content-Type", "text/plain")
 	c.String(http.StatusOK, "OK")
 }
