@@ -1198,23 +1198,23 @@ func (r *absensiRepository) GetAbsensi(ctx context.Context, start, end string, i
 	baseQuery := `
 		SELECT
 			COALESCE(NULLIF(uk.id, 0), NULLIF(ka.id_user_karyawan, 0), 0) AS id,
-			DATE(ka.jam_masuk) AS tanggal,
-			TIME(ka.jam_masuk) AS check_in,
+			DATE(COALESCE(ka.jam_masuk, ka.lembur_masuk)) AS tanggal,
+			TIME(COALESCE(ka.jam_masuk, ka.lembur_masuk)) AS check_in,
 			CASE
-				WHEN ka.jam_pulang IS NULL AND COALESCE(ka.validasi_atasan, 0) = 1
+				WHEN COALESCE(ka.jam_pulang, ka.lembur_pulang) IS NULL AND COALESCE(ka.validasi_atasan, 0) = 1
 				THEN '17:00:00'
-				ELSE COALESCE(TIME(ka.jam_pulang), '00:00:00')
+				ELSE COALESCE(TIME(COALESCE(ka.jam_pulang, ka.lembur_pulang)), '00:00:00')
 			END AS check_out,
 			CASE
-				WHEN LOWER(TRIM(ka.status)) = 'lembur' THEN 'Kantor'
-				ELSE COALESCE(ka.status, '')
+				WHEN LOWER(TRIM(COALESCE(ka.status, ''))) = 'lembur' OR COALESCE(ka.status, '') = '' THEN 'Kantor'
+				ELSE ka.status
 			END AS status,
 			IFNULL(ka.keterangan_ybs,'') AS notes,
 			COALESCE(NULLIF(ka.jumlah_potongan, ''), 0) AS jumlah_potongan,
 			COALESCE(ka.validasi_atasan, 0) AS validasi_atasan,
 			CASE
-				WHEN LOWER(TRIM(ka.attendance_type)) = 'lembur' THEN 'kantor'
-				ELSE COALESCE(ka.attendance_type, '')
+				WHEN LOWER(TRIM(COALESCE(ka.attendance_type, ''))) = 'lembur' OR COALESCE(ka.attendance_type, '') = '' THEN 'kantor'
+				ELSE ka.attendance_type
 			END AS attendance_type
 		FROM karyawan_absensi ka
 		LEFT JOIN user_karyawan uk 
@@ -1223,17 +1223,17 @@ func (r *absensiRepository) GetAbsensi(ctx context.Context, start, end string, i
 		INNER JOIN (
 			SELECT 
 				nama,
-				DATE(jam_masuk) AS tanggal,
-				MIN(jam_masuk) AS min_jam_masuk
+				DATE(COALESCE(jam_masuk, lembur_masuk)) AS tanggal,
+				MIN(COALESCE(jam_masuk, lembur_masuk)) AS min_jam_masuk
 			FROM karyawan_absensi
 			WHERE (hide = 0 OR hide IS NULL OR hide = '') AND tenant_id = ?
-			GROUP BY nama, DATE(jam_masuk)
+			GROUP BY nama, DATE(COALESCE(jam_masuk, lembur_masuk))
 		) x 
 			ON x.nama = ka.nama
-			AND DATE(ka.jam_masuk) = x.tanggal
-			AND ka.jam_masuk = x.min_jam_masuk
+			AND DATE(COALESCE(ka.jam_masuk, ka.lembur_masuk)) = x.tanggal
+			AND COALESCE(ka.jam_masuk, ka.lembur_masuk) = x.min_jam_masuk
 		WHERE ( ka.hide = 0 OR ka.hide IS NULL OR ka.hide = '' )
-		AND DATE(ka.jam_masuk) BETWEEN ? AND ? AND ka.tenant_id = ?
+		AND DATE(COALESCE(ka.jam_masuk, ka.lembur_masuk)) BETWEEN ? AND ? AND ka.tenant_id = ?
 		`
 	if id_leader != 0 && id_leader != 1 {
 		baseQuery += `
