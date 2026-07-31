@@ -2704,7 +2704,7 @@
           if (!status) return 'status-cuti';
           const norm = this.normalizeStatus(status);
           
-          if (norm === 'hadir' || norm === 'kantor') return 'status-hadir';
+          if (norm === 'hadir' || norm === 'kantor' || norm === 'lembur') return 'status-hadir';
           if (norm === 'wfh') return 'status-wfh';
           if (norm === 'alpa' || norm === 'alpha') return 'status-alpa';
           if (norm === 'terlambat' || norm.startsWith('t')) return 'status-terlambat';
@@ -2723,6 +2723,7 @@
           const map = {
             'hadir': 'Hadir',
             'kantor': 'Kantor',
+            'lembur': 'Kantor',
             'wfh': 'WFH',
             'alpa': 'Alpha',
             'alpha': 'Alpha',

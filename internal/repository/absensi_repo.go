@@ -1197,20 +1197,29 @@ func (r *absensiRepository) GetAbsensi(ctx context.Context, start, end string, i
 	)
 	baseQuery := `
 		SELECT
-			COALESCE(id_user_karyawan, 0) AS id,
-			DATE(jam_masuk) AS tanggal,
-			TIME(jam_masuk) AS check_in,
+			COALESCE(NULLIF(uk.id, 0), NULLIF(ka.id_user_karyawan, 0), 0) AS id,
+			DATE(ka.jam_masuk) AS tanggal,
+			TIME(ka.jam_masuk) AS check_in,
 			CASE
-				WHEN jam_pulang IS NULL AND COALESCE(validasi_atasan, 0) = 1
+				WHEN ka.jam_pulang IS NULL AND COALESCE(ka.validasi_atasan, 0) = 1
 				THEN '17:00:00'
-				ELSE COALESCE(TIME(jam_pulang), '00:00:00')
+				ELSE COALESCE(TIME(ka.jam_pulang), '00:00:00')
 			END AS check_out,
-			COALESCE(status, '') AS status,
-			IFNULL(keterangan_ybs,'') AS notes,
-			COALESCE(NULLIF(jumlah_potongan, ''), 0) AS jumlah_potongan,
-			COALESCE(validasi_atasan, 0) AS validasi_atasan,
-			COALESCE(attendance_type, '') AS attendance_type
+			CASE
+				WHEN LOWER(TRIM(ka.status)) = 'lembur' THEN 'Kantor'
+				ELSE COALESCE(ka.status, '')
+			END AS status,
+			IFNULL(ka.keterangan_ybs,'') AS notes,
+			COALESCE(NULLIF(ka.jumlah_potongan, ''), 0) AS jumlah_potongan,
+			COALESCE(ka.validasi_atasan, 0) AS validasi_atasan,
+			CASE
+				WHEN LOWER(TRIM(ka.attendance_type)) = 'lembur' THEN 'kantor'
+				ELSE COALESCE(ka.attendance_type, '')
+			END AS attendance_type
 		FROM karyawan_absensi ka
+		LEFT JOIN user_karyawan uk 
+			ON LOWER(REPLACE(uk.nama_mesin_absen, ' ', '')) = LOWER(REPLACE(ka.nama, ' ', '')) 
+			AND uk.tenant_id = ka.tenant_id
 		INNER JOIN (
 			SELECT 
 				nama,
@@ -1224,15 +1233,17 @@ func (r *absensiRepository) GetAbsensi(ctx context.Context, start, end string, i
 			AND DATE(ka.jam_masuk) = x.tanggal
 			AND ka.jam_masuk = x.min_jam_masuk
 		WHERE ( ka.hide = 0 OR ka.hide IS NULL OR ka.hide = '' )
-		AND DATE(jam_masuk) BETWEEN ? AND ? AND ka.tenant_id = ?
+		AND DATE(ka.jam_masuk) BETWEEN ? AND ? AND ka.tenant_id = ?
 		`
 	if id_leader != 0 && id_leader != 1 {
 		baseQuery += `
-			AND id_user_karyawan IN (
-				SELECT id FROM user_karyawan WHERE id_leader = ? AND tenant_id = ?
+			AND (
+				ka.id_user_karyawan IN (
+					SELECT id FROM user_karyawan WHERE id_leader = ? AND tenant_id = ?
+				) OR uk.id_leader = ?
 			)
 			`
-		rows, err = r.db.QueryContext(ctx, baseQuery+" ORDER BY ka.jam_masuk ASC", tenantID, start, end, tenantID, id_leader, tenantID)
+		rows, err = r.db.QueryContext(ctx, baseQuery+" ORDER BY ka.jam_masuk ASC", tenantID, start, end, tenantID, id_leader, tenantID, id_leader)
 	} else {
 		rows, err = r.db.QueryContext(ctx, baseQuery+" ORDER BY ka.jam_masuk ASC", tenantID, start, end, tenantID)
 	}

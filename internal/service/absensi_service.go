@@ -340,7 +340,7 @@ func (s *AbsensiService) GetKaryawanNameByPin(ctx context.Context, pin string) (
 func incrementSummary(s *model.SummaryAbsensi, status string) {
 	norm := strings.ToLower(strings.TrimSpace(status))
 	switch norm {
-	case "kantor", "hadir":
+	case "kantor", "hadir", "lembur":
 		s.Kantor++
 	case "wfh":
 		s.WFH++
